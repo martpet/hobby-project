@@ -10,7 +10,7 @@ export function Flash(_props: unknown, c: Context) {
     <dialog
       open
       id="flash"
-      class={flash.type}
+      class={`alert ${flash.type}`}
     >
       {flash.msg}
       <button
