@@ -13,6 +13,14 @@ export const FLASH = {
     type: "info",
     msg: "Your session has expired. Please, log in again.",
   },
+  "Reauthenticated": {
+    type: "success",
+    msg: "Successfully reauthenticated",
+  },
+  "PasskeyAccountMismatch": {
+    type: "info",
+    msg: "That passkey belongs to a different account.",
+  },
   "AccountDeleted": {
     type: "success",
     msg: "Your account has been deleted",

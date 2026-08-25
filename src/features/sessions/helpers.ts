@@ -6,7 +6,11 @@ import { getUserById } from "@features/users/kv.ts";
 import { UserAgent } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { decodeTime } from "@std/ulid";
-import { SESSION_ABSOLUTE_TIMEOUT, SESSION_IDLE_TIMEOUT } from "./const.ts";
+import {
+  SESSION_ABSOLUTE_TIMEOUT,
+  SESSION_EXPIRY_WARNING_THRESHOLD,
+  SESSION_IDLE_TIMEOUT,
+} from "./const.ts";
 import { deleteSessionCookie, setSessionCookie } from "./cookie.ts";
 import {
   deleteSession,
@@ -14,6 +18,15 @@ import {
   setSession,
 } from "./kv.ts";
 import { Session } from "./types.ts";
+
+export function getAbsoluteExpiresAt(session: Session) {
+  return decodeTime(session.id) + SESSION_ABSOLUTE_TIMEOUT;
+}
+
+export function isSessionExpiringSoon(session: Session) {
+  return getAbsoluteExpiresAt(session) - Date.now() <=
+    SESSION_EXPIRY_WARNING_THRESHOLD;
+}
 
 export async function createSession(c: Context, res: Response, userId: string) {
   const userEntry = await getUserById(userId);
@@ -58,7 +71,7 @@ export async function extendCurrentSession(
   const session = sessionEntry.value;
   const now = Date.now();
 
-  const absoluteExpiresAt = decodeTime(session.id) + SESSION_ABSOLUTE_TIMEOUT;
+  const absoluteExpiresAt = getAbsoluteExpiresAt(session);
 
   const duration = Math.min(
     SESSION_IDLE_TIMEOUT,

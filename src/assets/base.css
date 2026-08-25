@@ -441,6 +441,13 @@ button {
   }
 }
 
+#session-expiry-warning {
+  width: auto;
+  margin: 0 calc(var(--gutter) * -1) 1rem;
+  padding: 0.9em var(--gutter);
+  justify-content: center;
+}
+
 #header {
   display: flex;
   min-height: 4em;

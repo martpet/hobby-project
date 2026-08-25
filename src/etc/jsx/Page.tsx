@@ -2,15 +2,19 @@ import { Doc, DocProps } from "@etc/jsx/Doc.tsx";
 import { Header } from "@etc/jsx/Header.tsx";
 import { Context } from "@etc/types.ts";
 import { Flash } from "@features/flash/jsx/Flash.tsx";
+import { isSessionExpiringSoon } from "@features/sessions/helpers.ts";
+import { SessionExpiryWarning } from "@features/sessions/jsx/SessionExpiryWarning.tsx";
 
 export function Page(
   { title, children, ...props }: DocProps,
-  { url, user }: Context,
+  { url, user, session }: Context,
 ) {
+  const needsLoginAssets = !user || (session && isSessionExpiringSoon(session));
+
   const head = (
     <>
       {props.head}
-      {!user && (
+      {needsLoginAssets && (
         <>
           <script
             type="module"
@@ -38,6 +42,7 @@ export function Page(
       bodyClass={bodyClass}
     >
       <Flash />
+      <SessionExpiryWarning />
       <Header
         url={url}
         user={user}

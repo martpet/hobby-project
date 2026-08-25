@@ -2,13 +2,13 @@ import { isAuthenticatedContext } from "@etc/context.ts";
 import { Middleware } from "@etc/types.ts";
 import { setFlash } from "@features/flash/helpers.ts";
 import { getUserById } from "@features/users/kv.ts";
-import { decodeTime } from "@std/ulid";
-import {
-  SESSION_ABSOLUTE_TIMEOUT,
-  SESSION_ACTIVITY_INTERVAL,
-} from "./const.ts";
+import { SESSION_ACTIVITY_INTERVAL } from "./const.ts";
 import { deleteSessionCookie, getSessionCookie } from "./cookie.ts";
-import { destroySessionIfUnchanged, extendCurrentSession } from "./helpers.ts";
+import {
+  destroySessionIfUnchanged,
+  extendCurrentSession,
+  getAbsoluteExpiresAt,
+} from "./helpers.ts";
 import { getSessionByCookie } from "./kv.ts";
 
 const SKIP = [
@@ -39,7 +39,7 @@ export const sessionMid: Middleware = (next) => async (c) => {
   }
 
   const now = Date.now();
-  const absoluteExpiresAt = decodeTime(session.id) + SESSION_ABSOLUTE_TIMEOUT;
+  const absoluteExpiresAt = getAbsoluteExpiresAt(session);
 
   if (
     session.expiresAt <= now ||
