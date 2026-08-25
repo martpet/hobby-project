@@ -8,8 +8,16 @@
   --container-3xl: 48rem;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
   --text-base--line-height: calc(1.5 / 1);
   --text-sm--line-height: calc(1.25 / 0.875);
+  --text-lg--line-height: calc(1.75 / 1.125);
+  --text-xl--line-height: calc(1.75 / 1.25);
+  --text-2xl--line-height: calc(2 / 1.5);
+  --text-3xl--line-height: calc(2.25 / 1.875);
   --color-neutral-50: oklch(98.5% 0 none);
   --color-neutral-100: oklch(97% 0 none);
   --color-neutral-200: oklch(92.2% 0 none);
@@ -86,14 +94,46 @@
 
 body {
   margin: 0;
-  font-family: system-ui;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
   color: var(--text-color);
   background: var(--canvas-color);
   line-height: var(--text-base--line-height);
 }
 
+h1,
+h2 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h1 {
+  margin: 0 0 0.6em;
+  font-size: var(--text-3xl);
+  line-height: var(--text-3xl--line-height);
+}
+
 h2 {
   margin-top: 2em;
+  margin-bottom: 0.6em;
+  font-size: var(--text-2xl);
+  line-height: var(--text-2xl--line-height);
+}
+
+p {
+  text-wrap: pretty;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
 }
 
 a {
@@ -171,12 +211,12 @@ dialog.basic {
     background: rgb(0 0 0 / 0.5);
   }
   h2 {
-    margin: 0 0 0.6em;
+    margin: 0 0 1em;
     font-size: 1.25em;
   }
   .actions {
     display: flex;
-    margin-top: 1.5em;
+    margin-top: 2em;
     justify-content: end;
     gap: 1em;
   }
