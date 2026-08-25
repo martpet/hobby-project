@@ -1,12 +1,14 @@
-import { ComponentChildren } from "preact";
+import { ButtonHTMLAttributes, ComponentChildren } from "preact";
 import { Session } from "../types.ts";
 
-interface LogOutButtonProps {
+interface LogOutButtonProps extends ButtonHTMLAttributes {
   session?: Session;
   children?: ComponentChildren;
 }
 
-export function LogOutButton({ session, children }: LogOutButtonProps) {
+export function LogOutButton(
+  { session, children, ...attr }: LogOutButtonProps,
+) {
   return (
     <form
       class="logout"
@@ -16,6 +18,7 @@ export function LogOutButton({ session, children }: LogOutButtonProps) {
       <button
         type="submit"
         class="secondary"
+        {...attr}
       >
         {children || "Log out"}
       </button>

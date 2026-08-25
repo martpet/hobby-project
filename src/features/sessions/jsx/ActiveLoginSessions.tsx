@@ -19,43 +19,50 @@ export function ActiveLoginSessions(
   const multipleSessions = sessions.length > 1;
 
   return (
-    <table class="basic">
-      <thead>
-        <tr>
-          {multipleSessions && <th>Last active</th>}
-          <th>Login date</th>
-          <th>IP address</th>
-          <th>Browser</th>
-          {multipleSessions && <th></th>}
-        </tr>
-      </thead>
-
-      {sessions.map((session) => {
-        const isCurrentSession = session.id === currentSession.id;
-        const created = dateWithTimeFmt.format(decodeTime(session.id));
-        const activeDelta = now - session.lastActive;
-        let active = "now";
-
-        if (!isCurrentSession && activeDelta >= MINUTE) {
-          active = timeAgo(c, -activeDelta);
-        }
-
-        return (
+    <section class="panel">
+      <table class="basic">
+        <thead>
           <tr>
-            {multipleSessions && <td>{active}</td>}
-            <td>{created}</td>
-            <td>{session.ip}</td>
-            <td>{session.browser} {session.os}</td>
-            {multipleSessions && (
-              <td>
-                {isCurrentSession
-                  ? "your session"
-                  : <LogOutButton session={session}>Revoke</LogOutButton>}
-              </td>
-            )}
+            {multipleSessions && <th>Last active</th>}
+            <th>Login date</th>
+            <th>IP address</th>
+            <th>Browser</th>
+            {multipleSessions && <th></th>}
           </tr>
-        );
-      })}
-    </table>
+        </thead>
+
+        {sessions.map((session) => {
+          const isCurrentSession = session.id === currentSession.id;
+          const created = dateWithTimeFmt.format(decodeTime(session.id));
+          const activeDelta = now - session.lastActive;
+          let active = "now";
+
+          if (!isCurrentSession && activeDelta >= MINUTE) {
+            active = timeAgo(c, -activeDelta);
+          }
+
+          return (
+            <tr>
+              {multipleSessions && <td>{active}</td>}
+              <td>{created}</td>
+              <td>{session.ip}</td>
+              <td>{session.browser} {session.os}</td>
+              {multipleSessions && (
+                <td class="muted">
+                  {isCurrentSession ? "Your session" : (
+                    <LogOutButton
+                      session={session}
+                      class="small"
+                    >
+                      Revoke
+                    </LogOutButton>
+                  )}
+                </td>
+              )}
+            </tr>
+          );
+        })}
+      </table>
+    </section>
   );
 }
