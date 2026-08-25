@@ -1,0 +1,33 @@
+import { handleAsset } from "@etc/asset.ts";
+import { respondNotFound } from "@etc/responses/not-found.tsx";
+import { Context } from "@etc/types.ts";
+import { handleAccountPage } from "./handlers/account-page.tsx";
+import { handleSignupFinish } from "./handlers/signup/finish.ts";
+import { handleSignUpPage } from "./handlers/signup/page.tsx";
+import { handleSignupStart } from "./handlers/signup/start.ts";
+
+export function handleAccount(c: Context) {
+  const { pathname } = c.url;
+
+  if (pathname.startsWith("/account/assets/")) {
+    return handleAsset(c, import.meta);
+  }
+
+  if (pathname === "/account") {
+    return handleAccountPage(c);
+  }
+
+  if (pathname === "/signup") {
+    return handleSignUpPage(c);
+  }
+
+  if (pathname === "/signup/start") {
+    return handleSignupStart(c);
+  }
+
+  if (pathname === "/signup/finish") {
+    return handleSignupFinish(c);
+  }
+
+  return respondNotFound(c);
+}

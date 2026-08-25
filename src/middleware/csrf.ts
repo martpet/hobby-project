@@ -1,0 +1,32 @@
+import { respondForbidden } from "@etc/responses/forbidden.tsx";
+import { Middleware } from "@etc/types.ts";
+import { Method } from "@std/http/unstable-method";
+
+const SAFE_METHODS = new Set<Method>(["GET", "HEAD", "OPTIONS"]);
+const ALLOWED_SEC_FETCH = ["same-origin"];
+
+const SKIP = [
+  "^/webhook/",
+];
+
+export const csrfMid: Middleware = (next) => (c) => {
+  if (SAFE_METHODS.has(c.method)) {
+    return next(c);
+  }
+
+  if (SKIP.some((rule) => c.url.pathname.match(rule))) {
+    return next(c);
+  }
+
+  const origin = c.req.headers.get("origin");
+  const secFetch = c.req.headers.get("sec-fetch-site");
+
+  const originOk = origin === c.url.origin;
+  const secFetchOk = secFetch && ALLOWED_SEC_FETCH.includes(secFetch);
+
+  if (originOk || secFetchOk) {
+    return next(c);
+  }
+
+  return respondForbidden(c, "CSRF validation failed");
+};
