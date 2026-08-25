@@ -54,8 +54,6 @@ export async function verifiyAuthResponseJson(
     const tombstoned = userHandle &&
       (await getPasskeyDeletedTombstone(userHandle)).value;
 
-    console.log("tombstoned", tombstoned);
-
     return {
       ok: false,
       reason: tombstoned ? "AccountDeleted" : "PasskeyNotFound",

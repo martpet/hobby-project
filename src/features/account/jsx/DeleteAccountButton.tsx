@@ -4,8 +4,9 @@ export function DeleteAccountButton() {
       <button
         command="show-modal"
         commandfor="delete-account-dialog"
+        class="small"
       >
-        Delete account
+        Delete your account
       </button>
 
       <dialog id="delete-account-dialog" class="basic">
@@ -23,7 +24,7 @@ export function DeleteAccountButton() {
             method="POST"
             action="/account/delete"
           >
-            <button type="submit">Delete account</button>
+            <button type="submit" class="danger">Delete account</button>
           </form>
         </div>
       </dialog>

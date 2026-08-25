@@ -10,10 +10,10 @@ export function Flash(_props: unknown, c: Context) {
     <dialog open id="flash" class={flash.type}>
       {flash.msg}
       <button
-        class="plain"
         title="Close"
         commandfor="flash"
         command="close"
+        class="close"
       >
         ×
       </button>
