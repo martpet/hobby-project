@@ -13,7 +13,7 @@ export function DeleteAccountButton() {
         id="delete-account-dialog"
         class="basic"
       >
-        <h2>Delete your account</h2>
+        <h2>Delete account</h2>
         <p>Are you sure you want to delete your account?</p>
         <p>This cannot be undone.</p>
 
