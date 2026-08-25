@@ -24,9 +24,15 @@ export function Header({ url, user }: HeaderProps) {
 
   return (
     <header id="header">
-      {isHome
-        ? <h1 class="title">{logo}{WEBSITE_TITLE}</h1>
-        : <a href="/" class="title">{logo}{WEBSITE_TITLE}</a>}
+      {isHome ? <h1 class="title">{logo}{WEBSITE_TITLE}</h1> : (
+        <a
+          href="/"
+          class="title"
+        >
+          {logo}
+          {WEBSITE_TITLE}
+        </a>
+      )}
 
       <div class="actions">
         {user

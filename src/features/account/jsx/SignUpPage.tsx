@@ -5,13 +5,24 @@ import {
 } from "@features/users/const.ts";
 
 export function SignUpPage() {
-  const head = <script type="module" src="/account/assets/signup.js" />;
+  const head = (
+    <script
+      type="module"
+      src="/account/assets/signup.js"
+    />
+  );
 
   return (
-    <Page head={head} title="Sign up">
+    <Page
+      head={head}
+      title="Sign up"
+    >
       <h1>Create an account</h1>
 
-      <form id="signup-form" class="basic">
+      <form
+        id="signup-form"
+        class="basic"
+      >
         <noscript>JavaScript is required to create an account.</noscript>
 
         <label for="username">Username:</label>

@@ -12,9 +12,18 @@ export function Page(
       {props.head}
       {!user && (
         <>
-          <script type="module" src="/session/assets/login.js" />
-          <link rel="modulepreload" href="/passkeys/assets/simplewebauthn.js" />
-          <link rel="modulepreload" href="/assets/util.js" />
+          <script
+            type="module"
+            src="/session/assets/login.js"
+          />
+          <link
+            rel="modulepreload"
+            href="/passkeys/assets/simplewebauthn.js"
+          />
+          <link
+            rel="modulepreload"
+            href="/assets/util.js"
+          />
         </>
       )}
     </>
@@ -23,9 +32,16 @@ export function Page(
   const bodyClass = "page" + (props.bodyClass ? ` ${props.bodyClass}` : "");
 
   return (
-    <Doc title={title} head={head} bodyClass={bodyClass}>
+    <Doc
+      title={title}
+      head={head}
+      bodyClass={bodyClass}
+    >
       <Flash />
-      <Header url={url} user={user} />
+      <Header
+        url={url}
+        user={user}
+      />
       {children}
     </Doc>
   );

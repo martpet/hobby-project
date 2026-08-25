@@ -7,7 +7,11 @@ export function Flash(_props: unknown, c: Context) {
   const flash = FLASH[c.flash];
 
   return (
-    <dialog open id="flash" class={flash.type}>
+    <dialog
+      open
+      id="flash"
+      class={flash.type}
+    >
       {flash.msg}
       <button
         title="Close"

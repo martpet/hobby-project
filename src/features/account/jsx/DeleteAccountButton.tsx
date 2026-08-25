@@ -9,7 +9,10 @@ export function DeleteAccountButton() {
         Delete your account
       </button>
 
-      <dialog id="delete-account-dialog" class="basic">
+      <dialog
+        id="delete-account-dialog"
+        class="basic"
+      >
         <p>Are you sure you want to delete your account?</p>
         <p>This cannot be undone.</p>
 
@@ -24,7 +27,12 @@ export function DeleteAccountButton() {
             method="POST"
             action="/account/delete"
           >
-            <button type="submit" class="danger">Delete account</button>
+            <button
+              type="submit"
+              class="danger"
+            >
+              Delete account
+            </button>
           </form>
         </div>
       </dialog>

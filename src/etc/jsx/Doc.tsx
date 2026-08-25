@@ -13,10 +13,23 @@ export function Doc({ head, children, title, bodyClass }: DocProps) {
     <html lang="en">
       <head>
         <meta charset="UTF-8" />
-        <meta name="color-scheme" content="dark light" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/assets/logo.png" type="image/png" />
-        <link rel="stylesheet" href="/assets/base.css" />
+        <meta
+          name="color-scheme"
+          content="dark light"
+        />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+        />
+        <link
+          rel="icon"
+          href="/assets/logo.png"
+          type="image/png"
+        />
+        <link
+          rel="stylesheet"
+          href="/assets/base.css"
+        />
         {head}
         <title>{WEBSITE_TITLE}{title && ` – ${title}`}</title>
       </head>
