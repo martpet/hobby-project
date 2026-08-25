@@ -46,7 +46,9 @@ export async function handleSignupFinish(c: Context) {
     return respondConflict("UsernameTaken");
   }
 
-  await createSession(c, res, user.id);
+  if (!await createSession(c, res, user.id)) {
+    return respondForbidden(c);
+  }
 
   return res;
 }

@@ -5,6 +5,7 @@ import { ActiveLoginSessions } from "@features/sessions/jsx/ActiveLoginSessions.
 import { Session } from "@features/sessions/types.ts";
 import { User } from "@features/users/types.ts";
 import { decodeTime } from "@std/ulid";
+import { DeleteAccountButton } from "./DeleteAccountButton.tsx";
 
 interface AccountPageProps {
   heading: string;
@@ -35,6 +36,9 @@ export function AccountPage(
           sessions={sessions}
           currentSession={currentSession}
         />
+
+        <h2>Delete account</h2>
+        <DeleteAccountButton />
       </main>
     </Page>
   );

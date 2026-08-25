@@ -24,7 +24,9 @@ export async function handleLogInFinish(c: Context) {
     return respondForbidden(c, verification.reason);
   }
 
-  await createSession(c, res, verification.userId);
+  if (!await createSession(c, res, verification.userId)) {
+    return respondForbidden(c);
+  }
 
   return res;
 }

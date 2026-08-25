@@ -1,6 +1,8 @@
+import { generateToken } from "@etc/crypto.ts";
 import { kv } from "@etc/kv.ts";
 import { AuthenticatedContext, Context } from "@etc/types.ts";
 import { setFlash } from "@features/flash/helpers.ts";
+import { getUserById } from "@features/users/kv.ts";
 import { UserAgent } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { decodeTime } from "@std/ulid";
@@ -14,11 +16,18 @@ import {
 import { Session } from "./types.ts";
 
 export async function createSession(c: Context, res: Response, userId: string) {
+  const userEntry = await getUserById(userId);
+
+  if (!userEntry.value) {
+    return false;
+  }
+
   const ua = new UserAgent(c.req.headers.get(HEADER.UserAgent));
   const now = Date.now();
   const atomic = kv.atomic();
+  const cookie = generateToken();
 
-  const cookie = setSessionCookie(res, SESSION_IDLE_TIMEOUT);
+  atomic.check(userEntry);
 
   setSession({
     cookie,
@@ -30,7 +39,15 @@ export async function createSession(c: Context, res: Response, userId: string) {
     ip: c.ip,
   }, atomic);
 
-  await atomic.commit();
+  const result = await atomic.commit();
+
+  if (!result.ok) {
+    return false;
+  }
+
+  setSessionCookie(res, SESSION_IDLE_TIMEOUT, cookie);
+
+  return true;
 }
 
 export async function extendCurrentSession(

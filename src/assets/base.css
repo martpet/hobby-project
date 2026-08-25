@@ -143,6 +143,25 @@ table.basic {
   }
 }
 
+dialog.basic {
+  max-width: min(30em, calc(100% - 2 * var(--gutter)));
+  border: none;
+  padding: 1.4em;
+  gap: 1em;
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-xl);
+  color: var(--text-color);
+  background: var(--canvas-color);
+  .actions {
+    display: flex;
+    justify-content: end;
+    gap: 1em;
+    > * {
+      display: flex;
+    }
+  }
+}
+
 button.plain {
   appearance: none;
   border: 0;

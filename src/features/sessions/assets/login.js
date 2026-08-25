@@ -50,7 +50,9 @@ function makeErrorHandler(button) {
     let userMsg;
 
     if (error === "PasskeyNotFound") {
-      userMsg = "This passkey is no longer available on the website";
+      userMsg = "This passkey is no longer valid";
+    } else if (error === "AccountDeleted") {
+      userMsg = "This account has been deleted";
     } else if (error instanceof Error) {
       if (error.name === "NotAllowedError") {
         return;

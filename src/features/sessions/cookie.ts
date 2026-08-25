@@ -1,5 +1,4 @@
 import { IS_DEV } from "@etc/const.ts";
-import { generateToken } from "@etc/crypto.ts";
 import { Context } from "@etc/types.ts";
 import { deleteCookie, getCookies, setCookie } from "@std/http";
 
@@ -14,7 +13,7 @@ const COOKIE_ATTRIBUTES = {
 export function setSessionCookie(
   res: Response,
   duration: number,
-  value: string = generateToken(),
+  value: string,
 ) {
   setCookie(res.headers, {
     name: SESSION_COOKIE,

@@ -36,3 +36,9 @@ export function setUser(
 
   return user;
 }
+
+export function deleteUser(user: User, atomic: Deno.AtomicOperation) {
+  for (const key of getUserKeys(user)) {
+    atomic.delete(key);
+  }
+}

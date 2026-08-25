@@ -1,6 +1,7 @@
 import { kv } from "@etc/kv.ts";
 import { ulid } from "@std/ulid";
 import { SetOptional } from "type-fest";
+import { DELETED_ACCOUNT_TOMBSTONE_TTL } from "./const.ts";
 import { Passkey, PasskeyAuthOptions, PasskeyRegOptions } from "./types.ts";
 
 const PASSKEYS_BY_ID = "passkeys_by_id";
@@ -8,6 +9,8 @@ const PASSKEYS_BY_CRED_ID = "passkeys_by_cred_id";
 const PASSKEYS_BY_USER_ID = "passkeys_by_user_id";
 const PASSKEYS_REG_OPTIONS_BY_COOKIE = "passkeys_reg_options_by_cookie";
 const PASSKEYS_AUTH_OPTIONS_BY_COOKIE = "passkeys_auth_options_by_cookie";
+const PASSKEYS_DELETED_BY_WEBAUTHN_USER_ID =
+  "passkeys_deleted_by_webauthn_user_id";
 
 function getPasskeyKeys(passkey: Passkey) {
   return [
@@ -19,6 +22,11 @@ function getPasskeyKeys(passkey: Passkey) {
 
 export function getPasskeyByCredId(credId: Passkey["credId"]) {
   return kv.get<Passkey>([PASSKEYS_BY_CRED_ID, credId]);
+}
+
+export function listPasskeysByUserId(userId: Passkey["userId"]) {
+  const iter = kv.list<Passkey>({ prefix: [PASSKEYS_BY_USER_ID, userId] });
+  return Array.fromAsync(iter, (entry) => entry.value);
 }
 
 export function setPasskey(
@@ -35,6 +43,32 @@ export function setPasskey(
   }
 
   return passkey;
+}
+
+export function deletePasskey(passkey: Passkey, atomic: Deno.AtomicOperation) {
+  for (const key of getPasskeyKeys(passkey)) {
+    atomic.delete(key);
+  }
+}
+
+export function tombstonePasskey(
+  passkey: Passkey,
+  atomic: Deno.AtomicOperation,
+) {
+  atomic.set(
+    [PASSKEYS_DELETED_BY_WEBAUTHN_USER_ID, passkey.webauthnUserId],
+    true,
+    { expireIn: DELETED_ACCOUNT_TOMBSTONE_TTL },
+  );
+}
+
+export function getPasskeyDeletedTombstone(
+  webauthnUserId: Passkey["webauthnUserId"],
+) {
+  return kv.get<boolean>([
+    PASSKEYS_DELETED_BY_WEBAUTHN_USER_ID,
+    webauthnUserId,
+  ]);
 }
 
 export function getPasskeyRegOptions(cookie: PasskeyRegOptions["cookie"]) {

@@ -11,6 +11,7 @@ import {
   deletePasskeyAuthOptions,
   getPasskeyAuthOptions,
   getPasskeyByCredId,
+  getPasskeyDeletedTombstone,
   setPasskey,
 } from "../kv.ts";
 
@@ -45,10 +46,20 @@ export async function verifiyAuthResponseJson(
     return { ok: false };
   }
 
-  const passkey = (await getPasskeyByCredId(authResponseJson.id)).value;
+  const passkeyEntry = await getPasskeyByCredId(authResponseJson.id);
+  const passkey = passkeyEntry.value;
 
   if (!passkey) {
-    return { ok: false, reason: "PasskeyNotFound" };
+    const userHandle = authResponseJson.response.userHandle;
+    const tombstoned = userHandle &&
+      (await getPasskeyDeletedTombstone(userHandle)).value;
+
+    console.log("tombstoned", tombstoned);
+
+    return {
+      ok: false,
+      reason: tombstoned ? "AccountDeleted" : "PasskeyNotFound",
+    };
   }
 
   let authVerification;
@@ -78,9 +89,15 @@ export async function verifiyAuthResponseJson(
   }
 
   const atomic = kv.atomic();
+
+  atomic.check(passkeyEntry);
   setPasskey({ ...passkey, counter: authenticationInfo.newCounter }, atomic);
 
-  await atomic.commit();
+  const result = await atomic.commit();
+
+  if (!result.ok) {
+    return { ok: false };
+  }
 
   return {
     ok: true,

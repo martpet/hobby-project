@@ -13,4 +13,8 @@ export const FLASH = {
     type: "info",
     msg: "Your session has expired. Please, log in again.",
   },
+  "AccountDeleted": {
+    type: "success",
+    msg: "Your account has been deleted",
+  },
 } as const satisfies Record<string, FlashMessage>;
