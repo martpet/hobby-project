@@ -184,6 +184,7 @@ dialog.basic {
 
 button {
   appearance: none;
+  min-width: 5em;
   border-radius: 999px;
   padding: 0.4em 1.1em;
   font: inherit;
@@ -312,7 +313,7 @@ button {
   border: none;
   box-shadow: var(--shadow-md);
   border-radius: var(--radius-xl);
-  color: white;
+  color: light-dark(white, var(--color-neutral-100));
   font-size: var(--text-sm);
   line-height: var(--text-sm--line-height);
   animation: flash-in 0.2s ease-out;
