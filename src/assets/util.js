@@ -3,10 +3,11 @@ export function setButtonLoading(button, flag = true) {
   button.classList.toggle("loading", flag);
 }
 
-export function showAlert(message) {
+export function showAlert(message, heading) {
   const template = document.createElement("template");
   template.innerHTML = `
     <dialog class="basic">
+      ${heading ? `<h2>${escapeHtml(heading)}</h2>` : ""}
       <p>${escapeHtml(message)}</p>
       <div class="actions">
         <button>OK</button>

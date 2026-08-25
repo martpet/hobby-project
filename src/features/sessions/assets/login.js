@@ -61,6 +61,6 @@ function makeErrorHandler(button) {
       }
     }
 
-    showAlert(userMsg || "Something went wrong");
+    showAlert(userMsg || "Something went wrong", "Log in failed");
   };
 }

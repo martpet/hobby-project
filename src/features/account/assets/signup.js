@@ -67,5 +67,5 @@ function handleError(error, username) {
     }
   }
 
-  showAlert(userMsg || "Something went wrong");
+  showAlert(userMsg || "Something went wrong", "Sign up failed");
 }

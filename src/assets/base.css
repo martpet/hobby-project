@@ -199,7 +199,9 @@ table.basic {
 }
 
 dialog.basic {
-  max-width: min(30em, calc(100% - 2 * var(--gutter)));
+  width: fit-content;
+  min-width: min(20em, calc(100% - 2 * var(--gutter)));
+  max-width: min(50em, calc(100% - 2 * var(--gutter)));
   border: 1px solid var(--border-color-300);
   padding: 1.4em;
   gap: 1em;
@@ -215,10 +217,16 @@ dialog.basic {
     font-size: 1.25em;
   }
   .actions {
-    display: flex;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    width: fit-content;
     margin-top: 2em;
-    justify-content: end;
+    margin-inline-start: auto;
     gap: 1em;
+    form {
+      display: contents;
+    }
   }
 }
 
@@ -254,7 +262,7 @@ button {
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.55;
+    opacity: 0.4;
     &:hover,
     &:active {
       background: var(
@@ -270,7 +278,7 @@ button {
   }
 
   &.small {
-    padding: 0.25em 1em;
+    padding: 0.32em 1.1em;
     font-size: var(--text-xs);
   }
 
