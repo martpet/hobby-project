@@ -184,27 +184,30 @@ dialog.basic {
 
 button {
   appearance: none;
-  border-radius: 0.5em;
-  padding: 0.4em 0.9em;
+  border-radius: 999px;
+  padding: 0.4em 1.1em;
   font: inherit;
   font-size: var(--text-sm);
   cursor: pointer;
-  border: 1px solid var(--button-border, var(--border-color-300));
-  color: var(--button-color, inherit);
+  border: none;
+  color: var(
+    --button-color,
+    light-dark(var(--color-neutral-800), var(--color-neutral-100))
+  );
   background: var(
     --button-background,
-    light-dark(var(--color-neutral-100), var(--color-neutral-800))
+    light-dark(var(--color-neutral-200), var(--color-neutral-800))
   );
   &:hover {
     background: var(
       --button-background-hover,
-      light-dark(var(--color-neutral-200), var(--color-neutral-700))
+      light-dark(var(--color-neutral-300), var(--color-neutral-700))
     );
   }
   &:active {
     background: var(
       --button-background-active,
-      light-dark(var(--color-neutral-300), var(--color-neutral-600))
+      light-dark(var(--color-neutral-400), var(--color-neutral-600))
     );
   }
 
@@ -215,7 +218,7 @@ button {
     &:active {
       background: var(
         --button-background,
-        light-dark(var(--color-neutral-100), var(--color-neutral-800))
+        light-dark(var(--color-neutral-200), var(--color-neutral-800))
       );
     }
   }
@@ -226,13 +229,12 @@ button {
   }
 
   &.small {
-    padding: 0.25em 0.6em;
+    padding: 0.25em 1em;
     font-size: var(--text-xs);
   }
 
   &[type="submit"],
   &.primary {
-    --button-border: transparent;
     --button-color: white;
     --button-background: light-dark(
       var(--color-blue-700),
@@ -249,7 +251,6 @@ button {
   }
 
   &.secondary {
-    --button-border: initial;
     --button-color: initial;
     --button-background: initial;
     --button-background-hover: initial;
@@ -257,7 +258,6 @@ button {
   }
 
   &.danger {
-    --button-border: transparent;
     --button-color: white;
     --button-background: light-dark(var(--color-red-700), var(--color-red-600));
     --button-background-hover: light-dark(
