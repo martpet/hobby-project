@@ -2,6 +2,9 @@
   /* https://github.com/tailwindlabs/tailwindcss/blob/main/packages/tailwindcss/theme.css */
   --radius-xl: 0.75rem;
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --container-3xl: 48rem;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -150,15 +153,23 @@ table.basic {
 
 dialog.basic {
   max-width: min(30em, calc(100% - 2 * var(--gutter)));
-  border: none;
+  border: 1px solid var(--border-color-300);
   padding: 1.4em;
   gap: 1em;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-2xl);
   border-radius: var(--radius-xl);
   color: var(--text-color);
   background: var(--canvas-color);
+  &::backdrop {
+    background: rgb(0 0 0 / 0.5);
+  }
+  h2 {
+    margin: 0 0 0.6em;
+    font-size: 1.25em;
+  }
   .actions {
     display: flex;
+    margin-top: 1.5em;
     justify-content: end;
     gap: 1em;
   }

@@ -1,4 +1,4 @@
-import { apiFetch, setButtonLoading } from "/assets/util.js";
+import { apiFetch, setButtonLoading, showAlert } from "/assets/util.js";
 import { startAuthentication } from "/passkeys/assets/simplewebauthn.js";
 
 const logInButtons = document.querySelectorAll("button.login");
@@ -61,6 +61,6 @@ function makeErrorHandler(button) {
       }
     }
 
-    alert(userMsg || "Something went wrong");
+    showAlert(userMsg || "Something went wrong");
   };
 }

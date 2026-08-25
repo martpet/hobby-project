@@ -1,4 +1,4 @@
-import { apiFetch, setFormLoading } from "/assets/util.js";
+import { apiFetch, setFormLoading, showAlert } from "/assets/util.js";
 import { startRegistration } from "/passkeys/assets/simplewebauthn.js";
 
 const form = document.getElementById("signup-form");
@@ -67,5 +67,5 @@ function handleError(error, username) {
     }
   }
 
-  alert(userMsg || "Something went wrong");
+  showAlert(userMsg || "Something went wrong");
 }

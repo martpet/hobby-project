@@ -3,6 +3,38 @@ export function setButtonLoading(button, flag = true) {
   button.classList.toggle("loading", flag);
 }
 
+export function showAlert(message) {
+  const template = document.createElement("template");
+  template.innerHTML = `
+    <dialog class="basic">
+      <p>${escapeHtml(message)}</p>
+      <div class="actions">
+        <button>OK</button>
+      </div>
+    </dialog>
+  `;
+
+  const dialog = template.content.firstElementChild;
+  dialog
+    .querySelector("button")
+    .addEventListener("click", () => dialog.close());
+  dialog.addEventListener("close", () => dialog.remove());
+
+  document.body.append(dialog);
+  dialog.showModal();
+}
+
+// prevent `message` from being interpreted as markup when inlined into the template above
+function escapeHtml(str) {
+  return str.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+}
+
 export function setFormLoading(form, flag = true) {
   for (const formEl of form.elements) formEl.disabled = flag;
   const button = form.querySelector("button[type=submit]");
