@@ -49,7 +49,7 @@ export function ActiveLoginSessions(
             {multipleSessions && (
               <td>
                 {isCurrentSession
-                  ? <strong>you</strong>
+                  ? "your session"
                   : <LogOutButton session={session}>Revoke</LogOutButton>}
               </td>
             )}
