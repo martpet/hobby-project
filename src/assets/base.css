@@ -433,6 +433,22 @@ button {
     --button-background-active: initial;
   }
 
+  &.danger-solid {
+    --button-color: light-dark(var(--color-red-700), var(--color-rose-300));
+    --button-background: light-dark(
+      var(--color-red-100),
+      color-mix(in oklab, var(--color-red-900) 55%, transparent)
+    );
+    --button-background-hover: light-dark(
+      color-mix(in oklab, var(--color-red-100) 65%, var(--color-red-400)),
+      color-mix(in oklab, var(--color-red-900) 80%, transparent)
+    );
+    --button-background-active: light-dark(
+      color-mix(in oklab, var(--color-red-100) 40%, var(--color-red-400)),
+      color-mix(in oklab, var(--color-red-900) 100%, transparent)
+    );
+  }
+
   &.secondary {
     --button-color: initial;
     --button-background: initial;
