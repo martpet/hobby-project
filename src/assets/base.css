@@ -315,12 +315,16 @@ dialog.basic {
 }
 
 button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   appearance: none;
   min-width: 5em;
   border-radius: 999px;
   padding: 0.4em 1.1em;
   font: inherit;
   font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
   cursor: pointer;
   border: none;
   color: var(--button-color, var(--text-color));
@@ -403,8 +407,6 @@ button {
   }
 
   &.loading {
-    display: inline-flex;
-    align-items: center;
     gap: 0.55em;
     &::after {
       content: "";
