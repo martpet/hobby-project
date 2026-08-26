@@ -14,16 +14,9 @@ export function DeleteAccountButton() {
         class="basic"
       >
         <h2>Delete account</h2>
-        <p>Are you sure you want to delete your account?</p>
         <p>This cannot be undone.</p>
 
         <div class="actions">
-          <button
-            command="close"
-            commandfor="delete-account-dialog"
-          >
-            Cancel
-          </button>
           <form
             method="POST"
             action="/account/delete"
@@ -35,6 +28,13 @@ export function DeleteAccountButton() {
               Delete account
             </button>
           </form>
+          <button
+            command="close"
+            commandfor="delete-account-dialog"
+            autofocus
+          >
+            Cancel
+          </button>
         </div>
       </dialog>
     </>

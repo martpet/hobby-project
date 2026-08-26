@@ -332,7 +332,7 @@ table.basic {
 dialog.basic {
   width: fit-content;
   min-width: min(20em, calc(100% - 2 * var(--gutter)));
-  max-width: min(50em, calc(100% - 2 * var(--gutter)));
+  max-width: min(30em, calc(100% - 2 * var(--gutter)));
   border: 1px solid light-dark(transparent, var(--color-neutral-700));
   padding: 1.4em;
   gap: 1em;
@@ -345,19 +345,17 @@ dialog.basic {
   }
   h2 {
     margin: 0 0 1em;
-    font-size: 1.25em;
+    font-size: calc(1em + 1px);
+    font-weight: 700;
   }
   .actions {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
-    width: fit-content;
-    margin-top: 2em;
-    margin-inline-start: auto;
-    gap: 1em;
-    form {
-      display: contents;
+    &,
+    & > * {
+      display: flex;
+      flex-direction: column;
     }
+    margin-top: 2em;
+    gap: 0.7em;
   }
 }
 
@@ -425,16 +423,10 @@ button {
   }
 
   &.danger {
-    --button-color: white;
-    --button-background: light-dark(var(--color-red-700), var(--color-red-600));
-    --button-background-hover: light-dark(
-      var(--color-red-800),
-      var(--color-red-500)
-    );
-    --button-background-active: light-dark(
-      var(--color-red-900),
-      var(--color-red-400)
-    );
+    --button-color: light-dark(var(--color-red-700), var(--color-red-400));
+    --button-background: initial;
+    --button-background-hover: initial;
+    --button-background-active: initial;
   }
 
   &.secondary {
