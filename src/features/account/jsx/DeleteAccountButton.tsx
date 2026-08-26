@@ -4,7 +4,7 @@ export function DeleteAccountButton() {
       <button
         command="show-modal"
         commandfor="delete-account-dialog"
-        class="small danger"
+        class="small"
       >
         Delete Your Account
       </button>

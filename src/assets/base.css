@@ -360,6 +360,33 @@ dialog.basic {
     }
     margin-top: 2em;
     gap: 0.7em;
+
+    > form {
+      display: contents;
+    }
+
+    &.primary {
+      flex-direction: row;
+      justify-content: space-between;
+
+      &:has(> :only-child) {
+        justify-content: flex-start;
+      }
+
+      &.balanced {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        &:has(> :only-child) {
+          grid-auto-columns: max-content;
+        }
+      }
+    }
+
+    &.secondary {
+      flex-direction: row;
+      justify-content: flex-end;
+    }
   }
 }
 
