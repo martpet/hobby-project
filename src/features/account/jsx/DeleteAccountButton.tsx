@@ -6,14 +6,14 @@ export function DeleteAccountButton() {
         commandfor="delete-account-dialog"
         class="small"
       >
-        Delete your account
+        Delete Your Account
       </button>
 
       <dialog
         id="delete-account-dialog"
         class="basic"
       >
-        <h2>Delete account</h2>
+        <h2>Delete Account</h2>
         <p>This cannot be undone.</p>
 
         <div class="actions">
@@ -25,7 +25,7 @@ export function DeleteAccountButton() {
               type="submit"
               class="danger"
             >
-              Delete account
+              Delete Account Forever
             </button>
           </form>
           <button

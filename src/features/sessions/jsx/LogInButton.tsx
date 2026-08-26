@@ -13,7 +13,7 @@ export function LogInButton({ children, ...attr }: LogInButtonProps) {
         class="login"
         {...attr}
       >
-        {children || "Log in"}
+        {children || "Log In"}
       </button>
     </>
   );

@@ -17,7 +17,7 @@ export function SignUpPage() {
       head={head}
       title="Sign up"
     >
-      <h1>Create an account</h1>
+      <h1>Create a new account</h1>
 
       <form
         id="signup-form"
@@ -37,7 +37,7 @@ export function SignUpPage() {
           spellcheck={false}
         />
 
-        <button type="submit">Create</button>
+        <button type="submit">Create Account</button>
       </form>
     </Page>
   );

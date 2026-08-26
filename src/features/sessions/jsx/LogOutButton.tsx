@@ -20,7 +20,7 @@ export function LogOutButton(
         class="secondary"
         {...attr}
       >
-        {children || "Log out"}
+        {children || "Log Out"}
       </button>
       {session && (
         <input

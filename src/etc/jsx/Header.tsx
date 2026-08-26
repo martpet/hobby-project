@@ -46,7 +46,7 @@ export function Header({ url, user }: HeaderProps) {
           )
           : (
             <>
-              {!isSignUp && <a href="/signup">Sign up</a>}
+              {!isSignUp && <a href="/signup">Sign Up</a>}
               <LogInButton />
             </>
           )}
