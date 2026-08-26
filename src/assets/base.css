@@ -1,12 +1,14 @@
 :root {
   /* https://github.com/tailwindlabs/tailwindcss/blob/main/packages/tailwindcss/theme.css */
   color-scheme: light dark;
+  --container-3xl: 48rem;
   --radius-xl: 0.75rem;
+
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg:
     0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --container-3xl: 48rem;
+
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-lg: 1.125rem;
@@ -63,19 +65,22 @@
   --gutter: 1.1rem;
   --canvas-color: light-dark(white, var(--color-neutral-900));
   --text-color: light-dark(black, var(--color-neutral-100));
+
   --muted-text-color: light-dark(
     var(--color-neutral-600),
     var(--color-neutral-400)
   );
+
   --panel-background: light-dark(
     var(--color-neutral-100),
     var(--color-neutral-800)
   );
   --divider-color: light-dark(rgb(0 0 0 / 5%), rgb(255 255 255 / 5%));
   --divider-color-strong: light-dark(rgb(0 0 0 / 12%), rgb(255 255 255 / 12%));
-  --button-tint: rgb(0 0 0 / 10%);
-  --button-tint-hover: rgb(0 0 0 / 16%);
-  --button-tint-active: rgb(0 0 0 / 22%);
+
+  --button-tint: light-dark(rgb(0 0 0 / 10%), rgb(255 255 255 / 10%));
+  --button-tint-hover: light-dark(rgb(0 0 0 / 16%), rgb(255 255 255 / 16%));
+  --button-tint-active: light-dark(rgb(0 0 0 / 22%), rgb(255 255 255 / 22%));
 
   --link-color: light-dark(var(--color-blue-700), var(--color-indigo-300));
   --link-active-color: light-dark(var(--color-red-600), var(--color-rose-300));
@@ -83,14 +88,6 @@
     var(--color-purple-900),
     var(--color-purple-300)
   );
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --button-tint: rgb(255 255 255 / 10%);
-    --button-tint-hover: rgb(255 255 255 / 16%);
-    --button-tint-active: rgb(255 255 255 / 22%);
-  }
 }
 
 @keyframes spin {
@@ -147,11 +144,61 @@ p {
   text-wrap: pretty;
 }
 
-input,
-select,
+input:not([type="checkbox"], [type="radio"], [type="hidden"]),
+select {
+  appearance: none;
+  border: 1px solid var(--divider-color-strong);
+  border-radius: var(--radius-xl);
+  padding: 0.4em 1.1em;
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  color: inherit;
+  background-color: var(--canvas-color);
+  &::placeholder {
+    color: var(--muted-text-color);
+    opacity: 1;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-blue-500);
+    outline-offset: 1px;
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    -webkit-text-fill-color: currentColor;
+  }
+  &:invalid {
+    box-shadow: none;
+  }
+  &:user-invalid {
+    border-color: var(--color-red-600);
+  }
+  &:autofill {
+    box-shadow: 0 0 0 1000px var(--canvas-color) inset;
+    -webkit-text-fill-color: var(--text-color);
+  }
+}
+
+select {
+  padding-right: 2.2em;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.25em) center,
+    calc(100% - 0.9em) center;
+  background-size: 0.35em 0.35em;
+  background-repeat: no-repeat;
+}
+
 textarea {
   font: inherit;
   color: inherit;
+}
+
+input#username {
+  width: 15em;
 }
 
 a {
@@ -326,7 +373,7 @@ button {
   font-size: var(--text-sm);
   line-height: var(--text-sm--line-height);
   cursor: pointer;
-  border: none;
+  border: 1px solid transparent;
   color: var(--button-color, var(--text-color));
   background: var(--button-background, var(--button-tint));
   &:hover {
@@ -335,10 +382,15 @@ button {
   &:active {
     background: var(--button-background-active, var(--button-tint-active));
   }
+  &:focus-visible {
+    outline: 2px solid var(--color-blue-500);
+    outline-offset: 1px;
+  }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.4;
+    -webkit-text-fill-color: currentColor;
     &:hover,
     &:active {
       background: var(--button-background, var(--button-tint));
