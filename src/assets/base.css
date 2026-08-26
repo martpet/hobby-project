@@ -253,31 +253,15 @@ form.basic {
 
 table.basic {
   border-collapse: collapse;
+  th {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    vertical-align: top;
+    text-align: initial;
+  }
   th,
   td {
     padding: 0.8em 0;
-    text-align: initial;
-  }
-  th {
-    color: var(--muted-text-color);
-    font-size: var(--text-sm);
-    font-weight: 500;
-  }
-  thead th {
-    padding-top: 0;
-    padding-bottom: 0.6em;
-    border-bottom: 1px solid var(--divider-color-strong);
-    line-height: var(--text-sm--line-height);
-  }
-  tbody tr:not(:last-child) {
-    th,
-    td {
-      border-bottom: 1px solid var(--divider-color);
-    }
-  }
-  th,
-  td {
-    vertical-align: top;
     padding-right: 2em;
     &:last-child {
       padding-right: 0;
@@ -286,10 +270,15 @@ table.basic {
       padding: 0;
       vertical-align: middle;
     }
-  }
-  .muted {
-    color: var(--muted-text-color);
-    font-weight: 500;
+    &:is(thead &) {
+      padding-top: 0;
+      padding-bottom: 0.6em;
+      border-bottom: 1px solid var(--divider-color-strong);
+      line-height: var(--text-sm--line-height);
+    }
+    &:is(tbody tr:not(:last-child) &) {
+      border-bottom: 1px solid var(--divider-color);
+    }
   }
 }
 
