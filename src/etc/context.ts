@@ -7,9 +7,18 @@ export function createContext(
   req: Request,
   info: Deno.ServeHandlerInfo<Deno.NetAddr>,
 ) {
+  const proto = req.headers.get("x-forwarded-proto");
+  const host = req.headers.get("x-forwarded-host");
+  const url = new URL(req.url);
+
+  if (proto && host) {
+    url.protocol = `${proto}:`;
+    url.host = host;
+  }
+
   return {
     req,
-    url: new URL(req.url),
+    url,
     method: req.method as Method,
     ip: req.headers.get("X-Forwarded-For") || info.remoteAddr.hostname,
     locale: getAcceptLanguage(req) ?? DEFAULT_LOCALE,
