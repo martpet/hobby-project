@@ -8,7 +8,7 @@ export function handleHomepage(c: Context) {
     return respondMethodNotAllowed(c, "GET");
   }
 
-  c.isResCacheable = !isAuthenticatedContext(c);
+  c.shouldCache = !isAuthenticatedContext(c);
 
   return <Homepage user={c.user} />;
 }

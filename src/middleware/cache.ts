@@ -21,7 +21,7 @@ export const cacheMid: Middleware = (next) => async (c) => {
 
   const res = await next(c);
 
-  if (c.isResCacheable) {
+  if (c.shouldCache) {
     res.headers.set(HEADER.Vary, HEADER.Cookie);
     cache.put(c.req, res.clone());
   }

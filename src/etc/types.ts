@@ -13,7 +13,7 @@ export interface Context {
   method: Method;
   ip: string;
   locale: string;
-  isResCacheable?: boolean;
+  shouldCache?: boolean;
   session?: Session;
   user?: User;
   flash?: FlashKey;

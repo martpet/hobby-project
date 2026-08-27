@@ -13,7 +13,7 @@ export async function handleAsset(c: Context, meta: ImportMeta) {
 
   const res = await serveFile(c.req, filePath);
 
-  // c.isResCacheable = res.status === STATUS_CODE.OK;
+  // c.shouldCache = res.status === STATUS_CODE.OK;
 
   return res;
 }
