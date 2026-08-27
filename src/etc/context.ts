@@ -11,7 +11,7 @@ export function createContext(
     req,
     url: new URL(req.url),
     method: req.method as Method,
-    ip: info.remoteAddr.hostname,
+    ip: req.headers.get("X-Forwarded-For") || info.remoteAddr.hostname,
     locale: getAcceptLanguage(req) ?? DEFAULT_LOCALE,
   };
 }
