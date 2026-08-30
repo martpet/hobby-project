@@ -1,3 +1,4 @@
+import { lookupLocation } from "@etc/geoip.ts";
 import { dateTimeFormat, timeAgo } from "@etc/intl.ts";
 import { Context } from "@etc/types.ts";
 import { LogOutForm } from "@features/sessions/jsx/LogOutForm.tsx";
@@ -24,8 +25,10 @@ export function ActiveLoginSessions(
         <tr>
           {multipleSessions && <th>Last active</th>}
           <th>Login Date</th>
-          <th>IP Address</th>
+          <th>Location</th>
+          <th>IP</th>
           <th>Browser</th>
+          <th>OS</th>
           {multipleSessions && <th></th>}
         </tr>
       </thead>
@@ -44,8 +47,10 @@ export function ActiveLoginSessions(
           <tr>
             {multipleSessions && <td>{active}</td>}
             <td>{created}</td>
+            <td>{lookupLocation(session.ip) ?? "Unknown"}</td>
             <td>{session.ip}</td>
-            <td>{session.browser} {session.os}</td>
+            <td>{session.browser}</td>
+            <td>{session.os}</td>
             {multipleSessions && (
               <td>
                 {isCurrentSession

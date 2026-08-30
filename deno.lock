@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@josh-hemphill/maxminddb-wasm@^2.1.8": "2.1.8",
     "jsr:@simplewebauthn/browser@*": "13.3.0",
     "jsr:@simplewebauthn/browser@13.3.0": "13.3.0",
     "jsr:@simplewebauthn/browser@^13.3.0": "13.3.0",
@@ -35,6 +36,9 @@
     "npm:type-fest@^5.8.0": "5.8.0"
   },
   "jsr": {
+    "@josh-hemphill/maxminddb-wasm@2.1.8": {
+      "integrity": "10efd111632c32f6eb1f70c1ceae4f3457b157635b99bbe09236c89dcf68f2b5"
+    },
     "@simplewebauthn/browser@13.3.0": {
       "integrity": "2e837b14c06346e815dafa89270360c07a41411f62fa1ff3e0535de18ec2c8a5"
     },
@@ -307,6 +311,7 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@josh-hemphill/maxminddb-wasm@^2.1.8",
       "jsr:@simplewebauthn/server@^13.3.2",
       "jsr:@std/datetime@~0.225.7",
       "jsr:@std/dotenv@~0.225.8",
