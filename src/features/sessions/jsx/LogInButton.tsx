@@ -8,8 +8,7 @@ export function LogInButton({ children, ...buttonAttr }: LogInButtonProps) {
   return (
     <>
       <noscript>JavaScript is required to log in.</noscript>
-
-      <button class="login-button" type="button" {...buttonAttr}>
+      <button class="login-button" {...buttonAttr}>
         {children || "Sign In"}
       </button>
     </>
