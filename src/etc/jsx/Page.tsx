@@ -1,3 +1,4 @@
+import { assetPath } from "@etc/asset.ts";
 import { Document, DocumentProps } from "@etc/jsx/Document.tsx";
 import { Context } from "@etc/types.ts";
 import { FlashDialog } from "@features/flash/jsx/FlashDialog.tsx";
@@ -14,9 +15,12 @@ export function Page({ head, title, children }: DocumentProps, c: Context) {
 
       {needsLoginAssets && (
         <>
-          <script type="module" src="/session/assets/login.js" />
-          <link rel="modulepreload" href="/passkeys/assets/simplewebauthn.js" />
-          <link rel="modulepreload" href="/assets/util.js" />
+          <script type="module" src={assetPath("/session/assets/login.js")} />
+          <link
+            rel="modulepreload"
+            href={assetPath("/passkeys/assets/simplewebauthn.js")}
+          />
+          <link rel="modulepreload" href={assetPath("/assets/util.js")} />
         </>
       )}
     </>

@@ -1,4 +1,5 @@
-import { WEBSITE_TITLE } from "@etc/const.ts";
+import { assetPath } from "@etc/asset.ts";
+import { ASSET_VERSION, WEBSITE_TITLE } from "@etc/const.ts";
 import { ComponentChildren, JSX } from "preact";
 
 export interface DocumentProps {
@@ -7,6 +8,15 @@ export interface DocumentProps {
   children?: ComponentChildren;
 }
 
+const importMap = {
+  imports: {
+    "/assets/util.js": assetPath("/assets/util.js"),
+    "/passkeys/assets/simplewebauthn.js": assetPath(
+      "/passkeys/assets/simplewebauthn.js",
+    ),
+  },
+};
+
 export function Document({ head, children, title }: DocumentProps) {
   return (
     <html lang="en">
@@ -14,8 +24,18 @@ export function Document({ head, children, title }: DocumentProps) {
         <meta charset="UTF-8" />
         <meta name="color-scheme" content="dark light" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/assets/logo.png" type="image/png" />
-        <link rel="stylesheet" href="/assets/style.css" />
+        <link
+          rel="icon"
+          href={assetPath("/assets/logo.png")}
+          type="image/png"
+        />
+        <link rel="stylesheet" href={assetPath("/assets/style.css")} />
+        {ASSET_VERSION && (
+          <script
+            type="importmap"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(importMap) }}
+          />
+        )}
         {head}
         <title>{WEBSITE_TITLE}{title && ` – ${title}`}</title>
       </head>

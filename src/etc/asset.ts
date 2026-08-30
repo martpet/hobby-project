@@ -1,3 +1,4 @@
+import { ASSET_VERSION } from "@etc/const.ts";
 import { respondMethodNotAllowed } from "@etc/responses/method-not-allowed.tsx";
 import { Context } from "@etc/types.ts";
 import { serveFile } from "@std/http";
@@ -12,4 +13,8 @@ export function handleAsset(c: Context, meta: ImportMeta) {
   }
 
   return serveFile(c.req, filePath);
+}
+
+export function assetPath(path: string) {
+  return ASSET_VERSION ? `${path}?q=${ASSET_VERSION}` : path;
 }

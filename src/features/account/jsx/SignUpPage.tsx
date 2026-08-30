@@ -1,3 +1,4 @@
+import { assetPath } from "@etc/asset.ts";
 import { Page } from "@etc/jsx/Page.tsx";
 import {
   USERNAME_PATTERN_DESCRIPTION,
@@ -8,7 +9,7 @@ export function SignUpPage() {
   const head = (
     <script
       type="module"
-      src="/account/assets/signup.js"
+      src={assetPath("/account/assets/signup.js")}
     />
   );
 

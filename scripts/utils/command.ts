@@ -12,3 +12,19 @@ export async function command(cmd: string, args: string[]) {
     throw new Error(`${cmd} exited with code ${status.code}`);
   }
 }
+
+export async function commandOutput(cmd: string, args: string[]) {
+  const command = new Deno.Command(cmd, {
+    args,
+    stdout: "piped",
+    stderr: "inherit",
+  });
+
+  const { success, code, stdout } = await command.output();
+
+  if (!success) {
+    throw new Error(`${cmd} exited with code ${code}`);
+  }
+
+  return new TextDecoder().decode(stdout).trim();
+}
