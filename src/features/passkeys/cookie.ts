@@ -2,6 +2,7 @@ import { IS_DEV } from "@etc/const.ts";
 import { generateToken } from "@etc/crypto.ts";
 import { Context } from "@etc/types.ts";
 import { WEBAUTHN_TIMEOUT } from "@features/passkeys/const.ts";
+import { SECOND } from "@std/datetime";
 import { deleteCookie, getCookies, setCookie } from "@std/http";
 
 const PASSKEY_REG_COOKIE = "passkey_reg";
@@ -20,7 +21,7 @@ export function setPasskeyRegCookie(res: Response) {
     name: PASSKEY_REG_COOKIE,
     value,
     sameSite: "Strict",
-    maxAge: WEBAUTHN_TIMEOUT / 1000,
+    maxAge: WEBAUTHN_TIMEOUT / SECOND,
     ...COOKIE_ATTRIBUTES,
   });
 
@@ -34,7 +35,7 @@ export function setPasskeyAuthCookie(res: Response) {
     name: PASSKEY_AUTH_COOKIE,
     value,
     sameSite: "Strict",
-    maxAge: WEBAUTHN_TIMEOUT / 1000,
+    maxAge: WEBAUTHN_TIMEOUT / SECOND,
     ...COOKIE_ATTRIBUTES,
   });
 

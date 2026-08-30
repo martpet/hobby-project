@@ -3,7 +3,7 @@ import { isAuthenticatedContext } from "@etc/context.ts";
 import { addVaryCookie, toPrivateCacheControl } from "@etc/header.ts";
 import { Middleware } from "@etc/types.ts";
 import { getSessionCookie } from "@features/sessions/cookie.ts";
-import { MINUTE } from "@std/datetime/constants";
+import { MINUTE, SECOND } from "@std/datetime";
 import { StatusCode } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { Method } from "@std/http/unstable-method";
@@ -12,7 +12,7 @@ const APP_CACHE_ENABLED = false;
 const CACHEABLE_METHODS = new Set<Method>(["GET", "HEAD"]);
 const CACHEABLE_STATUS_CODES = new Set<StatusCode>([200]);
 const DEFAULT_UNAUTHENTICATED_CACHE_CONTROL = `public, max-age=${
-  5 * MINUTE / 1000
+  (5 * MINUTE) / SECOND
 }`;
 
 let appCache: Cache;

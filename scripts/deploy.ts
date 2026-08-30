@@ -11,7 +11,8 @@ const remoteBinaryTemp = `${remoteBinary}.tmp`;
 const remoteHost = getRequiredEnv("REMOTE_HOST");
 const remoteService = getRequiredEnv("REMOTE_SERVICE");
 const webCachePath = getRequiredEnv("WEB_CACHE_PATH");
-const gitSha = await commandOutput("git", ["rev-parse", "HEAD"]);
+const gitSha = await commandOutput("git", ["rev-parse", "--short", "HEAD"]);
+const serviceUnit = remoteService.replace(/\.service$/, "");
 
 if (!await exists(localBinary)) {
   console.error(`❌ File '${localBinary}' doesn't exist!`);
@@ -39,8 +40,8 @@ try {
       set -e
 
       mv ${remoteBinaryTemp} ${remoteBinary}
-      sudo mkdir -p /etc/systemd/system/${remoteService}.service.d
-      printf '[Service]\nEnvironment=GIT_SHA=%s\n' ${gitSha} | sudo tee /etc/systemd/system/${remoteService}.service.d/git-sha.conf > /dev/null
+      sudo mkdir -p /etc/systemd/system/${serviceUnit}.service.d
+      printf '[Service]\nEnvironment=GIT_SHA=%s\n' ${gitSha} | sudo tee /etc/systemd/system/${serviceUnit}.service.d/git-sha.conf > /dev/null
       sudo systemctl daemon-reload
       sudo systemctl restart ${remoteService}
       sudo rm -rf ${webCachePath}

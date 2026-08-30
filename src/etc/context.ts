@@ -8,12 +8,10 @@ export function createContext(
   info: Deno.ServeHandlerInfo<Deno.NetAddr>,
 ) {
   const proto = req.headers.get("x-forwarded-proto");
-  const host = req.headers.get("x-forwarded-host");
   const url = new URL(req.url);
 
-  if (proto && host) {
+  if (proto) {
     url.protocol = `${proto}:`;
-    url.host = host;
   }
 
   return {

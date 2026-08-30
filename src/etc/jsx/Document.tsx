@@ -33,7 +33,9 @@ export function Document({ head, children, title }: DocumentProps) {
         {ASSET_VERSION && (
           <script
             type="importmap"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(importMap) }}
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(importMap, null, 2),
+            }}
           />
         )}
         {head}

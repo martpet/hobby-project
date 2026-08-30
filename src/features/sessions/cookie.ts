@@ -1,5 +1,6 @@
 import { IS_DEV } from "@etc/const.ts";
 import { Context } from "@etc/types.ts";
+import { SECOND } from "@std/datetime";
 import { deleteCookie, getCookies, setCookie } from "@std/http";
 
 const SESSION_COOKIE = "session";
@@ -19,7 +20,7 @@ export function setSessionCookie(
     name: SESSION_COOKIE,
     value,
     sameSite: "Lax",
-    maxAge: duration / 1000,
+    maxAge: duration / SECOND,
     ...COOKIE_ATTRIBUTES,
   });
 

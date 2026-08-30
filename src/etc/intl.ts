@@ -10,8 +10,8 @@ export function dateTimeFormat(c: Context, opts?: Intl.DateTimeFormatOptions) {
 }
 
 const RTF_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
-  ["year", 365 * DAY],
-  ["month", 30 * DAY],
+  ["year", DAY * 365],
+  ["month", DAY * 30],
   ["day", DAY],
   ["hour", HOUR],
   ["minute", MINUTE],
