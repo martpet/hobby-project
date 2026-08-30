@@ -10,8 +10,6 @@ export async function handleHomepage(c: Context) {
     return respondMethodNotAllowed(c, "GET");
   }
 
-  c.shouldCache = !isAuthenticatedContext(c);
-
   if (!isAuthenticatedContext(c)) {
     return <PublicHome />;
   }

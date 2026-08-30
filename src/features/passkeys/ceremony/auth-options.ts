@@ -1,3 +1,4 @@
+import { cacheNoStore } from "@etc/header.ts";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import {
   WEBAUTHN_RP_ID,
@@ -15,6 +16,8 @@ export async function respondAuthOptions() {
   });
 
   const res = Response.json(authOptions);
+
+  cacheNoStore(res);
 
   const cookie = setPasskeyAuthCookie(res);
 

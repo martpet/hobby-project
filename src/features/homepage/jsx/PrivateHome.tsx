@@ -17,7 +17,7 @@ export function PrivateHome(
   return (
     <Page>
       <h1>
-        Hi {user.username}.
+        Welcome {user.username}
       </h1>
 
       <LogOutForm />
