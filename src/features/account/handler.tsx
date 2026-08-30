@@ -1,7 +1,6 @@
 import { handleAsset } from "@etc/asset.ts";
 import { respondNotFound } from "@etc/responses/not-found.tsx";
 import { Context } from "@etc/types.ts";
-import { handleAccountPage } from "./handlers/account-page.tsx";
 import { handleAccountDelete } from "./handlers/delete.ts";
 import { handleSignupFinish } from "./handlers/signup/finish.ts";
 import { handleSignUpPage } from "./handlers/signup/page.tsx";
@@ -12,10 +11,6 @@ export function handleAccount(c: Context) {
 
   if (pathname.startsWith("/account/assets/")) {
     return handleAsset(c, import.meta);
-  }
-
-  if (pathname === "/account") {
-    return handleAccountPage(c);
   }
 
   if (pathname === "/account/delete") {

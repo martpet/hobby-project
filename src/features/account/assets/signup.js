@@ -1,4 +1,4 @@
-import { apiFetch, setFormLoading, showAlert } from "/assets/util.js";
+import { apiFetch } from "/assets/util.js";
 import { startRegistration } from "/passkeys/assets/simplewebauthn.js";
 
 const form = document.getElementById("signup-form");
@@ -8,7 +8,6 @@ form.username.addEventListener("input", handleUsernameInput);
 
 async function handleFormSubmit(event) {
   event.preventDefault();
-  setFormLoading(form);
 
   const username = form.username.value;
 
@@ -67,5 +66,5 @@ function handleError(error, username) {
     }
   }
 
-  showAlert(userMsg || "Something went wrong", "Sign up failed");
+  alert(userMsg || "Something went wrong");
 }

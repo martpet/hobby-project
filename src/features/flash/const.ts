@@ -3,7 +3,7 @@ import { FlashMessage } from "./types.ts";
 export const FLASH = {
   "LoggedOut": {
     type: "success",
-    msg: "You were logged out",
+    msg: "You were signed out",
   },
   "SessionRevoked": {
     type: "success",

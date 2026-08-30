@@ -1,17 +1,13 @@
-import { apiFetch, setButtonLoading, showAlert } from "/assets/util.js";
+import { apiFetch } from "/assets/util.js";
 import { startAuthentication } from "/passkeys/assets/simplewebauthn.js";
 
-const logInButtons = document.querySelectorAll("button.login");
+const logInButtons = document.querySelectorAll(".login-button");
 
 for (const button of logInButtons) {
   button.addEventListener("click", handleClick);
 }
 
 async function handleClick({ target: button }) {
-  setButtonLoading(button);
-
-  const handleError = makeErrorHandler(button);
-
   try {
     const start = await apiFetch("/login/start", {
       method: "POST",
@@ -43,24 +39,20 @@ async function handleClick({ target: button }) {
   }
 }
 
-function makeErrorHandler(button) {
-  return (error) => {
-    setButtonLoading(button, false);
+function handleError(error) {
+  let userMsg;
 
-    let userMsg;
-
-    if (error === "PasskeyNotFound") {
-      userMsg = "This passkey is no longer valid";
-    } else if (error === "AccountDeleted") {
-      userMsg = "This account has been deleted";
-    } else if (error instanceof Error) {
-      if (error.name === "NotAllowedError") {
-        return;
-      } else if (!navigator.onLine) {
-        userMsg = "Network is offline";
-      }
+  if (error === "PasskeyNotFound") {
+    userMsg = "This passkey is no longer valid";
+  } else if (error === "AccountDeleted") {
+    userMsg = "This account has been deleted";
+  } else if (error instanceof Error) {
+    if (error.name === "NotAllowedError") {
+      return;
+    } else if (!navigator.onLine) {
+      userMsg = "Network is offline";
     }
+  }
 
-    showAlert(userMsg || "Something went wrong", "Log in failed");
-  };
+  alert(userMsg || "Something went wrong");
 }

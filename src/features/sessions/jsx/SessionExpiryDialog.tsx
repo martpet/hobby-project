@@ -3,18 +3,15 @@ import { Context } from "@etc/types.ts";
 import { getAbsoluteExpiresAt, isSessionExpiringSoon } from "../helpers.ts";
 import { LogInButton } from "./LogInButton.tsx";
 
-export function SessionExpiryWarning(_props: unknown, c: Context) {
+export function SessionExpiryDialog(_props: unknown, c: Context) {
   if (!c.session || !isSessionExpiringSoon(c.session)) return;
 
   const expiresAt = dateTimeFormat(c).format(getAbsoluteExpiresAt(c.session));
 
   return (
-    <div
-      id="session-expiry-warning"
-      class="alert warning"
-    >
-      Your session will expire at {expiresAt}.
+    <dialog open>
+      <p>Your session will expire at {expiresAt}.</p>
       <LogInButton>Reauthenticate</LogInButton>
-    </div>
+    </dialog>
   );
 }

@@ -1,59 +1,17 @@
-export function setButtonLoading(button, flag = true) {
-  button.disabled = flag;
-  button.classList.toggle("loading", flag);
-}
-
-export function showAlert(message, heading) {
-  const template = document.createElement("template");
-  template.innerHTML = `
-    <dialog class="basic">
-      ${heading ? `<h2>${escapeHtml(heading)}</h2>` : ""}
-      <p>${escapeHtml(message)}</p>
-      <div class="actions">
-        <button>OK</button>
-      </div>
-    </dialog>
-  `;
-
-  const dialog = template.content.firstElementChild;
-  dialog
-    .querySelector("button")
-    .addEventListener("click", () => dialog.close());
-  dialog.addEventListener("close", () => dialog.remove());
-
-  document.body.append(dialog);
-  dialog.showModal();
-}
-
-// prevent `message` from being interpreted as markup when inlined into the template above
-function escapeHtml(str) {
-  return str.replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ],
-  );
-}
-
-export function setFormLoading(form, flag = true) {
-  for (const formEl of form.elements) formEl.disabled = flag;
-  const button = form.querySelector("button[type=submit]");
-  button?.classList.toggle("loading", flag);
-}
-
-export async function apiFetch(path, options = {}) {
-  let { method, body, json, headers = {} } = options;
+export async function apiFetch(path, opts = {}) {
+  let { method, body, json, headers = {} } = opts;
   headers = new Headers(headers);
+
   if (json) {
     body = JSON.stringify(json);
     headers.set("content-type", "application/json");
   }
   const res = await fetch(path, { method, body, headers });
-  const resContentType = res.headers.get("content-type");
-  const isJsonRes = resContentType?.includes("application/json");
+  const resContType = res.headers.get("content-type");
+  const isResJson = resContType?.includes("application/json");
   const result = { ok: res.ok };
-  if (isJsonRes) {
+
+  if (isResJson) {
     const data = await res.json();
     if (!res.ok || data.error) {
       result.error = data.error;

@@ -19,14 +19,9 @@ export function SignUpPage() {
     >
       <h1>Create a new account</h1>
 
-      <form
-        id="signup-form"
-        class="basic"
-      >
+      <form id="signup-form">
         <noscript>JavaScript is required to create an account.</noscript>
-
         <label for="username">Username:</label>
-
         <input
           id="username"
           required
@@ -36,8 +31,9 @@ export function SignUpPage() {
           autocapitalize="off"
           spellcheck={false}
         />
-
-        <button type="submit">Create Account</button>
+        <p>
+          <button type="submit">Create Account</button>
+        </p>
       </form>
     </Page>
   );

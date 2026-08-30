@@ -1,12 +1,9 @@
-import { Context } from "@etc/types.ts";
-import { JSX } from "preact";
-import { renderToString } from "preact-render-to-string";
+import { HEADER } from "@std/http/unstable-header";
 
-export function respondHtml(c: Context, jsx: JSX.Element, init?: ResponseInit) {
-  const body = "<!DOCTYPE html>" + renderToString(jsx, c);
+export function respondHtml(body: string, init?: ResponseInit) {
   const headers = new Headers(init?.headers);
 
-  headers.set("Content-Type", "text/html; charset=utf-8");
+  headers.set(HEADER.ContentType, "text/html; charset=utf-8");
 
   return new Response(body, { ...init, headers });
 }

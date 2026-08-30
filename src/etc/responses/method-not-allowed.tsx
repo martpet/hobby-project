@@ -1,6 +1,6 @@
 import { requestAcceptsHtml } from "@etc/header.ts";
 import { NotFoundPage } from "@etc/jsx/pages/NotFound.tsx";
-import { respondHtml } from "@etc/responses/html.ts";
+import { render } from "@etc/render.ts";
 import { Context } from "@etc/types.ts";
 import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
@@ -15,7 +15,7 @@ export function respondMethodNotAllowed(
   const headers = { [HEADER["Allow"]]: [allow].flat().join() };
 
   if (requestAcceptsHtml(c)) {
-    return respondHtml(c, <NotFoundPage />, { status, headers });
+    return render(c, <NotFoundPage />, { status, headers });
   }
 
   return new Response(body, { status, headers });

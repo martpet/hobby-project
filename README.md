@@ -1,4 +1,4 @@
-# Hobby Project
+deno# Hobby Project
 
 A lightweight web application showcasing passkey authentication (WebAuthn).\
 Built without a heavy framework or single-page application (SPA) architecture.

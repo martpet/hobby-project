@@ -1,9 +1,9 @@
 import { dateTimeFormat, timeAgo } from "@etc/intl.ts";
 import { Context } from "@etc/types.ts";
+import { LogOutForm } from "@features/sessions/jsx/LogOutForm.tsx";
 import { MINUTE } from "@std/datetime";
 import { decodeTime } from "@std/ulid/decode-time";
 import { Session } from "../types.ts";
-import { LogOutButton } from "./LogOutButton.tsx";
 
 interface ActiveLoginSessionsProps {
   sessions: Session[];
@@ -19,12 +19,12 @@ export function ActiveLoginSessions(
   const multipleSessions = sessions.length > 1;
 
   return (
-    <table class="basic">
+    <table>
       <thead>
         <tr>
           {multipleSessions && <th>Last active</th>}
-          <th>Login date</th>
-          <th>IP address</th>
+          <th>Login Date</th>
+          <th>IP Address</th>
           <th>Browser</th>
           {multipleSessions && <th></th>}
         </tr>
@@ -48,14 +48,13 @@ export function ActiveLoginSessions(
             <td>{session.browser} {session.os}</td>
             {multipleSessions && (
               <td>
-                {isCurrentSession ? "Your session" : (
-                  <LogOutButton
-                    session={session}
-                    class="small"
-                  >
-                    Revoke
-                  </LogOutButton>
-                )}
+                {isCurrentSession
+                  ? "Your session"
+                  : (
+                    <LogOutForm revokedSession={session}>
+                      Revoke
+                    </LogOutForm>
+                  )}
               </td>
             )}
           </tr>

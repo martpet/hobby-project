@@ -8,6 +8,7 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "always"
   },
+  "sortcss.sortingStrategy": "frakto",
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },

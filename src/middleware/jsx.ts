@@ -1,4 +1,4 @@
-import { respondHtml } from "@etc/responses/html.ts";
+import { render } from "@etc/render.ts";
 import { Middleware } from "@etc/types.ts";
 import { VNode } from "preact";
 
@@ -9,5 +9,5 @@ export const jsxMid: Middleware<VNode | Response> = (next) => async (c) => {
     return resMaybe;
   }
 
-  return respondHtml(c, resMaybe);
+  return render(c, resMaybe);
 };

@@ -1,53 +1,32 @@
-import { Doc, DocProps } from "@etc/jsx/Doc.tsx";
-import { Header } from "@etc/jsx/Header.tsx";
+import { Document, DocumentProps } from "@etc/jsx/Document.tsx";
 import { Context } from "@etc/types.ts";
-import { Flash } from "@features/flash/jsx/Flash.tsx";
+import { FlashDialog } from "@features/flash/jsx/FlashDialog.tsx";
 import { isSessionExpiringSoon } from "@features/sessions/helpers.ts";
-import { SessionExpiryWarning } from "@features/sessions/jsx/SessionExpiryWarning.tsx";
+import { SessionExpiryDialog } from "@features/sessions/jsx/SessionExpiryDialog.tsx";
 
-export function Page(
-  { title, children, ...props }: DocProps,
-  { url, user, session }: Context,
-) {
-  const needsLoginAssets = !user || (session && isSessionExpiringSoon(session));
+export function Page({ head, title, children }: DocumentProps, c: Context) {
+  const needsLoginAssets = !c.user ||
+    (c.session && isSessionExpiringSoon(c.session));
 
-  const head = (
+  const docHead = (
     <>
-      {props.head}
+      {head}
+
       {needsLoginAssets && (
         <>
-          <script
-            type="module"
-            src="/session/assets/login.js"
-          />
-          <link
-            rel="modulepreload"
-            href="/passkeys/assets/simplewebauthn.js"
-          />
-          <link
-            rel="modulepreload"
-            href="/assets/util.js"
-          />
+          <script type="module" src="/session/assets/login.js" />
+          <link rel="modulepreload" href="/passkeys/assets/simplewebauthn.js" />
+          <link rel="modulepreload" href="/assets/util.js" />
         </>
       )}
     </>
   );
 
-  const bodyClass = "page" + (props.bodyClass ? ` ${props.bodyClass}` : "");
-
   return (
-    <Doc
-      title={title}
-      head={head}
-      bodyClass={bodyClass}
-    >
-      <Flash />
-      <SessionExpiryWarning />
-      <Header
-        url={url}
-        user={user}
-      />
+    <Document head={docHead} title={title}>
+      <FlashDialog />
+      <SessionExpiryDialog />
       {children}
-    </Doc>
+    </Document>
   );
 }
