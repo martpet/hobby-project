@@ -18,7 +18,7 @@ const DEFAULT_UNAUTHENTICATED_CACHE_CONTROL = `public, max-age=${
 let appCache: Cache;
 
 if (APP_CACHE_ENABLED) {
-  appCache = await caches.open("v1");
+  appCache = await caches.open("app-cache");
 }
 
 export const cacheMid: Middleware = (next) => async (c) => {
