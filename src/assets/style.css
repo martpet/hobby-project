@@ -15,7 +15,7 @@ th {
 td,
 th {
   padding: 0.5em;
-  border: 1px solid ButtonBorder;
+  border: 1px solid light-dark(lightgrey, dimgray);
 }
 
 label {
