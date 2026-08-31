@@ -39,7 +39,7 @@ export function Document({ head, children, title }: DocumentProps) {
           />
         )}
         {head}
-        <title>{WEBSITE_TITLE}{title && ` – ${title}`}</title>
+        <title>{title && `${title} | `}{WEBSITE_TITLE}</title>
       </head>
       <body>{children}</body>
     </html>
