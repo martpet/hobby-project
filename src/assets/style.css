@@ -23,6 +23,10 @@ label {
   margin-block-end: 0.3em;
 }
 
+button.danger {
+  color: crimson;
+}
+
 dialog {
   > :first-child {
     margin-block-start: 0;

@@ -34,7 +34,7 @@ export function DeleteAccountDialog({ username }: DeleteAccountButtonProps) {
           >
             Cancel
           </button>
-          <button form="delete-account-form">
+          <button form="delete-account-form" class="danger">
             Delete Account Forever
           </button>
         </footer>
