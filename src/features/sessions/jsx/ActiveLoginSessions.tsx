@@ -23,10 +23,10 @@ export function ActiveLoginSessions(
     <table>
       <thead>
         <tr>
-          {multipleSessions && <th>Last active</th>}
-          <th>Login Date</th>
+          {multipleSessions && <th>Last Seen</th>}
+          <th>Login</th>
           <th>Location</th>
-          <th>IP</th>
+          <th>IP address</th>
           <th>Browser</th>
           <th>OS</th>
           {multipleSessions && <th></th>}
@@ -37,7 +37,7 @@ export function ActiveLoginSessions(
         const isCurrentSession = session.id === currentSession.id;
         const created = dateWithTimeFmt.format(decodeTime(session.id));
         const activeDelta = now - session.lastActive;
-        let active = "now";
+        let active = "a few seconds ago";
 
         if (!isCurrentSession && activeDelta >= MINUTE) {
           active = timeAgo(c, -activeDelta);
@@ -54,7 +54,7 @@ export function ActiveLoginSessions(
             {multipleSessions && (
               <td>
                 {isCurrentSession
-                  ? "Your session"
+                  ? "Current Session"
                   : (
                     <LogOutForm revokedSession={session}>
                       Revoke
