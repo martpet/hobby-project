@@ -1,3 +1,4 @@
+import { CloseButton } from "@etc/jsx/CloseButton.tsx";
 import { Context } from "@etc/types.ts";
 import { FLASH } from "../const.ts";
 
@@ -7,13 +8,16 @@ export function FlashDialog(_props: unknown, c: Context) {
   const flash = FLASH[c.flash];
 
   return (
-    <dialog open id="flash-dialog">
+    <dialog
+      open
+      id="flash"
+      class={`alert ${flash.type}`}
+    >
       {flash.msg}
-      <footer class="actions">
-        <button commandfor="flash-dialog" command="close">
-          Close
-        </button>
-      </footer>
+      <CloseButton
+        commandfor="flash"
+        command="close"
+      />
     </dialog>
   );
 }

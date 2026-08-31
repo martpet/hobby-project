@@ -15,7 +15,7 @@ th {
 td,
 th {
   padding: 0.5em;
-  border: 1px solid light-dark(lightgrey, dimgray);
+  border: 1px solid light-dark(LightGrey, DimGrey);
 }
 
 label {
@@ -25,7 +25,7 @@ label {
 
 button {
   &.danger {
-    color: crimson;
+    color: Crimson;
   }
   &.loading {
     display: inline-flex;
@@ -41,6 +41,18 @@ button {
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
       content: "";
+    }
+  }
+  &.close {
+    all: unset;
+  }
+  &.close {
+    font: 1.1rem/1 monospace;
+    opacity: 0.8;
+    transition: opacity 0.15s;
+    cursor: pointer;
+    &:hover {
+      opacity: 1;
     }
   }
 }
@@ -59,8 +71,75 @@ dialog {
   }
 }
 
+.alert {
+  display: flex;
+  width: fit-content;
+  padding: 0.9em 1.1em;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9em;
+  color: white;
+  border-radius: 0.75rem;
+  &:is(dialog) {
+    top: 1rem;
+    max-width: min(50em, calc(100% - 2 * 1rem));
+    margin: 0 auto;
+    border: none;
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1);
+    animation: flash-in 0.2s ease-out;
+    &:not(:open) {
+      display: none;
+    }
+  }
+  &::before {
+    display: inline-flex;
+    width: 1.5em;
+    height: 1.5em;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    font: 700 0.9em system-ui;
+    background: color-mix(in srgb, white 20%, transparent);
+    border-radius: 50%;
+  }
+  &.info {
+    background: light-dark(Blue, DarkBlue);
+    &::before {
+      font-style: italic;
+      content: "i";
+    }
+  }
+  &.success {
+    background: light-dark(Green, DarkGreen);
+    &::before {
+      content: "✓";
+    }
+  }
+  &.warning {
+    background: light-dark(DarkGoldenrod, SaddleBrown);
+    &::before {
+      content: "!";
+    }
+  }
+  &.error {
+    background: light-dark(Brown, Maroon);
+    &::before {
+      content: "✕";
+    }
+  }
+}
+
 @keyframes spin {
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes flash-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5em);
   }
 }
