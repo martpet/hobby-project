@@ -11,6 +11,8 @@ async function handleFormSubmit(event) {
 
   const username = form.username.value;
 
+  const handleError = createErrorHandler(username);
+
   try {
     const start = await apiFetch("/signup/start", {
       method: "POST",
@@ -18,7 +20,7 @@ async function handleFormSubmit(event) {
     });
 
     if (!start.ok) {
-      handleError(start.error, username);
+      handleError(start.error);
       return;
     }
 
@@ -32,7 +34,7 @@ async function handleFormSubmit(event) {
     });
 
     if (!finish.ok) {
-      handleError(finish.error, username);
+      handleError(finish.error);
       return;
     }
 
@@ -47,24 +49,24 @@ function handleUsernameInput() {
   form.username.setCustomValidity("");
 }
 
-function handleError(error, username) {
-  setFormLoading(form, false);
-
-  if (error === "UsernameTaken") {
-    form.username.setCustomValidity(`Sorry, username "${username}" is taken`);
-    form.username.reportValidity();
-    return;
-  }
-
-  let userMsg;
-
-  if (error instanceof Error) {
-    if (error.name === "NotAllowedError") {
+function createErrorHandler(username) {
+  return (error) => {
+    if (error === "UsernameTaken") {
+      form.username.setCustomValidity(`Sorry, username "${username}" is taken`);
+      form.username.reportValidity();
       return;
-    } else if (!navigator.onLine) {
-      userMsg = "Network is offline";
     }
-  }
 
-  alert(userMsg || "Something went wrong");
+    let userMsg;
+
+    if (error instanceof Error) {
+      if (error.name === "NotAllowedError") {
+        return;
+      } else if (!navigator.onLine) {
+        userMsg = "Network is offline";
+      }
+    }
+
+    alert(userMsg || "Something went wrong");
+  };
 }
