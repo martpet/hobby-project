@@ -1,4 +1,4 @@
-import { IS_DEV } from "@etc/const.ts";
+import { GIT_SHA, IS_DEV } from "@etc/const.ts";
 import { isAuthenticatedContext } from "@etc/context.ts";
 import { addVaryCookie, toPrivateCacheControl } from "@etc/header.ts";
 import { Middleware } from "@etc/types.ts";
@@ -9,6 +9,7 @@ import { HEADER } from "@std/http/unstable-header";
 import { Method } from "@std/http/unstable-method";
 
 const APP_CACHE_ENABLED = false;
+const APP_CACHE_VERSION = GIT_SHA || new Date().toISOString();
 const CACHEABLE_METHODS = new Set<Method>(["GET", "HEAD"]);
 const CACHEABLE_STATUS_CODES = new Set<StatusCode>([200]);
 const DEFAULT_UNAUTHENTICATED_CACHE_CONTROL = `public, max-age=${
@@ -18,7 +19,7 @@ const DEFAULT_UNAUTHENTICATED_CACHE_CONTROL = `public, max-age=${
 let appCache: Cache;
 
 if (APP_CACHE_ENABLED) {
-  appCache = await caches.open("app-cache");
+  appCache = await caches.open(APP_CACHE_VERSION);
 }
 
 export const cacheMid: Middleware = (next) => async (c) => {
