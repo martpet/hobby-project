@@ -1,5 +1,5 @@
-import { assetPath } from "@etc/asset.ts";
-import { ASSET_VERSION, WEBSITE_TITLE } from "@etc/const.ts";
+import { ASSET_VERSION, assetPath } from "@etc/asset.ts";
+import { WEBSITE_TITLE } from "@etc/const.ts";
 import { ComponentChildren, JSX } from "preact";
 
 export interface DocumentProps {

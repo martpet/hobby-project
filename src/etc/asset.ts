@@ -1,4 +1,4 @@
-import { ASSET_VERSION } from "@etc/const.ts";
+import { GIT_SHA } from "@etc/const.ts";
 import { respondMethodNotAllowed } from "@etc/responses/method-not-allowed.tsx";
 import { Context } from "@etc/types.ts";
 import { DAY, SECOND } from "@std/datetime/constants";
@@ -6,6 +6,7 @@ import { serveFile } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { basename, join } from "@std/path";
 
+export const ASSET_VERSION = GIT_SHA;
 const VERSION_PARAM = "v";
 const MAX_AGE = (DAY * 365) / SECOND;
 
