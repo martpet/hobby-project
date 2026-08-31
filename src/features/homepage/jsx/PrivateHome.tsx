@@ -1,6 +1,6 @@
 import { Page } from "@etc/jsx/Page.tsx";
 import { DeleteAccountDialog } from "@features/account/jsx/DeleteAccountDialog.tsx";
-import { ActiveLoginSessions } from "@features/sessions/jsx/ActiveLoginSessions.tsx";
+import { ActiveSessions } from "@features/sessions/jsx/ActiveSessions.tsx";
 import { LogOutForm } from "@features/sessions/jsx/LogOutForm.tsx";
 import { Session } from "@features/sessions/types.ts";
 import { User } from "@features/users/types.ts";
@@ -23,8 +23,8 @@ export function PrivateHome(
       <LogOutForm />
 
       <section>
-        <h2>Active login sessions</h2>
-        <ActiveLoginSessions
+        <h2>Active sessions</h2>
+        <ActiveSessions
           sessions={sessions}
           currentSession={currentSession}
         />

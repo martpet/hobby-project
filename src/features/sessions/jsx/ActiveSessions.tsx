@@ -6,13 +6,13 @@ import { MINUTE } from "@std/datetime";
 import { decodeTime } from "@std/ulid/decode-time";
 import { Session } from "../types.ts";
 
-interface ActiveLoginSessionsProps {
+interface ActiveSessionsProps {
   sessions: Session[];
   currentSession: Session;
 }
 
-export function ActiveLoginSessions(
-  { sessions, currentSession }: ActiveLoginSessionsProps,
+export function ActiveSessions(
+  { sessions, currentSession }: ActiveSessionsProps,
   c: Context,
 ) {
   const dateWithTimeFmt = dateTimeFormat(c);
@@ -23,12 +23,12 @@ export function ActiveLoginSessions(
     <table>
       <thead>
         <tr>
-          {multipleSessions && <th>Last Seen</th>}
-          <th>Login</th>
-          <th>Location</th>
-          <th>IP address</th>
-          <th>Browser</th>
           <th>OS</th>
+          <th>Browser</th>
+          <th>IP address</th>
+          <th>Login</th>
+          {multipleSessions && <th>Last seen</th>}
+          <th>Location</th>
           {multipleSessions && <th></th>}
         </tr>
       </thead>
@@ -37,20 +37,20 @@ export function ActiveLoginSessions(
         const isCurrentSession = session.id === currentSession.id;
         const created = dateWithTimeFmt.format(decodeTime(session.id));
         const activeDelta = now - session.lastActive;
-        let active = "a few seconds ago";
+        let lastSeen = "a few seconds ago";
 
         if (!isCurrentSession && activeDelta >= MINUTE) {
-          active = timeAgo(c, -activeDelta);
+          lastSeen = timeAgo(c, -activeDelta);
         }
 
         return (
           <tr>
-            {multipleSessions && <td>{active}</td>}
-            <td>{created}</td>
-            <td>{lookupLocation(session.ip) ?? "Unknown"}</td>
-            <td>{session.ip}</td>
-            <td>{session.browser}</td>
             <td>{session.os}</td>
+            <td>{session.browser}</td>
+            <td>{session.ip}</td>
+            <td>{created}</td>
+            {multipleSessions && <td>{lastSeen}</td>}
+            <td>{lookupLocation(session.ip) ?? "Unknown"}</td>
             {multipleSessions && (
               <td>
                 {isCurrentSession
