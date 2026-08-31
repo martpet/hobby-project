@@ -6,11 +6,8 @@ interface LogInButtonProps extends ButtonHTMLAttributes {
 
 export function LogInButton({ children, ...buttonAttr }: LogInButtonProps) {
   return (
-    <>
-      <noscript>JavaScript is required to log in.</noscript>
-      <button class="login-button" {...buttonAttr}>
-        {children || "Sign In"}
-      </button>
-    </>
+    <button class="login-button" {...buttonAttr}>
+      {children || "Sign In"}
+    </button>
   );
 }

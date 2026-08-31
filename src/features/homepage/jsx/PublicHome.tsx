@@ -5,9 +5,10 @@ export function PublicHome() {
   return (
     <Page>
       <h1>Hobby Project</h1>
+      <noscript>JavaScript is required to log in.</noscript>
       <LogInButton />
       <p>
-        <a href="/signup">Create account</a>
+        <a href="/signup">Create an account</a>
       </p>
     </Page>
   );

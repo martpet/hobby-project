@@ -28,3 +28,18 @@ export async function apiFetch(path, opts = {}) {
   }
   return result;
 }
+
+export function toggleButtonLoading(button, force) {
+  button.toggleAttribute("disabled", force);
+  button.classList.toggle("loading", force);
+}
+
+export function toggleFormBuisy(form, force) {
+  for (const element of form.elements) {
+    if (element.type === "submit") {
+      toggleButtonLoading(element, force);
+    } else {
+      element.toggleAttribute("disabled", force);
+    }
+  }
+}

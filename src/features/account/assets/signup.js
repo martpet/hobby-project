@@ -1,4 +1,4 @@
-import { apiFetch } from "/assets/util.js";
+import { apiFetch, toggleFormBuisy } from "/assets/util.js";
 import { startRegistration } from "/passkeys/assets/simplewebauthn.js";
 
 const form = document.getElementById("signup-form");
@@ -8,9 +8,9 @@ form.username.addEventListener("input", handleUsernameInput);
 
 async function handleFormSubmit(event) {
   event.preventDefault();
+  toggleFormBuisy(form);
 
   const username = form.username.value;
-
   const handleError = createErrorHandler(username);
 
   try {
@@ -51,22 +51,23 @@ function handleUsernameInput() {
 
 function createErrorHandler(username) {
   return (error) => {
+    toggleFormBuisy(form);
+
     if (error === "UsernameTaken") {
       form.username.setCustomValidity(`Sorry, username "${username}" is taken`);
       form.username.reportValidity();
       return;
     }
 
-    let userMsg;
-
+    let msg;
     if (error instanceof Error) {
       if (error.name === "NotAllowedError") {
         return;
       } else if (!navigator.onLine) {
-        userMsg = "Network is offline";
+        msg = "Network is offline";
       }
     }
 
-    alert(userMsg || "Something went wrong");
+    alert(msg || "Something went wrong");
   };
 }

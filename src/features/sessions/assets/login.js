@@ -1,13 +1,17 @@
-import { apiFetch } from "/assets/util.js";
+import { apiFetch, toggleButtonLoading } from "/assets/util.js";
 import { startAuthentication } from "/passkeys/assets/simplewebauthn.js";
 
-const logInButtons = document.querySelectorAll(".login-button");
+const loginButtons = document.getElementsByClassName("login-button");
 
-for (const button of logInButtons) {
-  button.addEventListener("click", handleClick);
+for (const button of loginButtons) {
+  button.addEventListener("click", handleButtonClick);
 }
 
-async function handleClick({ target: button }) {
+async function handleButtonClick({ target }) {
+  toggleButtonLoading(target);
+
+  const handleError = createErrorHandler(target);
+
   try {
     const start = await apiFetch("/login/start", {
       method: "POST",
@@ -39,20 +43,23 @@ async function handleClick({ target: button }) {
   }
 }
 
-function handleError(error) {
-  let userMsg;
+function createErrorHandler(button) {
+  return (error) => {
+    toggleButtonLoading(button);
 
-  if (error === "PasskeyNotFound") {
-    userMsg = "This passkey is no longer valid";
-  } else if (error === "AccountDeleted") {
-    userMsg = "This account has been deleted";
-  } else if (error instanceof Error) {
-    if (error.name === "NotAllowedError") {
-      return;
-    } else if (!navigator.onLine) {
-      userMsg = "Network is offline";
+    let msg;
+    if (error === "PasskeyNotFound") {
+      msg = "This passkey is no longer valid";
+    } else if (error === "AccountDeleted") {
+      msg = "This account has been deleted";
+    } else if (error instanceof Error) {
+      if (error.name === "NotAllowedError") {
+        return;
+      } else if (!navigator.onLine) {
+        msg = "Network is offline";
+      }
     }
-  }
 
-  alert(userMsg || "Something went wrong");
+    alert(msg || "Something went wrong");
+  };
 }
