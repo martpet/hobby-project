@@ -22,6 +22,7 @@ export function DeleteAccountDialog({ username }: DeleteAccountButtonProps) {
             id="username"
             type="text"
             pattern={username}
+            autocomplete="off"
             required
           />
         </form>
