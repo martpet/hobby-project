@@ -3,7 +3,7 @@ import { Document, DocumentProps } from "@etc/jsx/Document.tsx";
 import { Context } from "@etc/types.ts";
 import { FlashDialog } from "@features/flash/jsx/FlashDialog.tsx";
 import { isSessionExpiringSoon } from "@features/sessions/helpers.ts";
-import { SessionExpiryDialog } from "@features/sessions/jsx/SessionExpiryDialog.tsx";
+import { SessionExpiryWarning } from "@features/sessions/jsx/SessionExpiryWarning.tsx";
 
 export function Page({ head, title, children }: DocumentProps, c: Context) {
   const needsLoginAssets = !c.user ||
@@ -29,7 +29,7 @@ export function Page({ head, title, children }: DocumentProps, c: Context) {
   return (
     <Document head={docHead} title={title}>
       <FlashDialog />
-      <SessionExpiryDialog />
+      <SessionExpiryWarning />
       {children}
     </Document>
   );
