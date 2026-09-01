@@ -1,14 +1,12 @@
-import { assetPath } from "@etc/asset.ts";
 import { Page } from "@etc/jsx/Page.tsx";
+import { Context } from "@etc/types.ts";
 import { SignUpForm } from "./SignUpForm.tsx";
 
-export function SignUpPage() {
-  const head = (
-    <script type="module" src={assetPath("/account/assets/signup.js")} />
-  );
+export function SignUpPage(_props: unknown, { assets }: Context) {
+  assets.add("signup");
 
   return (
-    <Page head={head} title="Sign Up">
+    <Page title="Sign Up">
       <h1>Create an account</h1>
       <noscript>JavaScript is required to create an account.</noscript>
       <SignUpForm />

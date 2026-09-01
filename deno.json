@@ -23,6 +23,7 @@
     "@middleware/": "./src/middleware/",
     "@josh-hemphill/maxminddb-wasm": "jsr:@josh-hemphill/maxminddb-wasm@^2.1.8",
     "@simplewebauthn/server": "jsr:@simplewebauthn/server@^13.3.2",
+    "@std/collections": "jsr:@std/collections@^1.3.0",
     "@std/datetime": "jsr:@std/datetime@^0.225.7",
     "@std/encoding": "jsr:@std/encoding@^1.0.11",
     "@std/fs": "jsr:@std/fs@^1.0.24",

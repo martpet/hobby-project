@@ -1,5 +1,4 @@
 import { apiFetch, toggleFormBuisy } from "/assets/util.js";
-import { startRegistration } from "/passkeys/assets/simplewebauthn.js";
 
 const form = document.getElementById("signup-form");
 
@@ -23,6 +22,9 @@ async function handleFormSubmit(event) {
       handleError(start.error);
       return;
     }
+
+    const { startRegistration } =
+      await import("/passkeys/assets/simplewebauthn.js");
 
     const regResponseJson = await startRegistration({
       optionsJSON: start.value,

@@ -1,4 +1,4 @@
-import { GIT_SHA } from "@etc/const.ts";
+import { VERSION_PARAM } from "@etc/asset/path.ts";
 import { respondMethodNotAllowed } from "@etc/responses/method-not-allowed.tsx";
 import { Context } from "@etc/types.ts";
 import { DAY, SECOND } from "@std/datetime/constants";
@@ -6,8 +6,6 @@ import { serveFile } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { basename, join } from "@std/path";
 
-export const ASSET_VERSION = GIT_SHA;
-const VERSION_PARAM = "v";
 const MAX_AGE = (DAY * 365) / SECOND;
 
 export async function handleAsset(c: Context, meta: ImportMeta) {
@@ -28,8 +26,4 @@ export async function handleAsset(c: Context, meta: ImportMeta) {
   }
 
   return res;
-}
-
-export function assetPath(path: string) {
-  return ASSET_VERSION ? `${path}?${VERSION_PARAM}=${ASSET_VERSION}` : path;
 }

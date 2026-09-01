@@ -1,5 +1,4 @@
 import { apiFetch, toggleButtonLoading } from "/assets/util.js";
-import { startAuthentication } from "/passkeys/assets/simplewebauthn.js";
 
 const loginButtons = document.getElementsByClassName("login-button");
 
@@ -21,6 +20,8 @@ async function handleButtonClick({ target }) {
       handleError(start.error);
       return;
     }
+
+    const { startAuthentication } = await import("simplewebauthn");
 
     const authResponseJson = await startAuthentication({
       optionsJSON: start.value,

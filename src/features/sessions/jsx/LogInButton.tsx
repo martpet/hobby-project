@@ -4,9 +4,9 @@ interface LogInButtonProps extends ButtonHTMLAttributes {
   children?: ComponentChildren;
 }
 
-export function LogInButton({ children, ...buttonAttr }: LogInButtonProps) {
+export function LogInButton({ children, ...attr }: LogInButtonProps) {
   return (
-    <button class="login-button" {...buttonAttr}>
+    <button class="login-button" {...attr}>
       {children || "Sign In"}
     </button>
   );

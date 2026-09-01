@@ -4,7 +4,7 @@ import { JSX } from "preact";
 import { renderToString } from "preact-render-to-string";
 
 export function render(c: Context, jsx: JSX.Element, init?: ResponseInit) {
-  const body = "<!DOCTYPE html>" + renderToString(jsx, c);
+  const html = "<!DOCTYPE html>" + renderToString(jsx, c);
 
-  return respondHtml(body, init);
+  return respondHtml(html, init);
 }

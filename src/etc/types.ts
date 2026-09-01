@@ -1,3 +1,4 @@
+import { AssetGroupKey } from "@etc/asset/types.ts";
 import { FlashKey } from "@features/flash/types.ts";
 import { Session } from "@features/sessions/types.ts";
 import { User } from "@features/users/types.ts";
@@ -16,6 +17,7 @@ export interface Context {
   session?: Session;
   user?: User;
   flash?: FlashKey;
+  assets: Set<AssetGroupKey>;
 }
 
 export type AuthenticatedContext = SetRequired<Context, "user" | "session">;

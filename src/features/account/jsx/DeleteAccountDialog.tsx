@@ -1,8 +1,10 @@
-interface DeleteAccountButtonProps {
-  username: string;
+import { User } from "@features/users/types.ts";
+
+interface DeleteAccountDialogProps {
+  user: User;
 }
 
-export function DeleteAccountDialog({ username }: DeleteAccountButtonProps) {
+export function DeleteAccountDialog(props: DeleteAccountDialogProps) {
   return (
     <>
       <button
@@ -16,12 +18,16 @@ export function DeleteAccountDialog({ username }: DeleteAccountButtonProps) {
         <h2>Delete account?</h2>
         <p>This action cannot be undone.</p>
 
-        <form id="delete-account-form" method="POST" action="/account/delete">
+        <form
+          id="delete-account-form"
+          method="POST"
+          action="/account/delete"
+        >
           <label for="username">Username:</label>
           <input
             id="username"
             type="text"
-            pattern={username}
+            pattern={props.user.username}
             autocomplete="off"
             required
           />

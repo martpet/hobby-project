@@ -2,7 +2,7 @@ import { CloseButton } from "@etc/jsx/CloseButton.tsx";
 import { Context } from "@etc/types.ts";
 import { FLASH } from "../const.ts";
 
-export function FlashDialog(_props: unknown, c: Context) {
+export function FlashMessage(_props: unknown, c: Context) {
   if (!c.flash) return;
 
   const flash = FLASH[c.flash];

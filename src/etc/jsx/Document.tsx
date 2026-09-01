@@ -1,5 +1,7 @@
-import { ASSET_VERSION, assetPath } from "@etc/asset.ts";
 import { WEBSITE_TITLE } from "@etc/const.ts";
+import { Assets } from "@etc/jsx/Assets.tsx";
+import { Link } from "@etc/jsx/Link.tsx";
+import { Context } from "@etc/types.ts";
 import { ComponentChildren, JSX } from "preact";
 
 export interface DocumentProps {
@@ -8,36 +10,19 @@ export interface DocumentProps {
   children?: ComponentChildren;
 }
 
-const importMap = {
-  imports: {
-    "/assets/util.js": assetPath("/assets/util.js"),
-    "/passkeys/assets/simplewebauthn.js": assetPath(
-      "/passkeys/assets/simplewebauthn.js",
-    ),
-  },
-};
-
-export function Document({ head, children, title }: DocumentProps) {
+export function Document(
+  { head, title, children }: DocumentProps,
+  { assets }: Context,
+) {
   return (
     <html lang="en">
       <head>
         <meta charset="UTF-8" />
         <meta name="color-scheme" content="dark light" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link
-          rel="icon"
-          href={assetPath("/assets/logo.png")}
-          type="image/png"
-        />
-        <link rel="stylesheet" href={assetPath("/assets/style.css")} />
-        {ASSET_VERSION && (
-          <script
-            type="importmap"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(importMap, null, 2),
-            }}
-          />
-        )}
+        <Link href="/assets/logo.png" rel="icon" type="image/png" />
+        <Link href="/assets/styles.css" rel="stylesheet" />
+        <Assets groups={assets} />
         {head}
         <title>{title && `${title} | `}{WEBSITE_TITLE}</title>
       </head>

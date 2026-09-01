@@ -1,4 +1,4 @@
-import { handleAsset } from "@etc/asset.ts";
+import { handleAsset } from "@etc/asset/handler.ts";
 import { respondNotFound } from "@etc/responses/not-found.tsx";
 import { Context } from "@etc/types.ts";
 import { handleAccount } from "@features/account/handler.tsx";

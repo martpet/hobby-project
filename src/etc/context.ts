@@ -6,9 +6,9 @@ import { Method } from "@std/http/unstable-method";
 export function createContext(
   req: Request,
   info: Deno.ServeHandlerInfo<Deno.NetAddr>,
-) {
-  const proto = req.headers.get("x-forwarded-proto");
+): Context {
   const url = new URL(req.url);
+  const proto = req.headers.get("x-forwarded-proto");
 
   if (proto) {
     url.protocol = `${proto}:`;
@@ -20,6 +20,7 @@ export function createContext(
     method: req.method as Method,
     ip: req.headers.get("X-Forwarded-For") || info.remoteAddr.hostname,
     locale: getAcceptLanguage(req) ?? DEFAULT_LOCALE,
+    assets: new Set(),
   };
 }
 

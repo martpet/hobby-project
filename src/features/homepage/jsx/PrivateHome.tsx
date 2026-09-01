@@ -11,29 +11,21 @@ interface PrivateHomeProps {
   currentSession: Session;
 }
 
-export function PrivateHome(
-  { user, sessions, currentSession }: PrivateHomeProps,
-) {
+export function PrivateHome(props: PrivateHomeProps) {
   return (
     <Page>
-      <h1>
-        Welcome {user.username}
-      </h1>
+      <h1>Welcome {props.user.username}</h1>
 
       <LogOutForm />
 
-      <section>
-        <h2>Active sessions</h2>
-        <ActiveSessions
-          sessions={sessions}
-          currentSession={currentSession}
-        />
-      </section>
+      <h2>Active sessions</h2>
+      <ActiveSessions
+        sessions={props.sessions}
+        currentSession={props.currentSession}
+      />
 
-      <section>
-        <h2>Delete account</h2>
-        <DeleteAccountDialog username={user.username} />
-      </section>
+      <h2>Delete account</h2>
+      <DeleteAccountDialog user={props.user} />
     </Page>
   );
 }
