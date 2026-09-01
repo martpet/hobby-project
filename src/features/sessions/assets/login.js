@@ -1,4 +1,4 @@
-import { apiFetch, toggleButtonLoading } from "/assets/util.js";
+import { apiFetch, toggleButtonLoading } from "util";
 
 const loginButtons = document.getElementsByClassName("login-button");
 

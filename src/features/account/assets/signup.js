@@ -1,4 +1,4 @@
-import { apiFetch, toggleFormBuisy } from "/assets/util.js";
+import { apiFetch, toggleFormBuisy } from "util";
 
 const form = document.getElementById("signup-form");
 
