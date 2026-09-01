@@ -11,8 +11,6 @@ async function handleButtonClick({ target }) {
 
   const handleError = createErrorHandler(target);
 
-  const { startAuthentication } = await import("simplewebauthn");
-
   try {
     const start = await apiFetch("/login/start", {
       method: "POST",
@@ -22,6 +20,8 @@ async function handleButtonClick({ target }) {
       handleError(start.error);
       return;
     }
+
+    const { startAuthentication } = await import("simplewebauthn");
 
     const authResponseJson = await startAuthentication({
       optionsJSON: start.value,
