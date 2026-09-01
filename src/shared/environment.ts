@@ -7,3 +7,11 @@ export function getRequiredEnv(key: string): string {
 
   return value;
 }
+
+export function getEnv(key: string): string | undefined {
+  return Deno.env.get(key);
+}
+
+export function getBooleanEnv(key: string): boolean {
+  return Boolean(Deno.env.get(key));
+}

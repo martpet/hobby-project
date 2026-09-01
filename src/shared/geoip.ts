@@ -1,6 +1,7 @@
 import { Maxmind } from "@josh-hemphill/maxminddb-wasm";
+import { getEnv } from "@shared/environment.ts";
 
-const dbPath = Deno.env.get("MAXMIND_DB_PATH");
+const dbPath = getEnv("MAXMIND_DB_PATH");
 
 export const maxmind = dbPath
   ? new Maxmind(await Deno.readFile(dbPath))

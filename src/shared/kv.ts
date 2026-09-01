@@ -1,3 +1,5 @@
-const path = Deno.env.get("KV_PATH");
+import { getEnv } from "@shared/environment.ts";
 
-export const kv = await Deno.openKv(path);
+const kvPath = getEnv("KV_PATH");
+
+export const kv = await Deno.openKv(kvPath);
