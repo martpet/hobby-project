@@ -12,6 +12,9 @@ async function handleFormSubmit(event) {
   const username = form.username.value;
   const handleError = createErrorHandler(username);
 
+  const { startRegistration } =
+    await import("/passkeys/assets/simplewebauthn.js");
+
   try {
     const start = await apiFetch("/signup/start", {
       method: "POST",
@@ -22,9 +25,6 @@ async function handleFormSubmit(event) {
       handleError(start.error);
       return;
     }
-
-    const { startRegistration } =
-      await import("/passkeys/assets/simplewebauthn.js");
 
     const regResponseJson = await startRegistration({
       optionsJSON: start.value,
