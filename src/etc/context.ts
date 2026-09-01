@@ -3,7 +3,7 @@ import { getAcceptLanguage } from "@etc/header.ts";
 import { AuthenticatedContext, Context } from "@etc/types.ts";
 import { Method } from "@std/http/unstable-method";
 
-export function createContext(
+export function buildContext(
   req: Request,
   info: Deno.ServeHandlerInfo<Deno.NetAddr>,
 ): Context {

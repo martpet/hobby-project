@@ -1,4 +1,4 @@
-import { createContext } from "@etc/context.ts";
+import { buildContext } from "@etc/context.ts";
 import { flashMid } from "@features/flash/middleware.ts";
 import { sessionMid } from "@features/sessions/middleware.ts";
 import { cacheMid } from "@middleware/cache.ts";
@@ -26,5 +26,5 @@ const middlewares = [
 const composed = middlewares.reduceRight((a, b) => b(a), jsxMid(handler));
 
 Deno.serve({ port }, (req, info) => {
-  return composed(createContext(req, info));
+  return composed(buildContext(req, info));
 });
