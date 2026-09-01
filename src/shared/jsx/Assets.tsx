@@ -23,12 +23,6 @@ export function Assets({ groups }: AssetsProps) {
 
   return (
     <>
-      {[...modules].map((key) => <Script src={scriptSrc[key]} type="module" />)}
-
-      {[...modulepreloads].map((key) => (
-        <Link href={scriptSrc[key]} rel="modulepreload" />
-      ))}
-
       {imports.size > 0 && (
         <ImportMap
           imports={Object.fromEntries(
@@ -36,6 +30,12 @@ export function Assets({ groups }: AssetsProps) {
           )}
         />
       )}
+
+      {[...modules].map((key) => <Script src={scriptSrc[key]} type="module" />)}
+
+      {[...modulepreloads].map((key) => (
+        <Link href={scriptSrc[key]} rel="modulepreload" />
+      ))}
     </>
   );
 }
