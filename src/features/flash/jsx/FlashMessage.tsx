@@ -1,5 +1,5 @@
-import { CloseButton } from "@etc/jsx/CloseButton.tsx";
-import { Context } from "@etc/types.ts";
+import { CloseButton } from "@shared/jsx/CloseButton.tsx";
+import { Context } from "@shared/types.ts";
 import { FLASH } from "../const.ts";
 
 export function FlashMessage(_props: unknown, c: Context) {

@@ -1,5 +1,5 @@
-import { respondForbidden } from "@etc/responses/forbidden.tsx";
-import { Middleware } from "@etc/types.ts";
+import { respondForbidden } from "@shared/responses/forbidden.tsx";
+import { Middleware } from "@shared/types.ts";
 import { Method } from "@std/http/unstable-method";
 
 const SAFE_METHODS = new Set<Method>(["GET", "HEAD", "OPTIONS"]);

@@ -1,5 +1,5 @@
-import { respondRedirect } from "@etc/responses/redirect.ts";
-import { Context } from "@etc/types.ts";
+import { respondRedirect } from "@shared/responses/redirect.ts";
+import { Context } from "@shared/types.ts";
 import { HEADER } from "@std/http/unstable-header";
 
 export function redirectBack(c: Context) {

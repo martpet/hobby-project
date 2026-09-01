@@ -1,4 +1,4 @@
-import { Middleware } from "@etc/types.ts";
+import { Middleware } from "@shared/types.ts";
 import { STATUS_CODE } from "@std/http";
 
 export const trailingSlashMid: Middleware = (next) => async (c) => {

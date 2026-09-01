@@ -1,7 +1,7 @@
-import { IS_DEV } from "@etc/const.ts";
-import { generateToken } from "@etc/crypto.ts";
-import { Context } from "@etc/types.ts";
 import { WEBAUTHN_TIMEOUT } from "@features/passkeys/const.ts";
+import { IS_DEV } from "@shared/const.ts";
+import { generateToken } from "@shared/crypto.ts";
+import { Context } from "@shared/types.ts";
 import { SECOND } from "@std/datetime";
 import { deleteCookie, getCookies, setCookie } from "@std/http";
 

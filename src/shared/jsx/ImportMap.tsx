@@ -1,4 +1,4 @@
-import { assetPath } from "@etc/asset/path.ts";
+import { assetPath } from "@shared/asset/path.ts";
 import { mapEntries } from "@std/collections";
 
 interface ImportMapProps {

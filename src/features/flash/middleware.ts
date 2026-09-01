@@ -1,5 +1,5 @@
-import { responseIsHtml } from "@etc/header.ts";
-import { Middleware } from "@etc/types.ts";
+import { responseIsHtml } from "@shared/header.ts";
+import { Middleware } from "@shared/types.ts";
 import { deleteFlashCookie, getFlashCookie } from "./cookie.ts";
 
 export const flashMid: Middleware = (next) => async (c) => {

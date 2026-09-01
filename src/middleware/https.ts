@@ -1,5 +1,5 @@
-import { IS_DEV } from "@etc/const.ts";
-import { Middleware } from "@etc/types.ts";
+import { IS_DEV } from "@shared/const.ts";
+import { Middleware } from "@shared/types.ts";
 import { DAY, SECOND } from "@std/datetime/constants";
 import { STATUS_CODE } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";

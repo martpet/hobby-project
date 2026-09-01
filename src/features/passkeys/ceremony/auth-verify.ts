@@ -1,6 +1,6 @@
-import { kv } from "@etc/kv.ts";
-import { Context } from "@etc/types.ts";
 import { User } from "@features/users/types.ts";
+import { kv } from "@shared/kv.ts";
+import { Context } from "@shared/types.ts";
 import {
   AuthenticationResponseJSON,
   verifyAuthenticationResponse,

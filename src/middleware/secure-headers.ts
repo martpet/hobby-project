@@ -1,4 +1,4 @@
-import { Middleware } from "@etc/types.ts";
+import { Middleware } from "@shared/types.ts";
 import { HEADER } from "@std/http/unstable-header";
 
 export const secureHeadersMid: Middleware = (next) => async (c) => {

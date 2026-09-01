@@ -1,8 +1,8 @@
-import { generateToken } from "@etc/crypto.ts";
-import { kv } from "@etc/kv.ts";
-import { AuthenticatedContext, Context } from "@etc/types.ts";
 import { setFlash } from "@features/flash/helpers.ts";
 import { getUserById } from "@features/users/kv.ts";
+import { generateToken } from "@shared/crypto.ts";
+import { kv } from "@shared/kv.ts";
+import { AuthenticatedContext, Context } from "@shared/types.ts";
 import { UserAgent } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { decodeTime } from "@std/ulid";

@@ -1,5 +1,5 @@
-import { respondServerError } from "@etc/responses/server-error.tsx";
-import { Middleware } from "@etc/types.ts";
+import { respondServerError } from "@shared/responses/server-error.tsx";
+import { Middleware } from "@shared/types.ts";
 
 export const errorMid: Middleware = (next) => async (c) => {
   try {

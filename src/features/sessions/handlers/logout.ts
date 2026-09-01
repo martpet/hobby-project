@@ -1,12 +1,12 @@
-import { isAuthenticatedContext } from "@etc/context.ts";
-import { respondForbidden } from "@etc/responses/forbidden.tsx";
-import { respondMethodNotAllowed } from "@etc/responses/method-not-allowed.tsx";
-import { redirectBack } from "@etc/responses/redirect-back.ts";
-import { respondRedirect } from "@etc/responses/redirect.ts";
-import { respondUnauthorized } from "@etc/responses/unauthorized.tsx";
-import { Context } from "@etc/types.ts";
 import { setFlash } from "@features/flash/helpers.ts";
 import { deleteSessionCookie } from "@features/sessions/cookie.ts";
+import { isAuthenticatedContext } from "@shared/context.ts";
+import { respondForbidden } from "@shared/responses/forbidden.tsx";
+import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
+import { redirectBack } from "@shared/responses/redirect-back.ts";
+import { respondRedirect } from "@shared/responses/redirect.ts";
+import { respondUnauthorized } from "@shared/responses/unauthorized.tsx";
+import { Context } from "@shared/types.ts";
 import { destroySession } from "../helpers.ts";
 import { getSessionById } from "../kv.ts";
 

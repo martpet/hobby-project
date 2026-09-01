@@ -1,6 +1,6 @@
-import { DEFAULT_LOCALE } from "@etc/const.ts";
-import { getAcceptLanguage } from "@etc/header.ts";
-import { AuthenticatedContext, Context } from "@etc/types.ts";
+import { DEFAULT_LOCALE } from "@shared/const.ts";
+import { getAcceptLanguage } from "@shared/header.ts";
+import { AuthenticatedContext, Context } from "@shared/types.ts";
 import { Method } from "@std/http/unstable-method";
 
 export function buildContext(

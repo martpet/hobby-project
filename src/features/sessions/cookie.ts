@@ -1,5 +1,5 @@
-import { IS_DEV } from "@etc/const.ts";
-import { Context } from "@etc/types.ts";
+import { IS_DEV } from "@shared/const.ts";
+import { Context } from "@shared/types.ts";
 import { SECOND } from "@std/datetime";
 import { deleteCookie, getCookies, setCookie } from "@std/http";
 

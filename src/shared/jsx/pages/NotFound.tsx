@@ -1,4 +1,4 @@
-import { Page } from "@etc/jsx/Page.tsx";
+import { Page } from "@shared/jsx/Page.tsx";
 
 export function NotFoundPage() {
   const title = "Page Not Found";

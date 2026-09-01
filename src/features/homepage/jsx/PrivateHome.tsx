@@ -1,9 +1,9 @@
-import { Page } from "@etc/jsx/Page.tsx";
 import { DeleteAccountDialog } from "@features/account/jsx/DeleteAccountDialog.tsx";
 import { ActiveSessions } from "@features/sessions/jsx/ActiveSessions.tsx";
 import { LogOutForm } from "@features/sessions/jsx/LogOutForm.tsx";
 import { Session } from "@features/sessions/types.ts";
 import { User } from "@features/users/types.ts";
+import { Page } from "@shared/jsx/Page.tsx";
 
 interface PrivateHomeProps {
   user: User;

@@ -1,5 +1,5 @@
-import { Page } from "@etc/jsx/Page.tsx";
 import { LogInButton } from "@features/sessions/jsx/LogInButton.tsx";
+import { Page } from "@shared/jsx/Page.tsx";
 
 interface UnauthorizedPageProps {
   heading?: string;

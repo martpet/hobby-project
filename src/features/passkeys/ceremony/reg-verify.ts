@@ -1,4 +1,4 @@
-import { Context } from "@etc/types.ts";
+import { Context } from "@shared/types.ts";
 import {
   RegistrationResponseJSON,
   verifyRegistrationResponse,

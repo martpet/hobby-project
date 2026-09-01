@@ -1,4 +1,4 @@
-import { Context } from "@etc/types.ts";
+import { Context } from "@shared/types.ts";
 import { DAY, HOUR, MINUTE, SECOND } from "@std/datetime";
 
 export function dateTimeFormat(c: Context, opts?: Intl.DateTimeFormatOptions) {

@@ -1,8 +1,8 @@
-import { GIT_SHA, IS_DEV } from "@etc/const.ts";
-import { isAuthenticatedContext } from "@etc/context.ts";
-import { addVaryCookie, toPrivateCacheControl } from "@etc/header.ts";
-import { Middleware } from "@etc/types.ts";
 import { getSessionCookie } from "@features/sessions/cookie.ts";
+import { GIT_SHA, IS_DEV } from "@shared/const.ts";
+import { isAuthenticatedContext } from "@shared/context.ts";
+import { addVaryCookie, toPrivateCacheControl } from "@shared/header.ts";
+import { Middleware } from "@shared/types.ts";
 import { MINUTE, SECOND } from "@std/datetime";
 import { StatusCode } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";

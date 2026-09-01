@@ -1,4 +1,4 @@
-import { assetPath } from "@etc/asset/path.ts";
+import { assetPath } from "@shared/asset/path.ts";
 import { LinkHTMLAttributes } from "preact";
 
 interface LinkProps extends Omit<LinkHTMLAttributes, "href"> {

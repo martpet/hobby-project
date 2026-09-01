@@ -18,7 +18,7 @@
   },
   "unstable": ["kv"],
   "imports": {
-    "@etc/": "./src/etc/",
+    "@shared/": "./src/shared/",
     "@features/": "./src/features/",
     "@middleware/": "./src/middleware/",
     "@josh-hemphill/maxminddb-wasm": "jsr:@josh-hemphill/maxminddb-wasm@^2.1.8",

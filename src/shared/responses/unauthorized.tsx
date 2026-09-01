@@ -1,7 +1,7 @@
-import { requestAcceptsHtml } from "@etc/header.ts";
-import { UnauthorizedPage } from "@etc/jsx/pages/Unauthorized.tsx";
-import { render } from "@etc/render.ts";
-import { Context } from "@etc/types.ts";
+import { requestAcceptsHtml } from "@shared/header.ts";
+import { UnauthorizedPage } from "@shared/jsx/pages/Unauthorized.tsx";
+import { render } from "@shared/render.ts";
+import { Context } from "@shared/types.ts";
 import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 
 export function respondUnauthorized(c: Context, heading?: string) {

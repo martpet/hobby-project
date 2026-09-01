@@ -1,4 +1,3 @@
-import { buildContext } from "@etc/context.ts";
 import { flashMid } from "@features/flash/middleware.ts";
 import { sessionMid } from "@features/sessions/middleware.ts";
 import { cacheMid } from "@middleware/cache.ts";
@@ -8,6 +7,7 @@ import { httpsMid } from "@middleware/https.ts";
 import { jsxMid } from "@middleware/jsx.ts";
 import { secureHeadersMid } from "@middleware/secure-headers.ts";
 import { trailingSlashMid } from "@middleware/trailing-slash.ts";
+import { buildContext } from "@shared/context.ts";
 import { handler } from "./handler.ts";
 
 const port = Number(Deno.env.get("APP_PORT")) ?? undefined;

@@ -1,4 +1,4 @@
-import { getRequiredEnv } from "@etc/environment.ts";
+import { getRequiredEnv } from "@shared/environment.ts";
 import { command } from "./utils/command.ts";
 import { loadEnv } from "./utils/load-env.ts";
 

@@ -1,4 +1,4 @@
-import { assetGroups, linkHref, scriptSrc } from "@etc/asset/registry.ts";
+import { assetGroups, linkHref, scriptSrc } from "@shared/asset/registry.ts";
 
 export type ScriptSrcKey = keyof typeof scriptSrc;
 

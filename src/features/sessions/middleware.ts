@@ -1,7 +1,7 @@
-import { isAuthenticatedContext } from "@etc/context.ts";
-import { Middleware } from "@etc/types.ts";
 import { setFlash } from "@features/flash/helpers.ts";
 import { getUserById } from "@features/users/kv.ts";
+import { isAuthenticatedContext } from "@shared/context.ts";
+import { Middleware } from "@shared/types.ts";
 import { SESSION_ACTIVITY_INTERVAL } from "./const.ts";
 import { deleteSessionCookie, getSessionCookie } from "./cookie.ts";
 import {

@@ -1,7 +1,7 @@
-import { requestAcceptsHtml } from "@etc/header.ts";
-import { ServerErrorPage } from "@etc/jsx/pages/ServerError.tsx";
-import { render } from "@etc/render.ts";
-import { Context } from "@etc/types.ts";
+import { requestAcceptsHtml } from "@shared/header.ts";
+import { ServerErrorPage } from "@shared/jsx/pages/ServerError.tsx";
+import { render } from "@shared/render.ts";
+import { Context } from "@shared/types.ts";
 import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 
 export function respondServerError(c: Context, error: unknown) {

@@ -1,5 +1,5 @@
-import { Page } from "@etc/jsx/Page.tsx";
-import { Context } from "@etc/types.ts";
+import { Page } from "@shared/jsx/Page.tsx";
+import { Context } from "@shared/types.ts";
 import { SignUpForm } from "./SignUpForm.tsx";
 
 export function SignUpPage(_props: unknown, { assets }: Context) {

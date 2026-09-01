@@ -1,4 +1,4 @@
-import { kv } from "@etc/kv.ts";
+import { kv } from "@shared/kv.ts";
 import { ulid } from "@std/ulid";
 import { SetOptional } from "type-fest";
 import { Session } from "./types.ts";

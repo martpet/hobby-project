@@ -1,5 +1,5 @@
-import { IS_DEV } from "@etc/const.ts";
-import { Page } from "@etc/jsx/Page.tsx";
+import { IS_DEV } from "@shared/const.ts";
+import { Page } from "@shared/jsx/Page.tsx";
 
 interface ServerErrorPageProps {
   error: unknown;

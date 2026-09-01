@@ -1,7 +1,7 @@
-import { WEBSITE_TITLE } from "@etc/const.ts";
-import { Assets } from "@etc/jsx/Assets.tsx";
-import { Link } from "@etc/jsx/Link.tsx";
-import { Context } from "@etc/types.ts";
+import { WEBSITE_TITLE } from "@shared/const.ts";
+import { Assets } from "@shared/jsx/Assets.tsx";
+import { Link } from "@shared/jsx/Link.tsx";
+import { Context } from "@shared/types.ts";
 import { ComponentChildren, JSX } from "preact";
 
 export interface DocumentProps {

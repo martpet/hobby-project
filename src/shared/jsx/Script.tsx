@@ -1,4 +1,4 @@
-import { assetPath } from "@etc/asset/path.ts";
+import { assetPath } from "@shared/asset/path.ts";
 import { ScriptHTMLAttributes } from "preact";
 
 interface ScriptProps extends Omit<ScriptHTMLAttributes, "src"> {

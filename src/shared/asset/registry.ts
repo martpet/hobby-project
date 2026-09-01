@@ -1,4 +1,4 @@
-import { AssetGroup } from "@etc/asset/types.ts";
+import { AssetGroup } from "@shared/asset/types.ts";
 
 export const scriptSrc = {
   util: "/assets/util.js",

@@ -1,9 +1,3 @@
-import { isAuthenticatedContext } from "@etc/context.ts";
-import { kv } from "@etc/kv.ts";
-import { respondMethodNotAllowed } from "@etc/responses/method-not-allowed.tsx";
-import { respondRedirect } from "@etc/responses/redirect.ts";
-import { respondUnauthorized } from "@etc/responses/unauthorized.tsx";
-import { Context } from "@etc/types.ts";
 import { setFlash } from "@features/flash/helpers.ts";
 import {
   deletePasskey,
@@ -13,6 +7,12 @@ import {
 import { deleteSessionCookie } from "@features/sessions/cookie.ts";
 import { deleteSession, listSessionsByUserId } from "@features/sessions/kv.ts";
 import { deleteUser } from "@features/users/kv.ts";
+import { isAuthenticatedContext } from "@shared/context.ts";
+import { kv } from "@shared/kv.ts";
+import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
+import { respondRedirect } from "@shared/responses/redirect.ts";
+import { respondUnauthorized } from "@shared/responses/unauthorized.tsx";
+import { Context } from "@shared/types.ts";
 
 export async function handleAccountDelete(c: Context) {
   if (c.method !== "POST") {

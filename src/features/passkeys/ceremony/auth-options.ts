@@ -1,4 +1,4 @@
-import { cacheNoStore } from "@etc/header.ts";
+import { cacheNoStore } from "@shared/header.ts";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import {
   WEBAUTHN_RP_ID,

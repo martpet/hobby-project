@@ -1,5 +1,5 @@
-import { WEBSITE_TITLE } from "@etc/const.ts";
-import { getRequiredEnv } from "@etc/environment.ts";
+import { WEBSITE_TITLE } from "@shared/const.ts";
+import { getRequiredEnv } from "@shared/environment.ts";
 import { DAY, MINUTE } from "@std/datetime";
 
 export const WEBAUTHN_TIMEOUT = 5 * MINUTE;

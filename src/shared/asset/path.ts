@@ -1,4 +1,4 @@
-import { GIT_SHA } from "@etc/const.ts";
+import { GIT_SHA } from "@shared/const.ts";
 
 export const ASSET_VERSION = GIT_SHA;
 export const VERSION_PARAM = "v";

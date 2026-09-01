@@ -1,8 +1,8 @@
-import { assetGroups, scriptSrc } from "@etc/asset/registry.ts";
-import { AssetGroupKey, ScriptSrcKey } from "@etc/asset/types.ts";
-import { ImportMap } from "@etc/jsx/ImportMap.tsx";
-import { Link } from "@etc/jsx/Link.tsx";
-import { Script } from "@etc/jsx/Script.tsx";
+import { assetGroups, scriptSrc } from "@shared/asset/registry.ts";
+import { AssetGroupKey, ScriptSrcKey } from "@shared/asset/types.ts";
+import { ImportMap } from "@shared/jsx/ImportMap.tsx";
+import { Link } from "@shared/jsx/Link.tsx";
+import { Script } from "@shared/jsx/Script.tsx";
 
 interface AssetsProps {
   groups: Set<AssetGroupKey>;

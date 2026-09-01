@@ -1,5 +1,5 @@
-import { render } from "@etc/render.ts";
-import { Middleware } from "@etc/types.ts";
+import { render } from "@shared/render.ts";
+import { Middleware } from "@shared/types.ts";
 import { VNode } from "preact";
 
 export const jsxMid: Middleware<VNode | Response> = (next) => async (c) => {

@@ -1,7 +1,7 @@
-import { lookupLocation } from "@etc/geoip.ts";
-import { dateTimeFormat, timeAgo } from "@etc/intl.ts";
-import { Context } from "@etc/types.ts";
 import { LogOutForm } from "@features/sessions/jsx/LogOutForm.tsx";
+import { lookupLocation } from "@shared/geoip.ts";
+import { dateTimeFormat, timeAgo } from "@shared/intl.ts";
+import { Context } from "@shared/types.ts";
 import { MINUTE } from "@std/datetime";
 import { decodeTime } from "@std/ulid/decode-time";
 import { Session } from "../types.ts";

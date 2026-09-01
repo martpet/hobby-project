@@ -1,5 +1,5 @@
-import { dateTimeFormat } from "@etc/intl.ts";
-import { Context } from "@etc/types.ts";
+import { dateTimeFormat } from "@shared/intl.ts";
+import { Context } from "@shared/types.ts";
 import { getAbsoluteExpiresAt, isSessionExpiringSoon } from "../helpers.ts";
 import { LogInButton } from "./LogInButton.tsx";
 

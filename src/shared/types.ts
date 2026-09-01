@@ -1,7 +1,7 @@
-import { AssetGroupKey } from "@etc/asset/types.ts";
 import { FlashKey } from "@features/flash/types.ts";
 import { Session } from "@features/sessions/types.ts";
 import { User } from "@features/users/types.ts";
+import { AssetGroupKey } from "@shared/asset/types.ts";
 import { Method } from "@std/http/unstable-method";
 import { SetRequired } from "type-fest";
 

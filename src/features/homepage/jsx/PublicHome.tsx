@@ -1,6 +1,6 @@
-import { Page } from "@etc/jsx/Page.tsx";
-import { Context } from "@etc/types.ts";
 import { LogInButton } from "@features/sessions/jsx/LogInButton.tsx";
+import { Page } from "@shared/jsx/Page.tsx";
+import { Context } from "@shared/types.ts";
 
 export function PublicHome(_props: unknown, { assets }: Context) {
   assets.add("login");

@@ -1,6 +1,6 @@
-import { handleAsset } from "@etc/asset/handler.ts";
-import { respondNotFound } from "@etc/responses/not-found.tsx";
-import { Context } from "@etc/types.ts";
+import { handleAsset } from "@shared/asset/handler.ts";
+import { respondNotFound } from "@shared/responses/not-found.tsx";
+import { Context } from "@shared/types.ts";
 import { handleAccountDelete } from "./handlers/delete.ts";
 import { handleSignupFinish } from "./handlers/signup/finish.ts";
 import { handleSignUpPage } from "./handlers/signup/page.tsx";
