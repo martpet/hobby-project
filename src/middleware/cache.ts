@@ -8,18 +8,18 @@ import { StatusCode } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { Method } from "@std/http/unstable-method";
 
-const APP_CACHE_ENABLED = false;
-const APP_CACHE_VERSION = GIT_SHA || new Date().toISOString();
+const LOCAL_CACHE_ENABLED = false;
+const LOCAL_CACHE_VERSION = GIT_SHA || new Date().toISOString();
 const CACHEABLE_METHODS = new Set<Method>(["GET", "HEAD"]);
 const CACHEABLE_STATUS_CODES = new Set<StatusCode>([200]);
 const DEFAULT_UNAUTHENTICATED_CACHE_CONTROL = `public, max-age=${
   (5 * MINUTE) / SECOND
 }`;
 
-let appCache: Cache;
+let localCache: Cache;
 
-if (APP_CACHE_ENABLED) {
-  appCache = await caches.open(APP_CACHE_VERSION);
+if (LOCAL_CACHE_ENABLED) {
+  localCache = await caches.open(LOCAL_CACHE_VERSION);
 }
 
 export const cacheMid: Middleware = (next) => async (c) => {
@@ -27,11 +27,11 @@ export const cacheMid: Middleware = (next) => async (c) => {
     return next(c);
   }
 
-  if (APP_CACHE_ENABLED && !getSessionCookie(c)) {
-    const match = await appCache.match(c.req);
+  if (LOCAL_CACHE_ENABLED && !getSessionCookie(c)) {
+    const match = await localCache.match(c.req);
 
     if (match) {
-      match.headers.set("X-App-Cache", "hit");
+      match.headers.set("X-Local-Cache", "hit");
       return match;
     }
   }
@@ -57,11 +57,11 @@ export const cacheMid: Middleware = (next) => async (c) => {
   }
 
   if (
-    APP_CACHE_ENABLED &&
+    LOCAL_CACHE_ENABLED &&
     finalCacheControl.includes("public") &&
     !finalCacheControl.includes("no-store")
   ) {
-    await appCache.put(c.req, res.clone());
+    await localCache.put(c.req, res.clone());
   }
 
   return res;
