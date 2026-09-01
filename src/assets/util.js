@@ -6,12 +6,7 @@ export async function apiFetch(path, opts = {}) {
     body = JSON.stringify(json);
     headers.set("content-type", "application/json");
   }
-  const res = await fetch(path, {
-    method,
-    body,
-    headers,
-    credentials: "omit",
-  });
+  const res = await fetch(path, { method, body, headers });
   const resContType = res.headers.get("content-type");
   const isResJson = resContType?.includes("application/json");
   const result = { ok: res.ok };
