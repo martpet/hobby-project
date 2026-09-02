@@ -3,8 +3,6 @@ import { getUserById } from "@features/users/kv.ts";
 import { AuthenticatedContext, Context } from "@shared/context.ts";
 import { generateToken } from "@shared/crypto.ts";
 import { kv } from "@shared/kv.ts";
-import { UserAgent } from "@std/http";
-import { HEADER } from "@std/http/unstable-header";
 import { decodeTime } from "@std/ulid";
 import {
   SESSION_ABSOLUTE_TIMEOUT,
@@ -35,7 +33,6 @@ export async function createSession(c: Context, res: Response, userId: string) {
     return false;
   }
 
-  const ua = new UserAgent(c.req.headers.get(HEADER.UserAgent));
   const now = Date.now();
   const atomic = kv.atomic();
   const cookie = generateToken();
@@ -47,8 +44,8 @@ export async function createSession(c: Context, res: Response, userId: string) {
     userId,
     expiresAt: now + SESSION_IDLE_TIMEOUT,
     lastActive: now,
-    browser: ua.browser.name,
-    os: ua.os.name,
+    browser: c.ua.browser.name,
+    os: c.ua.os.name,
     ip: c.ip,
   }, atomic);
 

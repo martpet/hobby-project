@@ -4,6 +4,8 @@ import { User } from "@features/users/types.ts";
 import { ScriptKey } from "@shared/asset/registry.ts";
 import { DEFAULT_LOCALE } from "@shared/const.ts";
 import { getAcceptLanguage } from "@shared/header.ts";
+import { UserAgent } from "@std/http";
+import { HEADER } from "@std/http/unstable-header";
 import { Method } from "@std/http/unstable-method";
 import { SetRequired } from "type-fest";
 
@@ -13,6 +15,7 @@ export interface Context {
   method: Method;
   ip: string;
   locale: string;
+  ua: UserAgent;
   session?: Session;
   user?: User;
   flash?: FlashKey;
@@ -43,6 +46,7 @@ export function buildContext(
     method: req.method as Method,
     ip: req.headers.get("X-Forwarded-For") || info.remoteAddr.hostname,
     locale: getAcceptLanguage(req) ?? DEFAULT_LOCALE,
+    ua: new UserAgent(req.headers.get(HEADER.UserAgent)),
     head: {
       modules: new Set(),
       modulepreloads: new Set(),

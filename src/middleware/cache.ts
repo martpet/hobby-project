@@ -1,7 +1,7 @@
 import { getSessionCookie } from "@features/sessions/cookie.ts";
+import { addVaryCookie, toPrivateCacheControl } from "@shared/cache-control.ts";
 import { GIT_SHA, IS_DEV } from "@shared/const.ts";
 import { isAuthenticatedContext } from "@shared/context.ts";
-import { addVaryCookie, toPrivateCacheControl } from "@shared/header.ts";
 import { Middleware } from "@shared/types.ts";
 import { MINUTE, SECOND } from "@std/datetime";
 import { StatusCode } from "@std/http";
