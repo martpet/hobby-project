@@ -1,4 +1,4 @@
-import { apiFetch, toggleButtonLoading } from "util";
+import { apiFetch, showAlert, toggleButtonLoading } from "util";
 
 const loginButtons = document.getElementsByClassName("login-button");
 
@@ -60,6 +60,6 @@ function createErrorHandler(button) {
       }
     }
 
-    alert(msg || "Something went wrong");
+    showAlert(msg || "Something went wrong");
   };
 }

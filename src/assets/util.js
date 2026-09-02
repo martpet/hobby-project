@@ -43,3 +43,20 @@ export function toggleFormBuisy(form, force) {
     }
   }
 }
+
+export function showAlert(msg, type = "error") {
+  const dialog = document.createElement("dialog");
+  dialog.id = `alert-${crypto.randomUUID()}`;
+  dialog.className = `alert ${type}`;
+  dialog.textContent = msg;
+
+  const closeButton = document.createElement("button");
+  closeButton.className = "close";
+  closeButton.textContent = "x";
+  closeButton.commandForElement = dialog;
+  closeButton.command = "close";
+  dialog.append(closeButton);
+
+  document.body.append(dialog);
+  dialog.show();
+}

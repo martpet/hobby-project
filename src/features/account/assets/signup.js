@@ -1,4 +1,4 @@
-import { apiFetch, toggleFormBuisy } from "util";
+import { apiFetch, showAlert, toggleFormBuisy } from "util";
 
 const form = document.getElementById("signup-form");
 
@@ -67,6 +67,6 @@ function createErrorHandler(username) {
       }
     }
 
-    alert(msg || "Something went wrong");
+    showAlert(msg || "Something went wrong");
   };
 }
