@@ -13,30 +13,27 @@ async function handleFormSubmit(event) {
   const handleError = createErrorHandler(username);
 
   try {
-    const start = await apiFetch("/signup/start", {
-      method: "POST",
-      json: { username },
-    });
+    const [signupStart, { startRegistration }] = await Promise.all([
+      apiFetch("/signup/start", { method: "POST", json: { username } }),
+      import("simplewebauthn"),
+    ]);
 
-    if (!start.ok) {
-      handleError(start.error);
+    if (!signupStart.ok) {
+      handleError(signupStart.error);
       return;
     }
 
-    const { startRegistration } =
-      await import("/passkeys/assets/simplewebauthn.js");
-
     const regResponseJson = await startRegistration({
-      optionsJSON: start.value,
+      optionsJSON: signupStart.value,
     });
 
-    const finish = await apiFetch("/signup/finish", {
+    const signupFinish = await apiFetch("/signup/finish", {
       method: "POST",
       json: regResponseJson,
     });
 
-    if (!finish.ok) {
-      handleError(finish.error);
+    if (!signupFinish.ok) {
+      handleError(signupFinish.error);
       return;
     }
 

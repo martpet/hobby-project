@@ -12,28 +12,27 @@ async function handleButtonClick({ target }) {
   const handleError = createErrorHandler(target);
 
   try {
-    const start = await apiFetch("/login/start", {
-      method: "POST",
-    });
+    const [loginStart, { startAuthentication }] = await Promise.all([
+      apiFetch("/login/start", { method: "POST" }),
+      import("simplewebauthn"),
+    ]);
 
-    if (!start.ok) {
-      handleError(start.error);
+    if (!loginStart.ok) {
+      handleError(loginStart.error);
       return;
     }
 
-    const { startAuthentication } = await import("simplewebauthn");
-
     const authResponseJson = await startAuthentication({
-      optionsJSON: start.value,
+      optionsJSON: loginStart.value,
     });
 
-    const finish = await apiFetch("/login/finish", {
+    const loginFinish = await apiFetch("/login/finish", {
       method: "POST",
       json: authResponseJson,
     });
 
-    if (!finish.ok) {
-      handleError(finish.error);
+    if (!loginFinish.ok) {
+      handleError(loginFinish.error);
       return;
     }
 
