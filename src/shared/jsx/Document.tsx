@@ -2,10 +2,10 @@ import { WEBSITE_TITLE } from "@shared/const.ts";
 import { Assets } from "@shared/jsx/Assets.tsx";
 import { Link } from "@shared/jsx/Link.tsx";
 import { Context } from "@shared/types.ts";
-import { ComponentChildren, JSX } from "preact";
+import { ComponentChildren, VNode } from "preact";
 
 export interface DocumentProps {
-  head?: JSX.Element;
+  head?: VNode;
   title?: string;
   children?: ComponentChildren;
 }

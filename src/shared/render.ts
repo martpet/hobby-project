@@ -1,10 +1,10 @@
 import { respondHtml } from "@shared/responses/html.ts";
 import { Context } from "@shared/types.ts";
-import { JSX } from "preact";
-import { renderToString } from "preact-render-to-string";
+import { VNode } from "preact";
+import { render as renderToString } from "preact-render-to-string/jsx";
 
-export function render(c: Context, jsx: JSX.Element, init?: ResponseInit) {
-  const html = "<!DOCTYPE html>" + renderToString(jsx, c);
+export function render(c: Context, vnode: VNode, init?: ResponseInit) {
+  const html = `<!DOCTYPE html>\n ${renderToString(vnode, c, {})}`;
 
   return respondHtml(html, init);
 }
