@@ -1,7 +1,7 @@
+import { Context } from "@shared/context.ts";
 import { requestAcceptsHtml } from "@shared/header.ts";
 import { UnauthorizedPage } from "@shared/jsx/pages/Unauthorized.tsx";
 import { render } from "@shared/render.ts";
-import { Context } from "@shared/types.ts";
 import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 
 export function respondUnauthorized(c: Context, heading?: string) {

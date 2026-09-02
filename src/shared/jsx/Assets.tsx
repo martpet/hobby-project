@@ -1,40 +1,24 @@
-import { assetGroups, scriptSrc } from "@shared/asset/registry.ts";
-import { AssetGroupKey, ScriptSrcKey } from "@shared/asset/types.ts";
+import { SCRIPTS_REGISTRY } from "@shared/asset/registry.ts";
+import { Context } from "@shared/context.ts";
 import { ImportMap } from "@shared/jsx/ImportMap.tsx";
 import { Link } from "@shared/jsx/Link.tsx";
 import { Script } from "@shared/jsx/Script.tsx";
 
-interface AssetsProps {
-  groups: Set<AssetGroupKey>;
-}
-
-export function Assets({ groups }: AssetsProps) {
-  const modules = new Set<ScriptSrcKey>();
-  const modulepreloads = new Set<ScriptSrcKey>();
-  const imports = new Set<ScriptSrcKey>();
-
-  for (const groupKey of groups) {
-    const group = assetGroups[groupKey];
-
-    for (const key of group.modules ?? []) modules.add(key);
-    for (const key of group.modulepreloads ?? []) modulepreloads.add(key);
-    for (const key of group.imports ?? []) imports.add(key);
-  }
-
+export function Assets(_props: unknown, { head }: Context) {
   return (
     <>
-      {imports.size > 0 && (
+      {[...head.modulepreloads].map((key) => (
+        <Link href={SCRIPTS_REGISTRY[key]} rel="modulepreload" />
+      ))}
+      {head.importmap.size > 0 && (
         <ImportMap
           imports={Object.fromEntries(
-            [...imports].map((key) => [key, scriptSrc[key]]),
+            [...head.importmap].map((key) => [key, SCRIPTS_REGISTRY[key]]),
           )}
         />
       )}
-
-      {[...modules].map((key) => <Script src={scriptSrc[key]} type="module" />)}
-
-      {[...modulepreloads].map((key) => (
-        <Link href={scriptSrc[key]} rel="modulepreload" />
+      {[...head.modules].map((key) => (
+        <Script src={SCRIPTS_REGISTRY[key]} type="module" />
       ))}
     </>
   );

@@ -1,6 +1,8 @@
+import { Context } from "@shared/context.ts";
 import { CloseButton } from "@shared/jsx/CloseButton.tsx";
-import { Context } from "@shared/types.ts";
 import { FLASH } from "../const.ts";
+
+const FLASH_DIALOG = "flash";
 
 export function FlashMessage(_props: unknown, c: Context) {
   if (!c.flash) return;
@@ -10,12 +12,12 @@ export function FlashMessage(_props: unknown, c: Context) {
   return (
     <dialog
       open
-      id="flash"
+      id={FLASH_DIALOG}
       class={`alert ${flash.type}`}
     >
       {flash.msg}
       <CloseButton
-        commandfor="flash"
+        commandfor={FLASH_DIALOG}
         command="close"
       />
     </dialog>

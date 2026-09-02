@@ -1,6 +1,6 @@
 import { User } from "@features/users/types.ts";
 import {
-  DELETE_ACCOUNT_DIALOG_ID,
+  DELETE_ACCOUNT_DIALOG,
   DeleteAccountDialog,
 } from "./DeleteAccountDialog.tsx";
 
@@ -13,7 +13,7 @@ export function DeleteAccountButton({ user }: DeleteAccountButtonProps) {
     <>
       <button
         command="show-modal"
-        commandfor={DELETE_ACCOUNT_DIALOG_ID}
+        commandfor={DELETE_ACCOUNT_DIALOG}
       >
         Delete Your Account
       </button>

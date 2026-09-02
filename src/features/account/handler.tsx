@@ -1,6 +1,6 @@
 import { handleAsset } from "@shared/asset/handler.ts";
+import { Context } from "@shared/context.ts";
 import { respondNotFound } from "@shared/responses/not-found.tsx";
-import { Context } from "@shared/types.ts";
 import { handleAccountDelete } from "./handlers/delete.ts";
 import { handleSignupFinish } from "./handlers/signup/finish.ts";
 import { handleSignUpPage } from "./handlers/signup/page.tsx";

@@ -1,7 +1,7 @@
+import { Context } from "@shared/context.ts";
 import { requestAcceptsHtml } from "@shared/header.ts";
 import { NotFoundPage } from "@shared/jsx/pages/NotFound.tsx";
 import { render } from "@shared/render.ts";
-import { Context } from "@shared/types.ts";
 import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 
 export function respondNotFound(c: Context) {

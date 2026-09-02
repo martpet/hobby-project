@@ -1,23 +1,4 @@
-import { FlashKey } from "@features/flash/types.ts";
-import { Session } from "@features/sessions/types.ts";
-import { User } from "@features/users/types.ts";
-import { AssetGroupKey } from "@shared/asset/types.ts";
-import { Method } from "@std/http/unstable-method";
-import { SetRequired } from "type-fest";
+import { Context } from "@shared/context.ts";
 
 export type Handler<T = Response> = (c: Context) => T | Promise<T>;
 export type Middleware<T = Response> = (next: Handler<T>) => Handler;
-
-export interface Context {
-  req: Request;
-  url: URL;
-  method: Method;
-  ip: string;
-  locale: string;
-  session?: Session;
-  user?: User;
-  flash?: FlashKey;
-  assets: Set<AssetGroupKey>;
-}
-
-export type AuthenticatedContext = SetRequired<Context, "user" | "session">;

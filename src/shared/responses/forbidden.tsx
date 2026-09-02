@@ -1,7 +1,7 @@
+import { Context } from "@shared/context.ts";
 import { requestAcceptsHtml } from "@shared/header.ts";
 import { ForbiddenPage } from "@shared/jsx/pages/Forbidden.tsx";
 import { render } from "@shared/render.ts";
-import { Context } from "@shared/types.ts";
 import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 
 export function respondForbidden(c: Context, reason?: string) {

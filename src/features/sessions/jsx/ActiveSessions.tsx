@@ -1,7 +1,7 @@
 import { LogOutForm } from "@features/sessions/jsx/LogOutForm.tsx";
+import { Context } from "@shared/context.ts";
 import { lookupLocation } from "@shared/geoip.ts";
-import { dateTimeFormat, timeAgo } from "@shared/intl.ts";
-import { Context } from "@shared/types.ts";
+import { dateTimeFormat, relativeTime } from "@shared/intl.ts";
 import { MINUTE } from "@std/datetime";
 import { decodeTime } from "@std/ulid/decode-time";
 import { Session } from "../types.ts";
@@ -36,11 +36,11 @@ export function ActiveSessions(
       {sessions.map((session) => {
         const isCurrentSession = session.id === currentSession.id;
         const created = dateWithTimeFmt.format(decodeTime(session.id));
-        const activeDelta = now - session.lastActive;
+        const idleMs = now - session.lastActive;
         let lastSeen = "a few seconds ago";
 
-        if (!isCurrentSession && activeDelta >= MINUTE) {
-          lastSeen = timeAgo(c, -activeDelta);
+        if (!isCurrentSession && idleMs >= MINUTE) {
+          lastSeen = relativeTime(c, -idleMs);
         }
 
         return (

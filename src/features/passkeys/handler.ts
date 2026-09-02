@@ -1,6 +1,6 @@
 import { handleAsset } from "@shared/asset/handler.ts";
+import { Context } from "@shared/context.ts";
 import { respondNotFound } from "@shared/responses/not-found.tsx";
-import { Context } from "@shared/types.ts";
 
 export function handlePasskeys(c: Context) {
   const { pathname } = c.url;

@@ -1,17 +1,33 @@
-import { dateTimeFormat } from "@shared/intl.ts";
-import { Context } from "@shared/types.ts";
+import { Context } from "@shared/context.ts";
+import { relativeTime } from "@shared/intl.ts";
+import { CloseButton } from "@shared/jsx/CloseButton.tsx";
 import { getAbsoluteExpiresAt, isSessionExpiringSoon } from "../helpers.ts";
 import { LogInButton } from "./LogInButton.tsx";
 
-export function SessionExpiryWarning(_props: unknown, c: Context) {
-  if (!c.session || !isSessionExpiringSoon(c.session)) return;
+const SESSION_EXPIRY_DIALOG = "session-expiry-dialog";
 
-  const expiresAt = dateTimeFormat(c).format(getAbsoluteExpiresAt(c.session));
+export function SessionExpiryWarning(_props: unknown, c: Context) {
+  if (!c.session || !isSessionExpiringSoon(c.session)) {
+    return;
+  }
+
+  const expiryDelta = getAbsoluteExpiresAt(c.session) - Date.now();
+  const expiresIn = relativeTime(c, expiryDelta);
 
   return (
-    <dialog open class="alert warning">
-      <p>Your session will expire at {expiresAt}.</p>
+    <dialog
+      open
+      id={SESSION_EXPIRY_DIALOG}
+      class="alert warning"
+    >
+      Your session will expire {expiresIn}.
+
       <LogInButton>Reauthenticate</LogInButton>
+
+      <CloseButton
+        commandfor={SESSION_EXPIRY_DIALOG}
+        command="close"
+      />
     </dialog>
   );
 }

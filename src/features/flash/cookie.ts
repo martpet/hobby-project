@@ -1,5 +1,5 @@
 import { IS_DEV } from "@shared/const.ts";
-import { Context } from "@shared/types.ts";
+import { Context } from "@shared/context.ts";
 import { deleteCookie, getCookies, setCookie } from "@std/http";
 import { FlashKey } from "./types.ts";
 

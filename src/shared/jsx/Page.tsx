@@ -1,22 +1,33 @@
 import { FlashMessage } from "@features/flash/jsx/FlashMessage.tsx";
-import { isSessionExpiringSoon } from "@features/sessions/helpers.ts";
 import { SessionExpiryWarning } from "@features/sessions/jsx/SessionExpiryWarning.tsx";
-import { Document, DocumentProps } from "@shared/jsx/Document.tsx";
-import { Context } from "@shared/types.ts";
+import { WEBSITE_TITLE } from "@shared/const.ts";
+import { Context } from "@shared/context.ts";
+import { Assets } from "@shared/jsx/Assets.tsx";
+import { Deferred } from "@shared/jsx/Deferred.tsx";
+import { Link } from "@shared/jsx/Link.tsx";
+import { PropsWithChildren } from "preact/compat";
 
-export function Page(
-  { head, title, children }: DocumentProps,
-  { assets, session }: Context,
-) {
-  if (session && isSessionExpiringSoon(session)) {
-    assets.add("login");
-  }
+export function Page({ children }: PropsWithChildren, { head }: Context) {
+  const title = [head.title, WEBSITE_TITLE].filter(Boolean).join(" | ");
 
   return (
-    <Document head={head} title={title}>
-      <FlashMessage />
-      <SessionExpiryWarning />
-      {children}
-    </Document>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="color-scheme" content="dark light" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <Link href="/assets/logo.png" rel="icon" type="image/png" />
+        <Link href="/assets/styles.css" rel="stylesheet" />
+        <Deferred>
+          <Assets />
+        </Deferred>
+        <title>{title}</title>
+      </head>
+      <body>
+        <FlashMessage />
+        <SessionExpiryWarning />
+        {children}
+      </body>
+    </html>
   );
 }

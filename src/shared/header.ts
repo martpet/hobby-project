@@ -1,4 +1,4 @@
-import { Context } from "@shared/types.ts";
+import { Context } from "@shared/context.ts";
 import { HEADER } from "@std/http/unstable-header";
 
 function parseDirectives(header: string | null) {

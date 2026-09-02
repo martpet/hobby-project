@@ -1,9 +1,8 @@
-import { ComponentChildren } from "preact";
+import { PropsWithChildren } from "preact/compat";
 import { Session } from "../types.ts";
 
-interface LogOutFormProps {
+interface LogOutFormProps extends PropsWithChildren {
   revokedSession?: Session;
-  children?: ComponentChildren;
 }
 
 export function LogOutForm({ revokedSession, children }: LogOutFormProps) {

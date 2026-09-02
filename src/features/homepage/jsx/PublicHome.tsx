@@ -1,10 +1,7 @@
 import { LogInButton } from "@features/sessions/jsx/LogInButton.tsx";
 import { Page } from "@shared/jsx/Page.tsx";
-import { Context } from "@shared/types.ts";
 
-export function PublicHome(_props: unknown, { assets }: Context) {
-  assets.add("login");
-
+export function PublicHome() {
   return (
     <Page>
       <h1>Hobby Project</h1>

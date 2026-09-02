@@ -1,4 +1,4 @@
-import { Context } from "@shared/types.ts";
+import { Context } from "@shared/context.ts";
 import { DAY, HOUR, MINUTE, SECOND } from "@std/datetime";
 
 export function dateTimeFormat(c: Context, opts?: Intl.DateTimeFormatOptions) {
@@ -18,7 +18,7 @@ const RTF_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ["second", SECOND],
 ];
 
-export function timeAgo(
+export function relativeTime(
   c: Context,
   deltaMs: number,
   opts?: Intl.RelativeTimeFormatOptions,

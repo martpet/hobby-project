@@ -1,7 +1,7 @@
 import { User } from "@features/users/types.ts";
 
-export const DELETE_ACCOUNT_DIALOG_ID = "delete-account-dialog";
-export const DELETE_ACCOUNT_FORM_ID = "delete-account-form";
+export const DELETE_ACCOUNT_DIALOG = "delete-account-dialog";
+const DELETE_ACCOUNT_FORM = "delete-account-form";
 
 interface DeleteAccountDialogProps {
   user: User;
@@ -9,12 +9,12 @@ interface DeleteAccountDialogProps {
 
 export function DeleteAccountDialog({ user }: DeleteAccountDialogProps) {
   return (
-    <dialog id={DELETE_ACCOUNT_DIALOG_ID}>
+    <dialog id={DELETE_ACCOUNT_DIALOG}>
       <h2>Delete account?</h2>
       <p>This action cannot be undone.</p>
 
       <form
-        id={DELETE_ACCOUNT_FORM_ID}
+        id={DELETE_ACCOUNT_FORM}
         method="POST"
         action="/account/delete"
       >
@@ -32,13 +32,13 @@ export function DeleteAccountDialog({ user }: DeleteAccountDialogProps) {
       <footer class="actions">
         <button
           command="close"
-          commandfor={DELETE_ACCOUNT_DIALOG_ID}
+          commandfor={DELETE_ACCOUNT_DIALOG}
           autofocus
         >
           Cancel
         </button>
         <button
-          form={DELETE_ACCOUNT_FORM_ID}
+          form={DELETE_ACCOUNT_FORM}
           class="danger"
         >
           Delete Account Forever

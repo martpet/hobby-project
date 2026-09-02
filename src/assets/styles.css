@@ -62,7 +62,7 @@ button {
 }
 
 dialog {
-  > :first-child {
+  > h2 {
     margin-block-start: 0;
   }
   .actions {
@@ -122,7 +122,7 @@ dialog {
     }
   }
   &.warning {
-    background: light-dark(DarkGoldenrod, SaddleBrown);
+    background: light-dark(Peru, SaddleBrown);
     &::before {
       content: "!";
     }

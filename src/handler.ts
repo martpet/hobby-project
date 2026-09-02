@@ -3,8 +3,8 @@ import { handleHomepage } from "@features/homepage/handler.tsx";
 import { handlePasskeys } from "@features/passkeys/handler.ts";
 import { handleSession } from "@features/sessions/handler.ts";
 import { handleAsset } from "@shared/asset/handler.ts";
+import { Context } from "@shared/context.ts";
 import { respondNotFound } from "@shared/responses/not-found.tsx";
-import { Context } from "@shared/types.ts";
 
 export function handler(c: Context) {
   const { pathname } = c.url;

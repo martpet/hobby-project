@@ -1,10 +1,9 @@
 import { setFlash } from "@features/flash/helpers.ts";
 import { verifiyAuthResponseJson } from "@features/passkeys/ceremony/auth-verify.ts";
-import { isAuthenticatedContext } from "@shared/context.ts";
+import { Context, isAuthenticatedContext } from "@shared/context.ts";
 import { respondBadRequest } from "@shared/responses/bad-request.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
 import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
-import { Context } from "@shared/types.ts";
 import { createSession, destroySession } from "../../helpers.ts";
 
 export async function handleLogInFinish(c: Context) {

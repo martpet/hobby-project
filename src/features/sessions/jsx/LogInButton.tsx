@@ -1,10 +1,18 @@
-import { ButtonHTMLAttributes, ComponentChildren } from "preact";
+import { Context } from "@shared/context.ts";
+import { ButtonHTMLAttributes } from "preact";
+import { PropsWithChildren } from "preact/compat";
 
-interface LogInButtonProps extends ButtonHTMLAttributes {
-  children?: ComponentChildren;
-}
+type LogInButtonProps = ButtonHTMLAttributes & PropsWithChildren;
 
-export function LogInButton({ children, ...attr }: LogInButtonProps) {
+export function LogInButton(
+  { children, ...attr }: LogInButtonProps,
+  c: Context,
+) {
+  c.head.modules.add("login-button");
+  c.head.modulepreloads.add("util");
+  c.head.importmap.add("util");
+  c.head.importmap.add("simplewebauthn");
+
   return (
     <button class="login-button" {...attr}>
       {children || "Sign In"}

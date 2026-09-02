@@ -1,6 +1,6 @@
 import { VERSION_PARAM } from "@shared/asset/path.ts";
+import { Context } from "@shared/context.ts";
 import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
-import { Context } from "@shared/types.ts";
 import { DAY, SECOND } from "@std/datetime/constants";
 import { serveFile } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";

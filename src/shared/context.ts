@@ -1,7 +1,30 @@
+import { FlashKey } from "@features/flash/types.ts";
+import { Session } from "@features/sessions/types.ts";
+import { User } from "@features/users/types.ts";
+import { ScriptKey } from "@shared/asset/registry.ts";
 import { DEFAULT_LOCALE } from "@shared/const.ts";
 import { getAcceptLanguage } from "@shared/header.ts";
-import { AuthenticatedContext, Context } from "@shared/types.ts";
 import { Method } from "@std/http/unstable-method";
+import { SetRequired } from "type-fest";
+
+export interface Context {
+  req: Request;
+  url: URL;
+  method: Method;
+  ip: string;
+  locale: string;
+  session?: Session;
+  user?: User;
+  flash?: FlashKey;
+  head: {
+    title?: string;
+    modules: Set<ScriptKey>;
+    modulepreloads: Set<ScriptKey>;
+    importmap: Set<ScriptKey>;
+  };
+}
+
+export type AuthenticatedContext = SetRequired<Context, "user" | "session">;
 
 export function buildContext(
   req: Request,
@@ -20,7 +43,11 @@ export function buildContext(
     method: req.method as Method,
     ip: req.headers.get("X-Forwarded-For") || info.remoteAddr.hostname,
     locale: getAcceptLanguage(req) ?? DEFAULT_LOCALE,
-    assets: new Set(),
+    head: {
+      modules: new Set(),
+      modulepreloads: new Set(),
+      importmap: new Set(),
+    },
   };
 }
 

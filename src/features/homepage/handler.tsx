@@ -1,7 +1,6 @@
 import { listSessionsByUserId } from "@features/sessions/kv.ts";
-import { isAuthenticatedContext } from "@shared/context.ts";
+import { Context, isAuthenticatedContext } from "@shared/context.ts";
 import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
-import { Context } from "@shared/types.ts";
 import { PrivateHome } from "./jsx/PrivateHome.tsx";
 import { PublicHome } from "./jsx/PublicHome.tsx";
 

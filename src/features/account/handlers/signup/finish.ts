@@ -2,12 +2,12 @@ import { verifyRegResponseJson } from "@features/passkeys/ceremony/reg-verify.ts
 import { setPasskey } from "@features/passkeys/kv.ts";
 import { createSession } from "@features/sessions/helpers.ts";
 import { setUser, USERS_BY_USERNAME } from "@features/users/kv.ts";
+import { Context } from "@shared/context.ts";
 import { kv } from "@shared/kv.ts";
 import { respondBadRequest } from "@shared/responses/bad-request.ts";
 import { respondConflict } from "@shared/responses/conflict.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
 import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
-import { Context } from "@shared/types.ts";
 
 export async function handleSignupFinish(c: Context) {
   if (c.method !== "POST") {
