@@ -8,7 +8,7 @@ export function PublicHome(_props: unknown, { assets }: Context) {
   return (
     <Page>
       <h1>Hobby Project</h1>
-      <noscript>JavaScript is required to log in.</noscript>
+      <noscript>JavaScript is required to signup in.</noscript>
       <LogInButton />
       <p>
         <a href="/signup">Create an account</a>
