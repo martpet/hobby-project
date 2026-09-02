@@ -52,7 +52,11 @@ export const cacheMid: Middleware = (next) => async (c) => {
 
   const finalCacheControl = res.headers.get(HEADER.CacheControl) ?? "";
 
-  if (finalCacheControl && !finalCacheControl.includes("no-store")) {
+  if (
+    finalCacheControl &&
+    !finalCacheControl.includes("no-store") &&
+    !finalCacheControl.includes("immutable")
+  ) {
     addVaryCookie(res);
   }
 
