@@ -29,7 +29,7 @@ label {
 
 button {
   &.danger {
-    color: Crimson;
+    color: Red;
   }
   &.loading {
     display: inline-flex;

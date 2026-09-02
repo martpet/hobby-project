@@ -1,4 +1,4 @@
-import { DeleteAccountDialog } from "@features/account/jsx/DeleteAccountDialog.tsx";
+import { DeleteAccountButton } from "@features/account/jsx/DeleteAccountButton.tsx";
 import { ActiveSessions } from "@features/sessions/jsx/ActiveSessions.tsx";
 import { LogOutForm } from "@features/sessions/jsx/LogOutForm.tsx";
 import { Session } from "@features/sessions/types.ts";
@@ -25,7 +25,7 @@ export function PrivateHome(props: PrivateHomeProps) {
       />
 
       <h2>Delete account</h2>
-      <DeleteAccountDialog user={props.user} />
+      <DeleteAccountButton user={props.user} />
     </Page>
   );
 }
