@@ -10,6 +10,7 @@ export function SignUpPage(_props: unknown, c: Context) {
       <h1>Create an account</h1>
       <noscript>JavaScript is required to create an account.</noscript>
       <SignUpForm />
+      <a href="/">Back</a>
     </Page>
   );
 }
