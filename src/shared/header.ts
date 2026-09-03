@@ -1,5 +1,5 @@
 import { Context } from "@shared/context.ts";
-import { Browser } from "@std/http";
+import { Engine } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 
 export function requestAcceptsHtml(c: Context) {
@@ -14,6 +14,6 @@ export function getAcceptLanguage(req: Request) {
   return req.headers.get(HEADER.AcceptLanguage)?.split(",")[0];
 }
 
-export function isSafari(browser: Browser) {
-  return browser.name?.includes("Safari") ?? false;
+export function isWebKit(engine: Engine) {
+  return engine.name === "WebKit";
 }

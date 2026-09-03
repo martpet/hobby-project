@@ -1,5 +1,6 @@
 import { setFlash } from "@features/flash/helpers.ts";
 import { getUserById } from "@features/users/kv.ts";
+import { cacheNoStoreOnCookieChange } from "@shared/cache-control.ts";
 import { AuthenticatedContext, Context } from "@shared/context.ts";
 import { generateToken } from "@shared/crypto.ts";
 import { kv } from "@shared/kv.ts";
@@ -79,6 +80,7 @@ export async function extendCurrentSession(
     await destroySessionIfUnchanged(sessionEntry);
     deleteSessionCookie(res);
     setFlash(res, "SessionExpired");
+    cacheNoStoreOnCookieChange(c, res);
     return;
   }
 

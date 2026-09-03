@@ -1,3 +1,5 @@
+import { Context } from "@shared/context.ts";
+import { isWebKit } from "@shared/header.ts";
 import { HEADER } from "@std/http/unstable-header";
 
 function parseDirectives(header: string | null) {
@@ -26,6 +28,25 @@ function stringifyDirectives(directives: Map<string, string | null>) {
 
 export function cacheNoStore(res: Response) {
   res.headers.set(HEADER.CacheControl, "no-store");
+}
+
+// Call this on any cacheable response that changes a cookie the response
+// varies on (via Set-Cookie). WebKit records the `Vary: Cookie` value for a
+// stored entry from the cookie jar *after* applying the response's
+// Set-Cookie, so it files such a response under the wrong variant and may
+// later serve it to a request whose cookies never produced it.
+// Upstream bug: https://bugs.webkit.org/show_bug.cgi?id=323342 (remove this
+// workaround once it is fixed and the fix has shipped). FIXME in
+// headerValueForVary, WebCore/platform/network/CacheValidation.cpp:
+// https://github.com/WebKit/WebKit/blob/7d09127ca947791dc0a72109466a9b0433ab898e/Source/WebCore/platform/network/CacheValidation.cpp#L413
+// This affects every WebKit browser (Safari, all iOS browsers, Epiphany);
+// Blink and Gecko snapshot the request's Cookie header and need nothing.
+// `max-age=0, must-revalidate` would be the only equivalent alternative;
+// `Vary` tricks are not (Vary only matches *request* headers).
+export function cacheNoStoreOnCookieChange(c: Context, res: Response) {
+  if (isWebKit(c.ua.engine)) {
+    cacheNoStore(res);
+  }
 }
 
 export function toPrivateCacheControl(res: Response) {

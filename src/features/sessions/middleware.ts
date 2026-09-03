@@ -1,5 +1,6 @@
 import { setFlash } from "@features/flash/helpers.ts";
 import { getUserById } from "@features/users/kv.ts";
+import { cacheNoStoreOnCookieChange } from "@shared/cache-control.ts";
 import { isAuthenticatedContext } from "@shared/context.ts";
 import { Middleware } from "@shared/types.ts";
 import { SESSION_ACTIVITY_INTERVAL } from "./const.ts";
@@ -35,6 +36,7 @@ export const sessionMid: Middleware = (next) => async (c) => {
   if (!session) {
     const res = await next(c);
     deleteSessionCookie(res);
+    cacheNoStoreOnCookieChange(c, res);
     return res;
   }
 
@@ -52,6 +54,7 @@ export const sessionMid: Middleware = (next) => async (c) => {
     if (destroyed) {
       deleteSessionCookie(res);
       setFlash(res, "SessionExpired");
+      cacheNoStoreOnCookieChange(c, res);
     }
 
     return res;
@@ -66,6 +69,7 @@ export const sessionMid: Middleware = (next) => async (c) => {
 
     if (destroyed) {
       deleteSessionCookie(res);
+      cacheNoStoreOnCookieChange(c, res);
     }
 
     return res;
