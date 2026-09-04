@@ -3,7 +3,7 @@ import { Context } from "@shared/context.ts";
 import { SECOND } from "@std/datetime";
 import { isErrorStatus, StatusCode } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
-import { CACHE_ID, CACHEABLE_STATUS_CODES } from "./const.ts";
+import { CACHE_ID, STORABLE_STATUS_CODES } from "./const.ts";
 import { CacheStatus } from "./types.ts";
 
 // RFC 9111 §4.4: a non-error response to an unsafe request invalidates the
@@ -51,7 +51,7 @@ export function appendCacheStatus(res: Response, status: CacheStatus) {
 
 // Returns why the response must not be stored, or `undefined` if it may be.
 export function notStorableReason(res: Response) {
-  if (!CACHEABLE_STATUS_CODES.has(res.status as StatusCode)) {
+  if (!STORABLE_STATUS_CODES.has(res.status as StatusCode)) {
     return "STATUS";
   }
 

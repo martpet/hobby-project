@@ -1,6 +1,11 @@
 import { Context } from "@shared/context.ts";
 import { isWebKit } from "@shared/header.ts";
+import { MINUTE, SECOND } from "@std/datetime";
 import { HEADER } from "@std/http/unstable-header";
+
+// Default freshness lifetime, in seconds, for responses that don't set their
+// own `max-age`.
+export const DEFAULT_MAX_AGE = (5 * MINUTE) / SECOND;
 
 function parseDirectives(header: string | null) {
   const directives = new Map<Lowercase<string>, string | null>();

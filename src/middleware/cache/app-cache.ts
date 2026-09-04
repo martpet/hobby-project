@@ -16,9 +16,9 @@ if (APP_CACHE_ENABLED) {
   appCache = await caches.open(APP_CACHE_VERSION);
 }
 
-// Serves public GET/HEAD responses from a server-side Cache API store, keyed
+// Serves public GET/HEAD responses from a server-side Cache API instance, keyed
 // by request and versioned per deploy. Only anonymous requests are looked up
-// (a session cookie bypasses the store) and only `public` 200 responses
+// (a session cookie bypasses the cache) and only `public` 200 responses
 // without `Set-Cookie` are stored. Unsafe requests evict what they may have
 // changed. Every response gets a `Cache-Status` entry.
 export const appCacheMid: Middleware = (next) => async (c) => {
