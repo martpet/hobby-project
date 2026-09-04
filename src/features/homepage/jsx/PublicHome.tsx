@@ -5,7 +5,7 @@ export function PublicHome() {
   return (
     <Page>
       <h1>Hobby Project</h1>
-      <noscript>JavaScript is required to signup in.</noscript>
+      <noscript>JavaScript is required to sign in.</noscript>
       <LogInButton />
       <p>
         <a href="/signup">Create an account</a>

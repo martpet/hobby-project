@@ -43,7 +43,7 @@ export function toggleFormBuisy(form, force) {
   }
 }
 
-export function showAlert(msg, type = "error") {
+export function showAlert(msg, type = "danger") {
   const dialog = document.createElement("dialog");
   dialog.id = `alert-${crypto.randomUUID()}`;
   dialog.className = `alert ${type}`;
