@@ -24,8 +24,10 @@ export function Page({ children }: PropsWithChildren, { head }: Context) {
         <title>{title}</title>
       </head>
       <body>
-        <FlashMessage />
-        <SessionExpiryWarning />
+        <div id="alerts">
+          <SessionExpiryWarning />
+          <FlashMessage />
+        </div>
         {children}
       </body>
     </html>

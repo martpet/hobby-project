@@ -57,6 +57,6 @@ export function showAlert(msg, type = "error") {
   closeButton.command = "close";
   dialog.append(closeButton);
 
-  document.body.append(dialog);
+  (document.getElementById("alerts") ?? document.body).append(dialog);
   dialog.show();
 }

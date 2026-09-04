@@ -75,62 +75,76 @@ dialog {
   }
 }
 
-.alert {
+#alerts {
+  position: fixed;
+  top: 1rem;
+  inset-inline: 1rem;
+  z-index: 1;
   display: flex;
-  width: fit-content;
-  padding: 0.9em 1.1em;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.9em;
-  color: white;
-  border-radius: 0.75rem;
-  &:is(dialog) {
-    top: 1rem;
-    max-width: min(50em, calc(100% - 2 * 1rem));
-    margin: 0 auto;
+  gap: 1rem;
+  pointer-events: none;
+  > .alert {
+    position: static;
+    max-width: min(50em, 100%);
+    margin: 0;
     border: none;
     box-shadow:
       0 4px 6px -1px rgb(0 0 0 / 0.1),
       0 2px 4px -2px rgb(0 0 0 / 0.1);
     animation: flash-in 0.2s ease-out;
+    pointer-events: auto;
     &:not(:open) {
       display: none;
     }
   }
-  &::before {
-    display: inline-flex;
-    width: 1.5em;
-    height: 1.5em;
-    flex-shrink: 0;
+
+  .alert {
+    display: flex;
+    width: fit-content;
+    padding: 0.9em 1.1em;
     align-items: center;
-    justify-content: center;
-    font: 700 0.9em system-ui;
-    background: color-mix(in srgb, white 20%, transparent);
-    border-radius: 50%;
-  }
-  &.info {
-    background: light-dark(Blue, DarkBlue);
+    justify-content: space-between;
+    gap: 0.9em;
+    color: white;
+    border-radius: 0.75rem;
+
     &::before {
-      font-style: italic;
-      content: "i";
+      display: inline-flex;
+      width: 1.5em;
+      height: 1.5em;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      font: 700 0.9em system-ui;
+      background: color-mix(in srgb, white 20%, transparent);
+      border-radius: 50%;
     }
-  }
-  &.success {
-    background: light-dark(Green, DarkGreen);
-    &::before {
-      content: "✓";
+    &.info {
+      background: light-dark(Blue, DarkBlue);
+      &::before {
+        font-style: italic;
+        content: "i";
+      }
     }
-  }
-  &.warning {
-    background: light-dark(Peru, SaddleBrown);
-    &::before {
-      content: "!";
+    &.success {
+      background: light-dark(Green, DarkGreen);
+      &::before {
+        content: "✓";
+      }
     }
-  }
-  &.error {
-    background: light-dark(Brown, Maroon);
-    &::before {
-      content: "✕";
+    &.warning {
+      background: light-dark(Peru, SaddleBrown);
+      &::before {
+        content: "!";
+      }
+    }
+    &.error {
+      background: light-dark(Brown, Maroon);
+      &::before {
+        content: "✕";
+      }
     }
   }
 }
