@@ -3,6 +3,8 @@
     "dev": "deno --env-file --permission-set=dev --watch src/main.ts",
     "build": "deno -A scripts/build.ts",
     "deploy": "deno -A scripts/deploy.ts",
+    "staging": "deno run build staging && deno run deploy staging",
+    "prod": "deno run build prod && deno run deploy prod",
     "simplewebauthn": "deno bundle -o src/features/passkeys/assets/simplewebauthn.js jsr:@simplewebauthn/browser@^14.0.0"
   },
   "permissions": {
