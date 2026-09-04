@@ -2,6 +2,7 @@ import { getSessionCookie } from "@features/sessions/cookie.ts";
 import { APP_CACHE_ENABLED } from "@shared/const.ts";
 import { Middleware } from "@shared/types.ts";
 import { HEADER } from "@std/http/unstable-header";
+import { METHOD } from "@std/http/unstable-method";
 import { APP_CACHE_VERSION, CACHEABLE_METHODS } from "./const.ts";
 import {
   appendCacheStatus,
@@ -19,8 +20,9 @@ if (APP_CACHE_ENABLED) {
 // Serves public GET/HEAD responses from a server-side Cache API instance, keyed
 // by request and versioned per deploy. Only anonymous requests are looked up
 // (a session cookie bypasses the cache) and only `public` 200 responses
-// without `Set-Cookie` are stored. Unsafe requests evict what they may have
-// changed. Every response gets a `Cache-Status` entry.
+// without `Set-Cookie` are stored. HEAD is answered from the GET entry with
+// the body stripped (RFC 9111 §4.3.5) and never stores. Unsafe requests evict
+// what they may have changed. Every response gets a `Cache-Status` entry.
 export const appCacheMid: Middleware = (next) => async (c) => {
   if (!CACHEABLE_METHODS.has(c.method)) {
     const res = await next(c);
@@ -49,16 +51,25 @@ export const appCacheMid: Middleware = (next) => async (c) => {
     });
   }
 
-  const match = await appCache.match(c.req);
+  // The Cache API only keys GET requests, so a HEAD shares its GET's entry.
+  const isHead = c.method === METHOD.Head;
+  const cacheKey = isHead ? new Request(c.req, { method: METHOD.Get }) : c.req;
+
+  const match = await appCache.match(cacheKey);
   const ttl = match ? getRemainingTtl(match) : undefined;
 
   if (match && (ttl === undefined || ttl > 0)) {
-    return appendCacheStatus(match, { hit: true, ttl });
+    return appendCacheStatus(isHead ? new Response(null, match) : match, {
+      hit: true,
+      ttl,
+    });
   }
 
   const fwd = match ? "stale" : "miss";
   const res = await next(c);
-  const detail = notStorableReason(res);
+
+  // A HEAD response has no body to store; it would poison the GET entry.
+  const detail = isHead ? "HEAD" : notStorableReason(res);
 
   if (detail) {
     return appendCacheStatus(res, { fwd, detail });
@@ -71,7 +82,7 @@ export const appCacheMid: Middleware = (next) => async (c) => {
     res.headers.set(HEADER.Date, new Date().toUTCString());
   }
 
-  await appCache.put(c.req, res.clone());
+  await appCache.put(cacheKey, res.clone());
 
   return appendCacheStatus(res, { fwd, stored: true });
 };
