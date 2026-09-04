@@ -3,19 +3,19 @@ import { FlashMessage } from "./types.ts";
 export const FLASH = {
   "LoggedOut": {
     type: "success",
-    msg: "You were signed out",
+    msg: "Signed Out",
   },
   "SessionRevoked": {
     type: "success",
-    msg: "Session successfully revoked",
+    msg: "Session Revoked",
   },
   "SessionExpired": {
-    type: "info",
-    msg: "Your session has expired. Please, log in again.",
+    type: "warning",
+    msg: "Session Expired",
   },
   "Reauthenticated": {
     type: "success",
-    msg: "Successfully reauthenticated",
+    msg: "Reauthenticated",
   },
   "PasskeyAccountMismatch": {
     type: "info",
@@ -23,6 +23,6 @@ export const FLASH = {
   },
   "AccountDeleted": {
     type: "success",
-    msg: "Your account has been deleted",
+    msg: "Account Deleted",
   },
 } as const satisfies Record<string, FlashMessage>;
