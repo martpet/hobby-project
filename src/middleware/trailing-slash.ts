@@ -1,3 +1,4 @@
+import { respondRedirect } from "@shared/responses/redirect.ts";
 import { Middleware } from "@shared/types.ts";
 import { STATUS_CODE } from "@std/http";
 
@@ -13,7 +14,7 @@ export const trailingSlashMid: Middleware = (next) => async (c) => {
 
     url.pathname = url.pathname.slice(0, -1);
 
-    return Response.redirect(url, STATUS_CODE.PermanentRedirect);
+    return respondRedirect(url.href, "PermanentRedirect");
   }
 
   return res;

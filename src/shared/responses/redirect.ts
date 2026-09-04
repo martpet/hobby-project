@@ -10,9 +10,9 @@ type RedirectStatusCodeKey =
 
 export function respondRedirect(
   location: string,
-  key: RedirectStatusCodeKey = "Found",
+  redirectStatusKey: RedirectStatusCodeKey = "Found",
 ) {
-  const status = STATUS_CODE[key];
+  const status = STATUS_CODE[redirectStatusKey];
 
   return new Response(null, { status, headers: { location } });
 }

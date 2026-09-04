@@ -1,7 +1,7 @@
 import { IS_DEV } from "@shared/const.ts";
+import { respondRedirect } from "@shared/responses/redirect.ts";
 import { Middleware } from "@shared/types.ts";
 import { DAY, SECOND } from "@std/datetime/constants";
-import { STATUS_CODE } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 
 const HSTS_MAX_AGE = (DAY * 365 * 2) / SECOND;
@@ -15,7 +15,7 @@ export const httpsMid: Middleware = (next) => async (c) => {
   if (c.url.protocol !== "https:") {
     const url = new URL(c.url);
     url.protocol = "https:";
-    return Response.redirect(url, STATUS_CODE.PermanentRedirect);
+    return respondRedirect(url.href, "PermanentRedirect");
   }
 
   const res = await next(c);

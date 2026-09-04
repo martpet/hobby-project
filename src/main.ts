@@ -1,6 +1,6 @@
 import { flashMid } from "@features/flash/middleware.ts";
 import { sessionMid } from "@features/sessions/middleware.ts";
-import { cacheMid } from "@middleware/cache.ts";
+import { cacheMid } from "@middleware/cache/middleware.ts";
 import { csrfMid } from "@middleware/csrf.ts";
 import { errorMid } from "@middleware/error.tsx";
 import { httpsMid } from "@middleware/https.ts";

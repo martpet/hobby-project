@@ -1,20 +1,13 @@
 import { getSessionCookie } from "@features/sessions/cookie.ts";
-import { addVaryCookie, toPrivateCacheControl } from "@shared/cache-control.ts";
-import { GIT_SHA, IS_DEV } from "@shared/const.ts";
-import { isAuthenticatedContext } from "@shared/context.ts";
+import { APP_CACHE_ENABLED } from "@shared/const.ts";
 import { Middleware } from "@shared/types.ts";
-import { MINUTE, SECOND } from "@std/datetime";
-import { StatusCode } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
-import { Method } from "@std/http/unstable-method";
-
-const APP_CACHE_ENABLED = false;
-const APP_CACHE_VERSION = GIT_SHA || new Date().toISOString();
-const CACHEABLE_METHODS = new Set<Method>(["GET", "HEAD"]);
-const CACHEABLE_STATUS_CODES = new Set<StatusCode>([200]);
-const DEFAULT_UNAUTHENTICATED_CACHE_CONTROL = `public, max-age=${
-  (5 * MINUTE) / SECOND
-}`;
+import { APP_CACHE_VERSION, CACHEABLE_METHODS } from "./const.ts";
+import {
+  appendCacheStatus,
+  getRemainingTtl,
+  notStorableReason,
+} from "./helpers.ts";
 
 let appCache: Cache;
 
@@ -22,51 +15,55 @@ if (APP_CACHE_ENABLED) {
   appCache = await caches.open(APP_CACHE_VERSION);
 }
 
-export const cacheMid: Middleware = (next) => async (c) => {
-  if (IS_DEV || !CACHEABLE_METHODS.has(c.method)) {
-    return next(c);
+// Serves public GET/HEAD responses from a server-side Cache API store, keyed
+// by request and versioned per deploy. Only anonymous requests are looked up
+// (a session cookie bypasses the store) and only `public` 200 responses
+// without `Set-Cookie` are stored. Every response gets a `Cache-Status` entry.
+export const appCacheMid: Middleware = (next) => async (c) => {
+  if (!CACHEABLE_METHODS.has(c.method)) {
+    return appendCacheStatus(await next(c), { fwd: "method" });
   }
 
-  if (APP_CACHE_ENABLED && !getSessionCookie(c)) {
-    const match = await appCache.match(c.req);
-
-    if (match) {
-      match.headers.set("X-App-Cache", "hit");
-      return match;
-    }
+  if (!APP_CACHE_ENABLED) {
+    return appendCacheStatus(await next(c), {
+      fwd: "bypass",
+      detail: "DISABLED",
+    });
   }
 
+  // The session is only resolved further down the chain (`sessionMid`), so
+  // the cookie's presence is the sole signal here. Downstream caches are
+  // handled separately by `cacheControlMid` once authentication is known.
+  if (getSessionCookie(c)) {
+    return appendCacheStatus(await next(c), {
+      fwd: "bypass",
+      detail: "SESSION-COOKIE",
+    });
+  }
+
+  const match = await appCache.match(c.req);
+  const ttl = match ? getRemainingTtl(match) : undefined;
+
+  if (match && (ttl === undefined || ttl > 0)) {
+    return appendCacheStatus(match, { hit: true, ttl });
+  }
+
+  const fwd = match ? "stale" : "miss";
   const res = await next(c);
+  const detail = notStorableReason(res);
 
-  if (!CACHEABLE_STATUS_CODES.has(res.status as StatusCode)) {
-    return res;
+  if (detail) {
+    return appendCacheStatus(res, { fwd, detail });
   }
 
-  const cacheControl = res.headers.get(HEADER.CacheControl) ?? "";
-
-  if (isAuthenticatedContext(c)) {
-    toPrivateCacheControl(res);
-  } else if (!cacheControl) {
-    res.headers.set(HEADER.CacheControl, DEFAULT_UNAUTHENTICATED_CACHE_CONTROL);
+  // Freshness counts from `Date`. Deno only adds it on the wire, so stamp it
+  // here for the stored copy — unless the handler already set one (e.g. a
+  // proxied upstream response), which per RFC 9111 a cache must not overwrite.
+  if (!res.headers.has(HEADER.Date)) {
+    res.headers.set(HEADER.Date, new Date().toUTCString());
   }
 
-  const finalCacheControl = res.headers.get(HEADER.CacheControl) ?? "";
+  await appCache.put(c.req, res.clone());
 
-  if (
-    finalCacheControl &&
-    !finalCacheControl.includes("no-store") &&
-    !finalCacheControl.includes("immutable")
-  ) {
-    addVaryCookie(res);
-  }
-
-  if (
-    APP_CACHE_ENABLED &&
-    finalCacheControl.includes("public") &&
-    !finalCacheControl.includes("no-store")
-  ) {
-    await appCache.put(c.req, res.clone());
-  }
-
-  return res;
+  return appendCacheStatus(res, { fwd, stored: true });
 };

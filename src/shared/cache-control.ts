@@ -59,6 +59,16 @@ export function toPrivateCacheControl(res: Response) {
   res.headers.set(HEADER.CacheControl, stringifyDirectives(directives));
 }
 
+// Freshness lifetime in seconds for a shared cache (`s-maxage` wins over
+// `max-age`), or `undefined` when the response does not declare one.
+export function getSharedFreshnessLifetime(res: Response) {
+  const directives = parseDirectives(res.headers.get(HEADER.CacheControl));
+  const value = directives.get("s-maxage") ?? directives.get("max-age");
+  const seconds = value === null || value === undefined ? NaN : Number(value);
+
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds : undefined;
+}
+
 export function addVaryCookie(res: Response) {
   const directives = parseDirectives(res.headers.get(HEADER.Vary));
 

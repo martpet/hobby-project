@@ -13,5 +13,7 @@ export function getEnv(key: string): string | undefined {
 }
 
 export function getBooleanEnv(key: string): boolean {
-  return Boolean(Deno.env.get(key));
+  const value = Deno.env.get(key)?.trim().toLowerCase();
+
+  return Boolean(value) && value !== "0" && value !== "false";
 }
