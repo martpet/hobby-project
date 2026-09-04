@@ -6,6 +6,7 @@ import { METHOD } from "@std/http/unstable-method";
 import { APP_CACHE_VERSION, CACHEABLE_METHODS } from "./const.ts";
 import {
   appendCacheStatus,
+  getAge,
   getRemainingTtl,
   invalidateAfterUnsafeRequest,
   notStorableReason,
@@ -56,9 +57,16 @@ export const appCacheMid: Middleware = (next) => async (c) => {
   const cacheKey = isHead ? new Request(c.req, { method: METHOD.Get }) : c.req;
 
   const match = await appCache.match(cacheKey);
-  const ttl = match ? getRemainingTtl(match) : undefined;
+  const age = match ? getAge(match) : undefined;
+  const ttl = match ? getRemainingTtl(match, age) : undefined;
 
   if (match && (ttl === undefined || ttl > 0)) {
+    // `Age` lets downstream caches (RFC 9111 §5.1) count remaining freshness
+    // from when we stored the entry rather than from when we served it.
+    if (age !== undefined) {
+      match.headers.set(HEADER.Age, String(age));
+    }
+
     return appendCacheStatus(isHead ? new Response(null, match) : match, {
       hit: true,
       ttl,

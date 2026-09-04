@@ -74,17 +74,28 @@ export function notStorableReason(res: Response) {
   }
 }
 
+// Seconds since the entry was stored, per its `Date` header; `undefined` if
+// the header is missing or unparseable.
+export function getAge(res: Response) {
+  const storedAt = Date.parse(res.headers.get(HEADER.Date) ?? "");
+
+  if (Number.isNaN(storedAt)) {
+    return undefined;
+  }
+
+  return Math.max(0, Math.floor((Date.now() - storedAt) / SECOND));
+}
+
 // Unlike Deno Deploy's hosted cache, the Deno CLI Cache API (used on our
 // self-hosted server) ignores `max-age`/`Expires` and never evicts by
 // freshness, so it is checked here against the `Date` recorded on store.
 // Returns remaining freshness in whole seconds, or `undefined` if unknown.
-export function getRemainingTtl(res: Response) {
+export function getRemainingTtl(res: Response, age = getAge(res)) {
   const lifetime = getSharedFreshnessLifetime(res);
-  const storedAt = Date.parse(res.headers.get(HEADER.Date) ?? "");
 
-  if (lifetime === undefined || Number.isNaN(storedAt)) {
+  if (lifetime === undefined || age === undefined) {
     return undefined;
   }
 
-  return Math.floor((storedAt + lifetime * SECOND - Date.now()) / SECOND);
+  return lifetime - age;
 }
