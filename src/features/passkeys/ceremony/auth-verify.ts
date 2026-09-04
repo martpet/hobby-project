@@ -2,6 +2,7 @@ import { Context } from "@shared/context.ts";
 import { kv } from "@shared/kv.ts";
 import {
   AuthenticationResponseJSON,
+  SendSignalUnknownCredentialOpts,
   verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
 import { WEBAUTHN_ORIGIN, WEBAUTHN_RP_ID } from "../const.ts";
@@ -14,6 +15,7 @@ import {
   setPasskey,
 } from "../kv.ts";
 import { Passkey } from "../types.ts";
+import { getUnknownCredentialSignal } from "../webauthn-signals.ts";
 
 type AuthVerificationResult = {
   ok: true;
@@ -21,6 +23,7 @@ type AuthVerificationResult = {
 } | {
   ok: false;
   reason?: string;
+  signal?: SendSignalUnknownCredentialOpts;
 };
 
 export async function verifiyAuthResponseJson(
@@ -57,6 +60,7 @@ export async function verifiyAuthResponseJson(
     return {
       ok: false,
       reason: tombstoned ? "AccountDeleted" : "PasskeyNotFound",
+      signal: getUnknownCredentialSignal(authResponseJson.id),
     };
   }
 

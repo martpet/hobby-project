@@ -36,30 +36,21 @@ async function handleButtonClick({ target }) {
       json: authResponseJson,
     });
 
-    if (!loginFinish.ok) {
-      if (isUnknownCredentialError(loginFinish.error)) {
-        trySendWebAuthnSignal({
-          signalName: "unknownCredential",
-          rpID: loginStart.value.rpId,
-          credentialID: authResponseJson.id,
-        });
-      }
-      handleError(loginFinish.error);
-      return;
-    }
-
+    // Present on both outcomes: unknownCredential on a rejected passkey,
+    // allAcceptedCredentials after a successful login.
     if (loginFinish.value?.signal) {
       await trySendWebAuthnSignal(loginFinish.value.signal);
+    }
+
+    if (!loginFinish.ok) {
+      handleError(loginFinish.error);
+      return;
     }
 
     location.reload();
   } catch (error) {
     handleError(error);
   }
-}
-
-function isUnknownCredentialError(error) {
-  return error === "PasskeyNotFound" || error === "AccountDeleted";
 }
 
 function createErrorHandler(button) {
@@ -70,7 +61,8 @@ function createErrorHandler(button) {
     if (error === "PasskeyNotFound") {
       msg = "This passkey is no longer valid";
     } else if (error === "AccountDeleted") {
-      msg = "This account has been deleted";
+      msg =
+        "This account has been deleted. You can delete your passkey from the authenticator.";
     } else if (error instanceof Error) {
       if (error.name === "NotAllowedError") {
         return;

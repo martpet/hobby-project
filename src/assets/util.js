@@ -13,10 +13,9 @@ export async function apiFetch(path, opts = {}) {
 
   if (isResJson) {
     const data = await res.json();
+    result.value = data;
     if (!res.ok || data.error) {
       result.error = data.error;
-    } else {
-      result.value = data;
     }
   } else {
     const data = await res.text();

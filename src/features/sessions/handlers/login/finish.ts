@@ -23,7 +23,8 @@ export async function handleLogInFinish(c: Context) {
   const verification = await verifiyAuthResponseJson(c, res, authResponseJson);
 
   if (!verification.ok) {
-    return respondForbidden(c, verification.reason);
+    const { reason, signal } = verification;
+    return respondForbidden(c, reason, { signal });
   }
 
   const { passkey } = verification;

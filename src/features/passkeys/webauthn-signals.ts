@@ -1,7 +1,22 @@
-import { SendSignalAllAcceptedCredentialsOpts } from "@simplewebauthn/server";
+import {
+  SendSignalAllAcceptedCredentialsOpts,
+  SendSignalUnknownCredentialOpts,
+} from "@simplewebauthn/server";
 import { WEBAUTHN_RP_ID } from "./const.ts";
 import { listPasskeysByUserId } from "./kv.ts";
 import { Passkey } from "./types.ts";
+
+// Tells the credential manager the passkey it just offered is not one this
+// RP recognizes, so it can be hidden from future sign-in prompts.
+export function getUnknownCredentialSignal(
+  credId: Passkey["credId"],
+): SendSignalUnknownCredentialOpts {
+  return {
+    signalName: "unknownCredential",
+    rpID: WEBAUTHN_RP_ID,
+    credentialID: credId,
+  };
+}
 
 // Options for @simplewebauthn/browser's sendSignal(), so the credential
 // manager can hide passkeys this RP no longer recognizes for the user.

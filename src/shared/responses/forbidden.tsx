@@ -4,12 +4,22 @@ import { ForbiddenPage } from "@shared/jsx/pages/Forbidden.tsx";
 import { render } from "@shared/render.ts";
 import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 
-export function respondForbidden(c: Context, reason?: string) {
+export function respondForbidden(
+  c: Context,
+  reason?: string,
+  data?: Record<string, unknown>,
+) {
   const status = STATUS_CODE["Forbidden"];
 
   if (requestAcceptsHtml(c)) {
     return render(c, <ForbiddenPage reason={reason} />, { status });
   }
 
-  return new Response(reason || STATUS_TEXT[status], { status });
+  const msg = reason || STATUS_TEXT[status];
+
+  if (data) {
+    return Response.json({ error: msg, ...data }, { status });
+  }
+
+  return new Response(msg, { status });
 }
