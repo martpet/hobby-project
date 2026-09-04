@@ -10,7 +10,7 @@ const remoteBinary = getRequiredEnv("REMOTE_BINARY");
 const remoteBinaryTemp = `${remoteBinary}.tmp`;
 const remoteHost = getRequiredEnv("REMOTE_HOST");
 const remoteService = getRequiredEnv("REMOTE_SERVICE");
-const webCachePath = getRequiredEnv("WEB_CACHE_PATH");
+const appCachePath = getRequiredEnv("REMOTE_CACHE_PATH");
 const gitSha = await commandOutput("git", ["rev-parse", "--short", "HEAD"]);
 const serviceUnit = remoteService.replace(/\.service$/, "");
 
@@ -44,7 +44,7 @@ try {
       printf '[Service]\nEnvironment=GIT_SHA=%s\n' ${gitSha} | sudo tee /etc/systemd/system/${serviceUnit}.service.d/git-sha.conf > /dev/null
       sudo systemctl daemon-reload
       sudo systemctl restart ${remoteService}
-      sudo rm -rf ${webCachePath}
+      sudo rm -rf ${appCachePath}
 
       if ! sudo systemctl is-active --quiet ${remoteService}; then
         echo "Service '${remoteService}' is not running."

@@ -7,11 +7,9 @@ import { httpsMid } from "@middleware/https.ts";
 import { jsxMid } from "@middleware/jsx.ts";
 import { secureHeadersMid } from "@middleware/secure-headers.ts";
 import { trailingSlashMid } from "@middleware/trailing-slash.ts";
+import { PORT } from "@shared/const.ts";
 import { buildContext } from "@shared/context.ts";
-import { getEnv } from "@shared/environment.ts";
 import { handler } from "./handler.ts";
-
-const port = Number(getEnv("APP_PORT")) ?? undefined;
 
 const middlewares = [
   errorMid,
@@ -26,6 +24,6 @@ const middlewares = [
 
 const composed = middlewares.reduceRight((a, b) => b(a), jsxMid(handler));
 
-Deno.serve({ port }, (req, info) => {
+Deno.serve({ port: PORT }, (req, info) => {
   return composed(buildContext(req, info));
 });

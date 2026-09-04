@@ -1,7 +1,7 @@
+import { DELETED_ACCOUNT_TOMBSTONE_TTL } from "@features/account/const.ts";
 import { kv } from "@shared/kv.ts";
 import { ulid } from "@std/ulid";
 import { SetOptional } from "type-fest";
-import { DELETED_ACCOUNT_TOMBSTONE_TTL } from "./const.ts";
 import { Passkey, PasskeyAuthOptions, PasskeyRegOptions } from "./types.ts";
 
 const PASSKEYS_BY_ID = "passkeys_by_id";
