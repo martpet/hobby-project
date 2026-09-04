@@ -19,3 +19,18 @@ export async function getAllAcceptedCredentialsSignal(
       .map((p) => p.credId),
   };
 }
+
+// One signal per webauthn user ID with an empty accepted list, so the
+// credential manager drops every passkey it holds for a deleted account.
+export function getNoAcceptedCredentialsSignals(
+  passkeys: Passkey[],
+): SendSignalAllAcceptedCredentialsOpts[] {
+  const webauthnUserIds = new Set(passkeys.map((p) => p.webauthnUserId));
+
+  return [...webauthnUserIds].map((userID) => ({
+    signalName: "allAcceptedCredentials",
+    rpID: WEBAUTHN_RP_ID,
+    userID,
+    allAcceptedCredentialIDs: [],
+  }));
+}

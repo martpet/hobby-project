@@ -1,4 +1,9 @@
-import { apiFetch, showAlert, toggleButtonLoading } from "util";
+import {
+  apiFetch,
+  showAlert,
+  toggleButtonLoading,
+  trySendWebAuthnSignal,
+} from "util";
 
 const loginButtons = document.getElementsByClassName("login-button");
 
@@ -12,9 +17,10 @@ async function handleButtonClick({ target }) {
   const handleError = createErrorHandler(target);
 
   try {
-    const [loginStart, { startAuthentication, sendSignal }] = await Promise.all(
-      [apiFetch("/login/start", { method: "POST" }), import("simplewebauthn")],
-    );
+    const [loginStart, { startAuthentication }] = await Promise.all([
+      apiFetch("/login/start", { method: "POST" }),
+      import("simplewebauthn"),
+    ]);
 
     if (!loginStart.ok) {
       handleError(loginStart.error);
@@ -32,7 +38,7 @@ async function handleButtonClick({ target }) {
 
     if (!loginFinish.ok) {
       if (isUnknownCredentialError(loginFinish.error)) {
-        trySendSignal(sendSignal, {
+        trySendWebAuthnSignal({
           signalName: "unknownCredential",
           rpID: loginStart.value.rpId,
           credentialID: authResponseJson.id,
@@ -43,7 +49,7 @@ async function handleButtonClick({ target }) {
     }
 
     if (loginFinish.value?.signal) {
-      await trySendSignal(sendSignal, loginFinish.value.signal);
+      await trySendWebAuthnSignal(loginFinish.value.signal);
     }
 
     location.reload();
@@ -54,15 +60,6 @@ async function handleButtonClick({ target }) {
 
 function isUnknownCredentialError(error) {
   return error === "PasskeyNotFound" || error === "AccountDeleted";
-}
-
-// Signals are fire-and-forget and unsupported in some browsers
-async function trySendSignal(sendSignal, opts) {
-  try {
-    await sendSignal(opts);
-  } catch (error) {
-    console.debug(error);
-  }
 }
 
 function createErrorHandler(button) {

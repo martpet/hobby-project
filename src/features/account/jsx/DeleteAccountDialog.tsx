@@ -1,4 +1,5 @@
 import { User } from "@features/users/types.ts";
+import { Context } from "@shared/context.ts";
 
 export const DELETE_ACCOUNT_DIALOG = "delete-account-dialog";
 const DELETE_ACCOUNT_FORM = "delete-account-form";
@@ -7,7 +8,15 @@ interface DeleteAccountDialogProps {
   user: User;
 }
 
-export function DeleteAccountDialog({ user }: DeleteAccountDialogProps) {
+export function DeleteAccountDialog(
+  { user }: DeleteAccountDialogProps,
+  c: Context,
+) {
+  c.head.modules.add("delete-account-form");
+  c.head.modulepreloads.add("util");
+  c.head.importmap.add("util");
+  c.head.importmap.add("simplewebauthn");
+
   return (
     <dialog id={DELETE_ACCOUNT_DIALOG}>
       <h2>Delete account?</h2>

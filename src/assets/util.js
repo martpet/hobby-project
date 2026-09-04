@@ -60,3 +60,14 @@ export function showAlert(msg, type = "error") {
   (document.getElementById("alerts") ?? document.body).append(dialog);
   dialog.show();
 }
+
+// WebAuthn signals are fire-and-forget and unsupported in some browsers, so
+// a failure is never surfaced to the user.
+export async function trySendWebAuthnSignal(opts) {
+  try {
+    const { sendSignal } = await import("simplewebauthn");
+    await sendSignal(opts);
+  } catch (error) {
+    console.debug(error);
+  }
+}
