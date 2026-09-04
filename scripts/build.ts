@@ -4,9 +4,8 @@ import { loadEnv } from "./utils/load-env.ts";
 
 const envName = await loadEnv();
 const badge = `[${envName.toUpperCase()}]`;
-const outputBinary = `./dist/bin-${envName}`;
+const outputBinary = `./dist/${envName}`;
 const compileTarget = getRequiredEnv("DENO_COMPILE_TARGET");
-const appName = getRequiredEnv("DENO_APP_NAME");
 const allowRead = Deno.env.get("DENO_ALLOW_READ");
 const allowWrite = Deno.env.get("DENO_ALLOW_WRITE");
 
@@ -14,7 +13,6 @@ const args = [
   "--permission-set=build",
   `--output=${outputBinary}`,
   `--target=${compileTarget}`,
-  `--app-name=${appName}`,
   "--include=src/", // needed for all "assets/" (pattern support: https://github.com/denoland/deno/issues/35037)
 ];
 

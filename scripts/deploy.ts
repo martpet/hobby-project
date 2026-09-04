@@ -5,7 +5,7 @@ import { loadEnv } from "./utils/load-env.ts";
 
 const envName = await loadEnv();
 const badge = `[${envName.toUpperCase()}]`;
-const localBinary = `dist/bin-${envName}`;
+const localBinary = `dist/${envName}`;
 const remoteBinary = getRequiredEnv("REMOTE_BINARY");
 const remoteBinaryTemp = `${remoteBinary}.tmp`;
 const remoteHost = getRequiredEnv("REMOTE_HOST");
