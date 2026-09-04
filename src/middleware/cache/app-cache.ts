@@ -6,6 +6,7 @@ import { APP_CACHE_VERSION, CACHEABLE_METHODS } from "./const.ts";
 import {
   appendCacheStatus,
   getRemainingTtl,
+  invalidateAfterUnsafeRequest,
   notStorableReason,
 } from "./helpers.ts";
 
@@ -18,10 +19,17 @@ if (APP_CACHE_ENABLED) {
 // Serves public GET/HEAD responses from a server-side Cache API store, keyed
 // by request and versioned per deploy. Only anonymous requests are looked up
 // (a session cookie bypasses the store) and only `public` 200 responses
-// without `Set-Cookie` are stored. Every response gets a `Cache-Status` entry.
+// without `Set-Cookie` are stored. Unsafe requests evict what they may have
+// changed. Every response gets a `Cache-Status` entry.
 export const appCacheMid: Middleware = (next) => async (c) => {
   if (!CACHEABLE_METHODS.has(c.method)) {
-    return appendCacheStatus(await next(c), { fwd: "method" });
+    const res = await next(c);
+
+    if (APP_CACHE_ENABLED) {
+      await invalidateAfterUnsafeRequest(appCache, c, res);
+    }
+
+    return appendCacheStatus(res, { fwd: "method" });
   }
 
   if (!APP_CACHE_ENABLED) {

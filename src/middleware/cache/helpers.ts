@@ -1,9 +1,36 @@
 import { getSharedFreshnessLifetime } from "@shared/cache-control.ts";
+import { Context } from "@shared/context.ts";
 import { SECOND } from "@std/datetime";
-import { StatusCode } from "@std/http";
+import { isErrorStatus, StatusCode } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { CACHE_ID, CACHEABLE_STATUS_CODES } from "./const.ts";
 import { CacheStatus } from "./types.ts";
+
+// RFC 9111 §4.4: a non-error response to an unsafe request invalidates the
+// stored representation of the request URL and of any same-origin URL named
+// by `Location`/`Content-Location`. The Cache API only matches GET, so the
+// lookups are rebuilt as plain GET requests.
+export async function invalidateAfterUnsafeRequest(
+  cache: Cache,
+  c: Context,
+  res: Response,
+) {
+  if (isErrorStatus(res.status)) return;
+
+  const targets = new Set([c.url.href]);
+
+  for (const name of [HEADER.Location, HEADER.ContentLocation]) {
+    const value = res.headers.get(name);
+    if (!value) continue;
+
+    const target = new URL(value, c.url);
+    if (target.origin === c.url.origin) targets.add(target.href);
+  }
+
+  await Promise.all(
+    [...targets].map((href) => cache.delete(new Request(href))),
+  );
+}
 
 export function appendCacheStatus(res: Response, status: CacheStatus) {
   const params = [CACHE_ID];
