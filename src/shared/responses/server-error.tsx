@@ -5,7 +5,7 @@ import { render } from "@shared/render.ts";
 import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 
 export function respondServerError(c: Context, error: unknown) {
-  const status = STATUS_CODE["NotFound"];
+  const status = STATUS_CODE["InternalServerError"];
 
   if (requestAcceptsHtml(c)) {
     return render(c, <ServerErrorPage error={error} />, { status });
