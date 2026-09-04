@@ -37,7 +37,14 @@ async function handleFormSubmit(event) {
       return;
     }
 
-    location.assign("/");
+    // Reload rather than navigate to "/": the server redirects an
+    // authenticated /signup there anyway, and a reload skips WebKit's disk
+    // cache, which may otherwise serve the anonymous "/" stored before signup.
+    // Same root cause as https://bugs.webkit.org/show_bug.cgi?id=323342 (see
+    // cacheNoStoreOnCookieChange in shared/cache-control.ts): WebKit's
+    // `Vary: Cookie` check reads the cookie jar instead of the request's
+    // Cookie header, and the jar can lag behind the Set-Cookie just received.
+    location.reload();
   } catch (error) {
     handleError(error);
   }
