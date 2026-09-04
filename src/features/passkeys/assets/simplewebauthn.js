@@ -1,4 +1,4 @@
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/bufferToBase64URLString.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/bufferToBase64URLString.ts
 function bufferToBase64URLString(buffer) {
   const bytes = new Uint8Array(buffer);
   let str = "";
@@ -9,7 +9,7 @@ function bufferToBase64URLString(buffer) {
   return base64String.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/base64URLStringToBuffer.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/base64URLStringToBuffer.ts
 function base64URLStringToBuffer(base64URLString) {
   const base64 = base64URLString.replace(/-/g, "+").replace(/_/g, "/");
   const padLength = (4 - base64.length % 4) % 4;
@@ -23,7 +23,7 @@ function base64URLStringToBuffer(base64URLString) {
   return buffer;
 }
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/browserSupportsWebAuthn.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/browserSupportsWebAuthn.ts
 function browserSupportsWebAuthn() {
   return _browserSupportsWebAuthnInternals.stubThis(globalThis?.PublicKeyCredential !== void 0 && typeof globalThis.PublicKeyCredential === "function");
 }
@@ -31,28 +31,24 @@ var _browserSupportsWebAuthnInternals = {
   stubThis: (value) => value
 };
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/toPublicKeyCredentialDescriptor.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/toPublicKeyCredentialDescriptor.ts
 function toPublicKeyCredentialDescriptor(descriptor) {
   const { id } = descriptor;
   return {
     ...descriptor,
     id: base64URLStringToBuffer(id),
-    /**
-     * `descriptor.transports` is an array of our `AuthenticatorTransportFuture` that includes newer
-     * transports that TypeScript's DOM lib is ignorant of. Convince TS that our list of transports
-     * are fine to pass to WebAuthn since browsers will recognize the new value.
-     */
-    transports: descriptor.transports
+    transports: descriptor.transports,
+    type: descriptor.type
   };
 }
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/isValidDomain.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/isValidDomain.ts
 function isValidDomain(hostname) {
   return hostname === "localhost" || // Support punycode (ACE) or ascii labels and domains
   /^((xn--[a-z0-9-]+|[a-z0-9]+(-[a-z0-9]+)*)\.)+([a-z]{2,}|xn--[a-z0-9-]+)$/i.test(hostname);
 }
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/webAuthnError.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/webAuthnError.ts
 var WebAuthnError = class extends Error {
   code;
   constructor({ message, code, cause, name }) {
@@ -64,7 +60,7 @@ var WebAuthnError = class extends Error {
   }
 };
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/identifyRegistrationError.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/identifyRegistrationError.ts
 function identifyRegistrationError({ error, options }) {
   const { publicKey } = options;
   if (!publicKey) {
@@ -157,7 +153,7 @@ function identifyRegistrationError({ error, options }) {
   return error;
 }
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/webAuthnAbortService.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/webAuthnAbortService.ts
 var BaseWebAuthnAbortService = class {
   controller;
   createNewAbortSignal() {
@@ -181,7 +177,7 @@ var BaseWebAuthnAbortService = class {
 };
 var WebAuthnAbortService = new BaseWebAuthnAbortService();
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/toAuthenticatorAttachment.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/toAuthenticatorAttachment.ts
 var attachments = [
   "cross-platform",
   "platform"
@@ -196,7 +192,7 @@ function toAuthenticatorAttachment(attachment) {
   return attachment;
 }
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/methods/startRegistration.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/methods/startRegistration.ts
 async function startRegistration(options) {
   if (!options.optionsJSON && options.challenge) {
     console.warn("startRegistration() was not called correctly. It will try to continue with the provided options, but this call should be refactored to use the expected call structure instead. See https://simplewebauthn.dev/docs/packages/browser#typeerror-cannot-read-properties-of-undefined-reading-challenge for more information.");
@@ -288,7 +284,7 @@ function warnOnBrokenImplementation(methodName, cause) {
 `, cause);
 }
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/browserSupportsWebAuthnAutofill.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/browserSupportsWebAuthnAutofill.ts
 function browserSupportsWebAuthnAutofill() {
   if (!browserSupportsWebAuthn()) {
     return _browserSupportsWebAuthnAutofillInternals.stubThis(new Promise((resolve) => resolve(false)));
@@ -303,7 +299,7 @@ var _browserSupportsWebAuthnAutofillInternals = {
   stubThis: (value) => value
 };
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/identifyAuthenticationError.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/identifyAuthenticationError.ts
 function identifyAuthenticationError({ error, options }) {
   const { publicKey } = options;
   if (!publicKey) {
@@ -348,7 +344,7 @@ function identifyAuthenticationError({ error, options }) {
   return error;
 }
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/methods/startAuthentication.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/methods/startAuthentication.ts
 async function startAuthentication(options) {
   if (!options.optionsJSON && options.challenge) {
     console.warn("startAuthentication() was not called correctly. It will try to continue with the provided options, but this call should be refactored to use the expected call structure instead. See https://simplewebauthn.dev/docs/packages/browser#typeerror-cannot-read-properties-of-undefined-reading-challenge for more information.");
@@ -415,7 +411,197 @@ async function startAuthentication(options) {
   };
 }
 
-// deno:https://jsr.io/@simplewebauthn/browser/13.3.0/src/helpers/platformAuthenticatorIsAvailable.ts
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/identifySignalError.ts
+function identifySignalError({ error, options }) {
+  if (error.name === "SecurityError") {
+    const effectiveDomain = globalThis.location.hostname;
+    if (!isValidDomain(effectiveDomain)) {
+      return new WebAuthnError({
+        message: `"${globalThis.location.hostname}" is an invalid domain`,
+        code: "ERROR_INVALID_DOMAIN",
+        cause: error
+      });
+    }
+    return new WebAuthnError({
+      message: `The browser does not support Related Origins to enable signals for RP ID "${options.rpID}" on domain "${globalThis.location.hostname}"`,
+      code: "ERROR_INVALID_RP_ID",
+      cause: error
+    });
+  }
+  if (options.signalName === "unknownCredential") {
+    if (error.name === "TypeError") {
+      return new WebAuthnError({
+        message: "credentialID is an invalid base64url string",
+        code: "ERROR_SIGNAL_INVALID_ARGUMENT",
+        cause: error
+      });
+    }
+  } else if (options.signalName === "allAcceptedCredentials") {
+    if (error.name === "TypeError") {
+      return new WebAuthnError({
+        message: "userID, or an entry in allAcceptedCredentialIDs, is an invalid base64url string",
+        code: "ERROR_SIGNAL_INVALID_ARGUMENT",
+        cause: error
+      });
+    }
+  } else if (options.signalName === "currentUserDetails") {
+    if (error.name === "TypeError") {
+      return new WebAuthnError({
+        message: "userID is an invalid base64url string",
+        code: "ERROR_SIGNAL_INVALID_ARGUMENT",
+        cause: error
+      });
+    }
+  }
+  return new WebAuthnError({
+    message: error.message,
+    code: "ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY",
+    cause: error
+  });
+}
+
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/methods/sendSignal.ts
+async function sendSignal(opts) {
+  const { signalName } = opts;
+  if (signalName === "unknownCredential") {
+    return _callSignalUnknownCredential(opts);
+  } else if (signalName === "allAcceptedCredentials") {
+    return _callSignalAllAcceptedCredentials(opts);
+  } else if (signalName === "currentUserDetails") {
+    return _callSignalCurrentUserDetails(opts);
+  }
+  throw new Error(`Received unrecognized signalName "${opts.signalName}"`);
+}
+async function _callSignalUnknownCredential(opts) {
+  const globalPublicKeyCredential = globalThis.PublicKeyCredential;
+  if (typeof globalPublicKeyCredential.signalUnknownCredential !== "function") {
+    throw new Error("This browser does not support PublicKeyCredential.signalUnknownCredential()");
+  }
+  try {
+    await globalPublicKeyCredential.signalUnknownCredential({
+      rpId: opts.rpID,
+      credentialId: opts.credentialID
+    });
+  } catch (err) {
+    throw identifySignalError({
+      error: err,
+      options: opts
+    });
+  }
+  return void 0;
+}
+async function _callSignalAllAcceptedCredentials(opts) {
+  const globalPublicKeyCredential = globalThis.PublicKeyCredential;
+  if (typeof globalPublicKeyCredential.signalAllAcceptedCredentials !== "function") {
+    throw new Error("This browser does not support PublicKeyCredential.signalAllAcceptedCredentials()");
+  }
+  try {
+    await globalPublicKeyCredential.signalAllAcceptedCredentials({
+      rpId: opts.rpID,
+      userId: opts.userID,
+      allAcceptedCredentialIds: opts.allAcceptedCredentialIDs
+    });
+  } catch (err) {
+    throw identifySignalError({
+      error: err,
+      options: opts
+    });
+  }
+  return void 0;
+}
+async function _callSignalCurrentUserDetails(opts) {
+  const globalPublicKeyCredential = globalThis.PublicKeyCredential;
+  if (typeof globalPublicKeyCredential.signalCurrentUserDetails !== "function") {
+    throw new Error("This browser does not support PublicKeyCredential.signalCurrentUserDetails()");
+  }
+  try {
+    await globalPublicKeyCredential.signalCurrentUserDetails({
+      rpId: opts.rpID,
+      userId: opts.userID,
+      name: opts.userName,
+      displayName: opts.userDisplayName ?? ""
+    });
+  } catch (err) {
+    throw identifySignalError({
+      error: err,
+      options: opts
+    });
+  }
+  return void 0;
+}
+
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/getBrowserCapabilities.ts
+async function getBrowserCapabilities() {
+  if (typeof PublicKeyCredential.getClientCapabilities === "function") {
+    const capabilities = await PublicKeyCredential.getClientCapabilities();
+    let _userVerifyingPlatformAuthenticator = mapCapabilityToEnum(capabilities.userVerifyingPlatformAuthenticator);
+    if (_userVerifyingPlatformAuthenticator === "unknown" && typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === "function") {
+      const isUVPAA = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      if (isUVPAA) {
+        _userVerifyingPlatformAuthenticator = "supported";
+      } else {
+        _userVerifyingPlatformAuthenticator = "unsupported";
+      }
+    }
+    let _conditionalGet = mapCapabilityToEnum(capabilities.conditionalGet);
+    if (_conditionalGet === "unknown" && typeof PublicKeyCredential.isConditionalMediationAvailable === "function") {
+      const isCMA = await PublicKeyCredential.isConditionalMediationAvailable();
+      if (isCMA) {
+        _conditionalGet = "supported";
+      } else {
+        _conditionalGet = "unsupported";
+      }
+    }
+    return _getBrowserCapabilitiesInternals.stubThis({
+      conditionalCreate: mapCapabilityToEnum(capabilities.conditionalCreate),
+      conditionalGet: _conditionalGet,
+      hybridTransport: mapCapabilityToEnum(capabilities.hybridTransport),
+      passkeyPlatformAuthenticator: mapCapabilityToEnum(capabilities.passkeyPlatformAuthenticator),
+      userVerifyingPlatformAuthenticator: _userVerifyingPlatformAuthenticator,
+      relatedOrigins: mapCapabilityToEnum(capabilities.relatedOrigins),
+      signalAllAcceptedCredentials: mapCapabilityToEnum(capabilities.signalAllAcceptedCredentials),
+      signalCurrentUserDetails: mapCapabilityToEnum(capabilities.signalCurrentUserDetails),
+      signalUnknownCredential: mapCapabilityToEnum(capabilities.signalUnknownCredential)
+    });
+  }
+  return _getBrowserCapabilitiesInternals.stubThis({
+    conditionalCreate: "unknown",
+    conditionalGet: "unknown",
+    hybridTransport: "unknown",
+    passkeyPlatformAuthenticator: "unknown",
+    userVerifyingPlatformAuthenticator: "unknown",
+    relatedOrigins: "unknown",
+    signalAllAcceptedCredentials: "unknown",
+    signalCurrentUserDetails: "unknown",
+    signalUnknownCredential: "unknown"
+  });
+}
+function mapCapabilityToEnum(value) {
+  if (value === true) {
+    return "supported";
+  } else if (value === false) {
+    return "unsupported";
+  } else if (typeof value === "undefined") {
+    return "unknown";
+  } else {
+    throw new Error("Unexpected capability value:", value);
+  }
+}
+var _getBrowserCapabilitiesInternals = {
+  stubThis: (value) => value
+};
+
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/browserSupportsPasskeys.ts
+async function browserSupportsPasskeys() {
+  if (!browserSupportsWebAuthn()) {
+    return new Promise((resolve) => resolve(false));
+  }
+  const capabilities = await getBrowserCapabilities();
+  const { passkeyPlatformAuthenticator, userVerifyingPlatformAuthenticator, hybridTransport } = capabilities;
+  return passkeyPlatformAuthenticator === "supported" || hybridTransport === "supported" || userVerifyingPlatformAuthenticator === "supported";
+}
+
+// deno:https://jsr.io/@simplewebauthn/browser/14.0.0/src/helpers/platformAuthenticatorIsAvailable.ts
 function platformAuthenticatorIsAvailable() {
   if (!browserSupportsWebAuthn()) {
     return new Promise((resolve) => resolve(false));
@@ -427,11 +613,15 @@ export {
   WebAuthnError,
   _browserSupportsWebAuthnAutofillInternals,
   _browserSupportsWebAuthnInternals,
+  _getBrowserCapabilitiesInternals,
   base64URLStringToBuffer,
+  browserSupportsPasskeys,
   browserSupportsWebAuthn,
   browserSupportsWebAuthnAutofill,
   bufferToBase64URLString,
+  getBrowserCapabilities,
   platformAuthenticatorIsAvailable,
+  sendSignal,
   startAuthentication,
   startRegistration
 };

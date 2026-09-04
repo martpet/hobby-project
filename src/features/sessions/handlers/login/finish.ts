@@ -1,5 +1,6 @@
 import { setFlash } from "@features/flash/helpers.ts";
 import { verifiyAuthResponseJson } from "@features/passkeys/ceremony/auth-verify.ts";
+import { getAllAcceptedCredentialsSignal } from "@features/passkeys/signal.ts";
 import { Context, isAuthenticatedContext } from "@shared/context.ts";
 import { respondBadRequest } from "@shared/responses/bad-request.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
@@ -25,14 +26,15 @@ export async function handleLogInFinish(c: Context) {
     return respondForbidden(c, verification.reason);
   }
 
+  const { passkey } = verification;
   const isReauthenticating = isAuthenticatedContext(c);
 
-  if (isReauthenticating && c.session.userId !== verification.userId) {
+  if (isReauthenticating && c.session.userId !== passkey.userId) {
     setFlash(res, "PasskeyAccountMismatch");
     return res;
   }
 
-  if (!await createSession(c, res, verification.userId)) {
+  if (!await createSession(c, res, passkey.userId)) {
     return respondForbidden(c);
   }
 
@@ -41,5 +43,7 @@ export async function handleLogInFinish(c: Context) {
     setFlash(res, "Reauthenticated");
   }
 
-  return res;
+  const signal = await getAllAcceptedCredentialsSignal(passkey);
+
+  return Response.json({ signal }, { headers: res.headers });
 }

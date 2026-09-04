@@ -1,6 +1,7 @@
 import {
-  AuthenticatorTransportFuture,
   CredentialDeviceType,
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/server";
 
 export interface Passkey {
@@ -12,7 +13,7 @@ export interface Passkey {
   counter: number;
   deviceType: CredentialDeviceType;
   backedUp: boolean;
-  transports?: AuthenticatorTransportFuture[];
+  transports?: string[];
 }
 
 export interface PasskeyRegOptions {

@@ -1,4 +1,3 @@
-import { User } from "@features/users/types.ts";
 import { Context } from "@shared/context.ts";
 import { kv } from "@shared/kv.ts";
 import {
@@ -14,10 +13,11 @@ import {
   getPasskeyDeletedTombstone,
   setPasskey,
 } from "../kv.ts";
+import { Passkey } from "../types.ts";
 
 type AuthVerificationResult = {
   ok: true;
-  userId: User["id"];
+  passkey: Passkey;
 } | {
   ok: false;
   reason?: string;
@@ -87,9 +87,10 @@ export async function verifiyAuthResponseJson(
   }
 
   const atomic = kv.atomic();
+  const updatedPasskey = { ...passkey, counter: authenticationInfo.newCounter };
 
   atomic.check(passkeyEntry);
-  setPasskey({ ...passkey, counter: authenticationInfo.newCounter }, atomic);
+  setPasskey(updatedPasskey, atomic);
 
   const result = await atomic.commit();
 
@@ -99,6 +100,6 @@ export async function verifiyAuthResponseJson(
 
   return {
     ok: true,
-    userId: passkey.userId,
+    passkey: updatedPasskey,
   };
 }

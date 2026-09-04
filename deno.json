@@ -3,7 +3,7 @@
     "dev": "deno --env-file --permission-set=dev --watch src/main.ts",
     "build": "deno -A scripts/build.ts",
     "deploy": "deno -A scripts/deploy.ts",
-    "simplewebauthn": "deno bundle -o src/features/passkeys/assets/simplewebauthn.js jsr:@simplewebauthn/browser@^13.3.0"
+    "simplewebauthn": "deno bundle -o src/features/passkeys/assets/simplewebauthn.js jsr:@simplewebauthn/browser@^14.0.0"
   },
   "permissions": {
     "dev": {
@@ -22,7 +22,7 @@
     "@features/": "./src/features/",
     "@middleware/": "./src/middleware/",
     "@josh-hemphill/maxminddb-wasm": "jsr:@josh-hemphill/maxminddb-wasm@^2.1.8",
-    "@simplewebauthn/server": "jsr:@simplewebauthn/server@^13.3.2",
+    "@simplewebauthn/server": "jsr:@simplewebauthn/server@^14.0.0",
     "@std/collections": "jsr:@std/collections@^1.3.0",
     "@std/datetime": "jsr:@std/datetime@^0.225.7",
     "@std/encoding": "jsr:@std/encoding@^1.0.11",
