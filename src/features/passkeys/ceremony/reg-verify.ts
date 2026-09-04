@@ -35,7 +35,7 @@ export async function verifyRegResponseJson(
   }
 
   if (!regOptions || regOptions.expiresAt < Date.now()) {
-    console.log("PasskeyRegExpired");
+    console.debug("PasskeyRegExpired");
     return { ok: false };
   }
 
@@ -49,7 +49,7 @@ export async function verifyRegResponseJson(
       expectedChallenge: regOptions.value.challenge,
     });
   } catch (error) {
-    console.log(error);
+    console.warn(error);
     return { ok: false };
   }
 

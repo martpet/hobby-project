@@ -49,7 +49,6 @@ async function handleButtonClick({ target }) {
     location.reload();
   } catch (error) {
     handleError(error);
-    console.log(error);
   }
 }
 
@@ -78,7 +77,9 @@ function createErrorHandler(button) {
     } else if (error instanceof Error) {
       if (error.name === "NotAllowedError") {
         return;
-      } else if (!navigator.onLine) {
+      }
+      console.error(error);
+      if (!navigator.onLine) {
         msg = "Network is offline";
       }
     }

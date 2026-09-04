@@ -40,7 +40,6 @@ async function handleFormSubmit(event) {
     location.assign("/");
   } catch (error) {
     handleError(error);
-    console.log(error);
   }
 }
 
@@ -62,7 +61,9 @@ function createErrorHandler(username) {
     if (error instanceof Error) {
       if (error.name === "NotAllowedError") {
         return;
-      } else if (!navigator.onLine) {
+      }
+      console.error(error);
+      if (!navigator.onLine) {
         msg = "Network is offline";
       }
     }

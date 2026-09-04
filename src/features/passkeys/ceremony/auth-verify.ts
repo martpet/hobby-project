@@ -42,7 +42,7 @@ export async function verifiyAuthResponseJson(
   }
 
   if (!authOptions || authOptions.expiresAt < Date.now()) {
-    console.log("PasskeyAuthExpired");
+    console.debug("PasskeyAuthExpired");
     return { ok: false };
   }
 
@@ -76,7 +76,7 @@ export async function verifiyAuthResponseJson(
       },
     });
   } catch (error) {
-    console.log(error);
+    console.warn(error);
     return { ok: false };
   }
 
