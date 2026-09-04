@@ -1,16 +1,16 @@
 import { cacheNoStoreOnCookieChange } from "@shared/cache-control.ts";
 import { responseIsHtml } from "@shared/header.ts";
 import { Middleware } from "@shared/types.ts";
-import { deleteFlashCookie, getFlashCookie } from "./cookie.ts";
+import { deleteFlashCookie, getFlashCookie, hasFlashCookie } from "./cookie.ts";
 
 export const flashMid: Middleware = (next) => async (c) => {
-  const flash = getFlashCookie(c);
-
-  c.flash = flash;
+  c.flash = getFlashCookie(c);
 
   const res = await next(c);
 
-  if (flash && c.method === "GET" && responseIsHtml(res)) {
+  // Clear the cookie once shown — or immediately if its value is unknown, so
+  // a stale cookie doesn't keep being sent.
+  if (hasFlashCookie(c) && c.method === "GET" && responseIsHtml(res)) {
     deleteFlashCookie(res);
     cacheNoStoreOnCookieChange(c, res);
   }
