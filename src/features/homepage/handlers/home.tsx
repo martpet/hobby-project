@@ -1,14 +1,9 @@
 import { listSessionsByUserId } from "@features/sessions/kv.ts";
 import { Context, isAuthenticatedContext } from "@shared/context.ts";
-import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
-import { PrivateHome } from "./jsx/PrivateHome.tsx";
-import { PublicHome } from "./jsx/PublicHome.tsx";
+import { PrivateHome } from "../jsx/PrivateHome.tsx";
+import { PublicHome } from "../jsx/PublicHome.tsx";
 
 export async function handleHomepage(c: Context) {
-  if (c.method !== "GET") {
-    return respondMethodNotAllowed(c, "GET");
-  }
-
   if (!isAuthenticatedContext(c)) {
     return <PublicHome />;
   }

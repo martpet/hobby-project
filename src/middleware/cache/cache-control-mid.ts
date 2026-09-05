@@ -1,9 +1,11 @@
+import { CACHEABLE_METHODS, CACHEABLE_STATUS_CODES } from "./const.ts";
 import {
-  CACHEABLE_METHODS,
-  CACHEABLE_STATUS_CODES,
-  DEFAULT_UNAUTHENTICATED_CACHE_CONTROL,
-} from "./const.ts";
-import { addVaryCookie, toPrivateCacheControl } from "@shared/header/cache-control.ts";
+  addVaryCookie,
+  DEFAULT_MAX_AGE,
+  getCacheControl,
+  setCacheControl,
+  toPrivateCacheControl,
+} from "@shared/header/cache-control.ts";
 import { isAuthenticatedContext } from "@shared/context.ts";
 import { Middleware } from "@shared/types.ts";
 import { StatusCode } from "@std/http";
@@ -25,21 +27,17 @@ export const cacheControlMid: Middleware = (next) => async (c) => {
     return res;
   }
 
-  const cacheControl = res.headers.get(HEADER.CacheControl) ?? "";
-
   if (isAuthenticatedContext(c)) {
     toPrivateCacheControl(res.headers);
-  } else if (!cacheControl) {
-    res.headers.set(HEADER.CacheControl, DEFAULT_UNAUTHENTICATED_CACHE_CONTROL);
+  } else if (!res.headers.has(HEADER.CacheControl)) {
+    // Anonymous responses without a policy of their own default to `public`;
+    // never applied when authenticated.
+    setCacheControl(res.headers, { public: true, maxAge: DEFAULT_MAX_AGE });
   }
 
-  const finalCacheControl = res.headers.get(HEADER.CacheControl) ?? "";
+  const cc = getCacheControl(res.headers);
 
-  if (
-    finalCacheControl &&
-    !finalCacheControl.includes("no-store") &&
-    !finalCacheControl.includes("immutable")
-  ) {
+  if (!cc.noStore && !cc.immutable) {
     addVaryCookie(res.headers);
   }
 

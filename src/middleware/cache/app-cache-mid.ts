@@ -1,9 +1,9 @@
 import { getSessionCookie } from "@features/sessions/cookie.ts";
-import { APP_CACHE_ENABLED } from "@shared/const.ts";
+import { APP_CACHE_ENABLED, GIT_SHA } from "@shared/const.ts";
 import { Middleware } from "@shared/types.ts";
 import { HEADER } from "@std/http/unstable-header";
 import { METHOD } from "@std/http/unstable-method";
-import { APP_CACHE_VERSION, CACHEABLE_METHODS } from "./const.ts";
+import { CACHEABLE_METHODS } from "./const.ts";
 import {
   appendCacheStatus,
   getAge,
@@ -15,7 +15,8 @@ import {
 let appCache: Cache;
 
 if (APP_CACHE_ENABLED) {
-  appCache = await caches.open(APP_CACHE_VERSION);
+  // One cache per deploy; without a SHA (local runs) one per process start.
+  appCache = await caches.open(GIT_SHA || new Date().toISOString());
 }
 
 // Serves public GET/HEAD responses from a server-side Cache API instance, keyed

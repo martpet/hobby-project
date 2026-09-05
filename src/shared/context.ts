@@ -13,6 +13,9 @@ export interface Context {
   req: Request;
   url: URL;
   method: Method;
+  // Named `URLPattern` groups of the matched route (set by `router`), e.g.
+  // `file` for `:file`.
+  params: Record<string, string | undefined>;
   ip: string;
   locale: string;
   ua: UserAgent;
@@ -44,6 +47,7 @@ export function buildContext(
     req,
     url,
     method: req.method as Method,
+    params: {},
     ip: req.headers.get("X-Forwarded-For") || info.remoteAddr.hostname,
     locale: getAcceptLanguage(req) ?? DEFAULT_LOCALE,
     ua: new UserAgent(req.headers.get(HEADER.UserAgent)),

@@ -9,7 +9,8 @@ import { secureHeadersMid } from "@middleware/secure-headers.ts";
 import { trailingSlashMid } from "@middleware/trailing-slash.ts";
 import { PORT } from "@shared/const.ts";
 import { buildContext } from "@shared/context.ts";
-import { handler } from "./handler.ts";
+import { router } from "@shared/router.ts";
+import { routes } from "./routes.ts";
 
 const middlewares = [
   errorMid,
@@ -22,7 +23,10 @@ const middlewares = [
   flashMid,
 ];
 
-const composed = middlewares.reduceRight((a, b) => b(a), jsxMid(handler));
+const composed = middlewares.reduceRight(
+  (a, b) => b(a),
+  jsxMid(router(routes)),
+);
 
 Deno.serve({ port: PORT }, (req, info) => {
   return composed(buildContext(req, info));

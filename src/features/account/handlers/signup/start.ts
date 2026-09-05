@@ -5,13 +5,8 @@ import { Context } from "@shared/context.ts";
 import { respondBadRequest } from "@shared/responses/bad-request.ts";
 import { respondConflict } from "@shared/responses/conflict.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
-import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
 
 export async function handleSignupStart(c: Context) {
-  if (c.method !== "POST") {
-    return respondMethodNotAllowed(c, "POST");
-  }
-
   if (c.user) {
     return respondForbidden(c);
   }

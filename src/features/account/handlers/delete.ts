@@ -13,15 +13,10 @@ import { Context, isAuthenticatedContext } from "@shared/context.ts";
 import { requestAcceptsHtml } from "@shared/header/negotiation.ts";
 import { kv } from "@shared/kv.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
-import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
 import { respondRedirect } from "@shared/responses/redirect.ts";
 import { respondUnauthorized } from "@shared/responses/unauthorized.tsx";
 
 export async function handleAccountDelete(c: Context) {
-  if (c.method !== "POST") {
-    return respondMethodNotAllowed(c, "POST");
-  }
-
   if (!isAuthenticatedContext(c)) {
     return respondUnauthorized(c);
   }

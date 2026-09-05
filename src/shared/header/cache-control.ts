@@ -1,38 +1,30 @@
 import { Context } from "@shared/context.ts";
 import { isWebKit } from "@shared/header/user-agent.ts";
 import { MINUTE, SECOND } from "@std/datetime";
+import {
+  formatCacheControl,
+  parseCacheControl,
+  ResponseCacheControl,
+} from "@std/http/unstable-cache-control";
 import { HEADER } from "@std/http/unstable-header";
 
 // Default freshness lifetime, in seconds, for responses that don't set their
 // own `max-age`.
 export const DEFAULT_MAX_AGE = (5 * MINUTE) / SECOND;
 
-function parseDirectives(header: string | null) {
-  const directives = new Map<Lowercase<string>, string | null>();
-
-  if (!header) return directives;
-
-  for (const raw of header.split(",")) {
-    const directive = raw.trim();
-    if (!directive) continue;
-    const [name, value] = directive.split("=");
-    directives.set(
-      name.trim().toLowerCase() as Lowercase<string>,
-      value !== undefined ? value.trim() : null,
-    );
-  }
-
-  return directives;
+// Parsed response `Cache-Control`. Only our own handlers set this header, so
+// a malformed value is a bug and the parser's `SyntaxError` is left to
+// propagate.
+export function getCacheControl(headers: Headers): ResponseCacheControl {
+  return parseCacheControl(headers.get(HEADER.CacheControl));
 }
 
-function stringifyDirectives(directives: Map<string, string | null>) {
-  return [...directives].map(([name, value]) =>
-    value !== null ? `${name}=${value}` : name
-  ).join(", ");
+export function setCacheControl(headers: Headers, cc: ResponseCacheControl) {
+  headers.set(HEADER.CacheControl, formatCacheControl(cc));
 }
 
 export function cacheNoStore(headers: Headers) {
-  headers.set(HEADER.CacheControl, "no-store");
+  setCacheControl(headers, { noStore: true });
 }
 
 // Call this on any cacheable response that changes a cookie the response
@@ -55,29 +47,32 @@ export function cacheNoStoreOnCookieChange(c: Context, headers: Headers) {
 }
 
 export function toPrivateCacheControl(headers: Headers) {
-  const directives = parseDirectives(headers.get(HEADER.CacheControl));
+  const { public: _public, sMaxage: _sMaxage, ...rest } = getCacheControl(
+    headers,
+  );
 
-  directives.delete("public");
-  directives.delete("s-maxage");
-  directives.set("private", null);
-
-  headers.set(HEADER.CacheControl, stringifyDirectives(directives));
+  setCacheControl(headers, { ...rest, private: true });
 }
 
 // Freshness lifetime in seconds for a shared cache (`s-maxage` wins over
 // `max-age`), or `undefined` when the response does not declare one.
 export function getSharedFreshnessLifetime(res: Response) {
-  const directives = parseDirectives(res.headers.get(HEADER.CacheControl));
-  const value = directives.get("s-maxage") ?? directives.get("max-age");
-  const seconds = value === null || value === undefined ? NaN : Number(value);
+  const cc = getCacheControl(res.headers);
 
-  return Number.isFinite(seconds) && seconds >= 0 ? seconds : undefined;
+  return cc.sMaxage ?? cc.maxAge;
 }
 
+// `Vary` is a plain comma-separated list of field names (RFC 9110 §12.5.5),
+// not a Structured Field, so it is handled by hand.
 export function addVaryCookie(headers: Headers) {
-  const directives = parseDirectives(headers.get(HEADER.Vary));
+  const fields = (headers.get(HEADER.Vary) ?? "")
+    .split(",")
+    .map((field) => field.trim())
+    .filter(Boolean);
 
-  directives.set("cookie", null);
+  if (!fields.some((field) => field.toLowerCase() === "cookie")) {
+    fields.push("Cookie");
+  }
 
-  headers.set(HEADER.Vary, stringifyDirectives(directives));
+  headers.set(HEADER.Vary, fields.join(", "));
 }

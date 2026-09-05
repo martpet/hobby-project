@@ -4,14 +4,9 @@ import { getAllAcceptedCredentialsSignal } from "@features/passkeys/signals.ts";
 import { Context, isAuthenticatedContext } from "@shared/context.ts";
 import { respondBadRequest } from "@shared/responses/bad-request.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
-import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
 import { createSession, destroySession } from "../../helpers.ts";
 
 export async function handleLogInFinish(c: Context) {
-  if (c.method !== "POST") {
-    return respondMethodNotAllowed(c, "POST");
-  }
-
   const authResponseJson = await c.req.json();
 
   if (!authResponseJson) {

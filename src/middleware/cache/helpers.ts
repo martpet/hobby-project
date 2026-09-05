@@ -1,9 +1,21 @@
-import { getSharedFreshnessLifetime } from "@shared/header/cache-control.ts";
+import {
+  getCacheControl,
+  getSharedFreshnessLifetime,
+} from "@shared/header/cache-control.ts";
+import { APP_ID } from "@shared/const.ts";
 import { Context } from "@shared/context.ts";
 import { SECOND } from "@std/datetime";
 import { isErrorStatus, StatusCode } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
-import { CACHE_ID, STORABLE_STATUS_CODES } from "./const.ts";
+import {
+  BareItem,
+  boolean,
+  integer,
+  item,
+  serializeItem,
+  token,
+} from "@std/http/unstable-structured-fields";
+import { STORABLE_STATUS_CODES } from "./const.ts";
 import { CacheStatus } from "./types.ts";
 
 // RFC 9111 §4.4: a non-error response to an unsafe request invalidates the
@@ -32,19 +44,26 @@ export async function invalidateAfterUnsafeRequest(
   );
 }
 
+// `Cache-Status` is a Structured Field List (RFC 9211 §2); this app's entry is
+// an Item whose value is the cache identifier (a Token, so `APP_ID` must fit
+// the RFC 9651 §3.3.4 grammar) and whose parameters carry the status, e.g.
+// `hobproj;fwd=miss;stored`.
 export function appendCacheStatus(res: Response, status: CacheStatus) {
-  const params = [CACHE_ID];
+  const params = new Map<string, BareItem>();
 
   if ("hit" in status) {
-    params.push("hit");
-    if (status.ttl !== undefined) params.push(`ttl=${status.ttl}`);
+    params.set("hit", boolean(true));
+    if (status.ttl !== undefined) params.set("ttl", integer(status.ttl));
   } else {
-    params.push(`fwd=${status.fwd}`);
-    if (status.stored) params.push("stored");
-    if (status.detail) params.push(`detail=${status.detail}`);
+    params.set("fwd", token(status.fwd));
+    if (status.stored) params.set("stored", boolean(true));
+    if (status.detail) params.set("detail", token(status.detail));
   }
 
-  res.headers.append(HEADER.CacheStatus, params.join("; "));
+  res.headers.append(
+    HEADER.CacheStatus,
+    serializeItem(item(token(APP_ID), params)),
+  );
 
   return res;
 }
@@ -59,17 +78,17 @@ export function notStorableReason(res: Response) {
     return "SET-COOKIE";
   }
 
-  const cacheControl = res.headers.get(HEADER.CacheControl) ?? "";
+  const cc = getCacheControl(res.headers);
 
-  if (cacheControl.includes("no-store")) {
+  if (cc.noStore) {
     return "NO-STORE";
   }
 
-  if (cacheControl.includes("private")) {
+  if (cc.private) {
     return "PRIVATE";
   }
 
-  if (!cacheControl.includes("public")) {
+  if (!cc.public) {
     return "NOT-PUBLIC";
   }
 }

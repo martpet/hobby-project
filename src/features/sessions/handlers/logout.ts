@@ -2,7 +2,6 @@ import { setFlash } from "@features/flash/helpers.ts";
 import { deleteSessionCookie } from "@features/sessions/cookie.ts";
 import { Context, isAuthenticatedContext } from "@shared/context.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
-import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";
 import { redirectBack } from "@shared/responses/redirect-back.ts";
 import { respondRedirect } from "@shared/responses/redirect.ts";
 import { respondUnauthorized } from "@shared/responses/unauthorized.tsx";
@@ -10,10 +9,6 @@ import { destroySession } from "../helpers.ts";
 import { getSessionById } from "../kv.ts";
 
 export async function handleLogOut(c: Context) {
-  if (c.method !== "POST") {
-    return respondMethodNotAllowed(c, "POST");
-  }
-
   if (!isAuthenticatedContext(c)) {
     return respondUnauthorized(c);
   }
