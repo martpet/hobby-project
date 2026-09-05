@@ -29,7 +29,7 @@ export async function handleAccountDelete(c: Context) {
   // Deleting an account is irreversible, so require a recent passkey
   // ceremony rather than trusting a possibly long-lived session cookie.
   if (isReauthRequiredForSensitiveAction(c.session)) {
-    return respondForbidden(c, "ReauthRequired");
+    return respondForbidden(c, { reason: "ReauthRequired" });
   }
 
   const { user } = c;

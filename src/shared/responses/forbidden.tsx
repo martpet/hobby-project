@@ -6,10 +6,13 @@ import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 
 export function respondForbidden(
   c: Context,
-  reason?: string,
-  data?: Record<string, unknown>,
-  init?: ResponseInit,
+  opts?: {
+    reason?: string;
+    data?: Record<string, unknown>;
+    init?: ResponseInit;
+  },
 ) {
+  const { reason, data, init } = opts ?? {};
   const status = STATUS_CODE["Forbidden"];
 
   if (requestAcceptsHtml(c)) {

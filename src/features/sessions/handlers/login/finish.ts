@@ -24,7 +24,11 @@ export async function handleLogInFinish(c: Context) {
 
   if (!verification.ok) {
     const { reason, signal } = verification;
-    return respondForbidden(c, reason, { signal }, { headers: res.headers });
+    return respondForbidden(c, {
+      reason,
+      data: { signal },
+      init: { headers: res.headers },
+    });
   }
 
   const { passkey } = verification;
@@ -34,13 +38,14 @@ export async function handleLogInFinish(c: Context) {
     // A real error response (rather than a flash cookie on `res`), so
     // fetch-driven reauth flows can detect and act on the mismatch
     // immediately instead of relying on a subsequent page reload.
-    return respondForbidden(c, "PasskeyAccountMismatch", undefined, {
-      headers: res.headers,
+    return respondForbidden(c, {
+      reason: "PasskeyAccountMismatch",
+      init: { headers: res.headers },
     });
   }
 
   if (!await createSession(c, res, passkey.userId)) {
-    return respondForbidden(c, undefined, undefined, { headers: res.headers });
+    return respondForbidden(c, { init: { headers: res.headers } });
   }
 
   if (isReauthenticating) {

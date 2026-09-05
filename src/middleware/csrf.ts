@@ -28,5 +28,5 @@ export const csrfMid: Middleware = (next) => (c) => {
     return next(c);
   }
 
-  return respondForbidden(c, "CSRF validation failed");
+  return respondForbidden(c, { reason: "CSRF validation failed" });
 };
