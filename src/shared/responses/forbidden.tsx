@@ -1,28 +1,32 @@
 import { Context } from "@shared/context.ts";
 import { ForbiddenPage } from "@shared/jsx/pages/Forbidden.tsx";
 import { respondPageOrBody } from "@shared/responses/page-or-body.tsx";
-import { STATUS_CODE, STATUS_TEXT } from "@std/http";
+import { STATUS_CODE } from "@std/http";
+import { ProblemDetailsExtensions } from "@std/http/unstable-problem-details";
 
-// `reason` doubles as a machine-readable error code: for non-HTML requests it
-// becomes the response body (or the `error` field when `data` is present),
-// and the client-side scripts branch on it (e.g. "ReauthRequired").
+// `code` is a machine-readable error code (e.g. "REAUTH_REQUIRED") that the
+// client-side scripts branch on; it's a Problem Details extension member,
+// not the standard `detail` member, per RFC 9457 §3.1 (clients MUST NOT
+// parse `detail`/`title` for information). `detail`, if given, is the
+// human-readable explanation of this occurrence — shown as-is by clients
+// instead of hardcoding a message per `code`. `extensions`, if any, are
+// merged in alongside `code` (e.g. a WebAuthn `signal`).
 export function respondForbidden(
   c: Context,
   opts?: {
-    reason?: string;
-    data?: Record<string, unknown>;
+    code?: string;
+    detail?: string;
+    extensions?: ProblemDetailsExtensions;
     init?: ResponseInit;
   },
 ) {
-  const { reason, data, init } = opts ?? {};
+  const { code, detail, extensions, init } = opts ?? {};
   const status = STATUS_CODE["Forbidden"];
-  const errorMsg = reason || STATUS_TEXT[status];
-  const body = data ? { error: errorMsg, ...data } : errorMsg;
 
   return respondPageOrBody(
     c,
-    <ForbiddenPage reason={reason} />,
-    body,
+    <ForbiddenPage detail={detail} />,
     { ...init, status },
+    { ...extensions, detail, ...(code && { code }) },
   );
 }

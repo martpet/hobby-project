@@ -10,7 +10,9 @@ export async function handleLogInFinish(c: Context) {
   const authResponseJson = await c.req.json();
 
   if (!authResponseJson) {
-    return respondBadRequest("AuthResponseJsonMissing");
+    return respondBadRequest({
+      detail: "The authentication response is missing or invalid",
+    });
   }
 
   const headers = new Headers();
@@ -22,10 +24,10 @@ export async function handleLogInFinish(c: Context) {
   );
 
   if (!verification.ok) {
-    const { reason, signal } = verification;
+    const { detail, signal } = verification;
     return respondForbidden(c, {
-      reason,
-      data: { signal },
+      detail,
+      extensions: { signal },
       init: { headers },
     });
   }
@@ -39,7 +41,7 @@ export async function handleLogInFinish(c: Context) {
 
   if (isReauthenticating && c.session.userId !== passkey.userId) {
     return respondForbidden(c, {
-      reason: "PasskeyAccountMismatch",
+      detail: "That passkey belongs to a different account.",
       init: { headers },
     });
   }
@@ -52,7 +54,7 @@ export async function handleLogInFinish(c: Context) {
   // the old session rather than with none.
   if (isReauthenticating) {
     await destroySession(c.session);
-    setFlash(headers, "Reauthenticated");
+    setFlash(headers, "REAUTHENTICATED");
   }
 
   const signal = await getAllAcceptedCredentialsSignal(passkey);

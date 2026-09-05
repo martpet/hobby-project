@@ -14,15 +14,15 @@ import {
   getPasskeyDeletedTombstone,
   setPasskey,
 } from "../kv.ts";
-import { Passkey } from "../types.ts";
 import { getUnknownCredentialSignal } from "../signals.ts";
+import { Passkey } from "../types.ts";
 
 type AuthVerificationResult = {
   ok: true;
   passkey: Passkey;
 } | {
   ok: false;
-  reason?: string;
+  detail?: string;
   signal?: SendSignalUnknownCredentialOpts;
 };
 
@@ -66,7 +66,9 @@ export async function verifiyAuthResponseJson(
 
     return {
       ok: false,
-      reason: tombstoned ? "AccountDeleted" : "PasskeyNotFound",
+      detail: tombstoned
+        ? "Your account has been deleted. You can delete the passkey from the authenticator."
+        : "This passkey is no longer valid",
       signal: getUnknownCredentialSignal(authResponseJson.id),
     };
   }

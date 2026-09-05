@@ -1,8 +1,8 @@
 import { setFlash } from "@features/flash/helpers.ts";
 import { getUserById } from "@features/users/kv.ts";
-import { cacheNoStoreOnCookieChange } from "@shared/header/cache-control.ts";
 import { AuthenticatedContext, Context } from "@shared/context.ts";
 import { generateToken } from "@shared/crypto.ts";
+import { cacheNoStoreOnCookieChange } from "@shared/header/cache-control.ts";
 import { kv } from "@shared/kv.ts";
 import { decodeTime } from "@std/ulid";
 import {
@@ -34,7 +34,7 @@ export function isSessionExpiringSoon(session: Session) {
     SESSION_EXPIRY_WARNING_THRESHOLD;
 }
 
-export function isReauthRequiredForSensitiveAction(session: Session) {
+export function isREAUTH_REQUIREDForSensitiveAction(session: Session) {
   return Date.now() - getSessionAuthTime(session) >
     SENSITIVE_ACTION_MAX_AUTH_AGE;
 }
@@ -116,7 +116,7 @@ export async function extendCurrentSession(
   if (duration <= 0) {
     await destroySessionIfUnchanged(sessionEntry);
     deleteSessionCookie(headers);
-    setFlash(headers, "SessionExpired");
+    setFlash(headers, "SESSION_EXPIRED");
     cacheNoStoreOnCookieChange(c, headers);
     return;
   }

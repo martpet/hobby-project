@@ -15,7 +15,9 @@ export async function handleSignupFinish(c: Context) {
   const regResponseJson = await c.req.json();
 
   if (!regResponseJson) {
-    return respondBadRequest("RegResponseJsonMissing");
+    return respondBadRequest({
+      detail: "The registration response is missing or invalid",
+    });
   }
 
   const headers = new Headers();
@@ -49,7 +51,10 @@ export async function handleSignupFinish(c: Context) {
 
   // The username check above is the only thing that can fail the commit.
   if (!commit.ok) {
-    return respondConflict("UsernameTaken", { init: { headers } });
+    return respondConflict("USERNAME_TAKEN", {
+      detail: `Sorry, username "${username}" is taken`,
+      init: { headers },
+    });
   }
 
   setNewSessionCookie(headers, session);

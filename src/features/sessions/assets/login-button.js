@@ -17,7 +17,7 @@ async function handleButtonClick({ target }) {
     const loginFinish = await authenticateWithPasskey();
 
     if (!loginFinish.ok) {
-      handleError(loginFinish.error);
+      handleError(loginFinish);
       return;
     }
 
@@ -35,14 +35,7 @@ function createErrorHandler(button) {
     toggleButtonLoading(button);
 
     let msg;
-    if (error === "PasskeyNotFound") {
-      msg = "This passkey is no longer valid";
-    } else if (error === "AccountDeleted") {
-      msg =
-        "Your account has been deleted. You can delete the passkey from the authenticator.";
-    } else if (error === "PasskeyAccountMismatch") {
-      msg = "That passkey belongs to a different account.";
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       // The user dismissed the passkey prompt; not an error worth showing.
       if (error.name === "NotAllowedError") {
         return;
@@ -51,6 +44,9 @@ function createErrorHandler(button) {
       if (!navigator.onLine) {
         msg = "Network is offline";
       }
+    } else {
+      // Server-provided, human-readable explanation (RFC 9457 `detail`).
+      msg = error.detail;
     }
 
     showAlert(msg || "Something went wrong");

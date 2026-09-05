@@ -1,7 +1,7 @@
 import { Context } from "@shared/context.ts";
 import { NotFoundPage } from "@shared/jsx/pages/NotFound.tsx";
 import { respondPageOrBody } from "@shared/responses/page-or-body.tsx";
-import { STATUS_CODE, STATUS_TEXT } from "@std/http";
+import { STATUS_CODE } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { Method } from "@std/http/unstable-method";
 
@@ -17,5 +17,5 @@ export function respondMethodNotAllowed(
     headers: { [HEADER["Allow"]]: [allow].flat().join() },
   };
 
-  return respondPageOrBody(c, <NotFoundPage />, STATUS_TEXT[status], init);
+  return respondPageOrBody(c, <NotFoundPage />, init);
 }

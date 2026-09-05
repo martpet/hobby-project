@@ -1,20 +1,16 @@
-import { STATUS_CODE, STATUS_TEXT } from "@std/http";
+import { STATUS_CODE } from "@std/http";
+import { createProblemDetailsResponse } from "@std/http/unstable-problem-details";
 
+// `detail` is a human-readable explanation of this occurrence (RFC 9457
+// §3.1), safe for clients to display as-is.
 export function respondBadRequest(
-  input?: string | object,
-  opts?: { init?: ResponseInit },
+  opts?: { detail?: string; init?: ResponseInit },
 ) {
-  const { init } = opts ?? {};
+  const { detail, init } = opts ?? {};
   const status = STATUS_CODE["BadRequest"];
-  let body;
 
-  if (typeof input === "string") {
-    body = input;
-  } else if (input === undefined) {
-    body = STATUS_TEXT[status];
-  } else {
-    body = JSON.stringify(input);
-  }
-
-  return new Response(body, { ...init, status });
+  return createProblemDetailsResponse(
+    { status, detail },
+    { headers: init?.headers, statusText: init?.statusText },
+  );
 }

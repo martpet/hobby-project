@@ -1,7 +1,10 @@
-// Thin `fetch` wrapper normalising every response into `{ ok, value?, error? }`
-// so callers can branch on `error` codes (e.g. "UsernameTaken") without
-// caring whether the server sent JSON or a plain-text body. Network failures
-// still reject like `fetch` does.
+// Thin `fetch` wrapper normalising every response into
+// `{ ok, status, value?, code?, detail? }` so callers can branch on `status`
+// for generic HTTP-level outcomes (e.g. 401), on `code` for domain-specific
+// ones (e.g. "USERNAME_TAKEN"), and show `detail` (if present) as a
+// ready-made, human-readable message — without caring whether the server
+// sent JSON or a plain-text body. Network failures still reject like
+// `fetch` does.
 export async function apiFetch(path, opts = {}) {
   let { method, body, json, headers = {} } = opts;
   headers = new Headers(headers);
@@ -12,22 +15,29 @@ export async function apiFetch(path, opts = {}) {
   }
   const res = await fetch(path, { method, body, headers });
   const resContType = res.headers.get("content-type");
-  const isResJson = resContType?.includes("application/json");
-  const result = { ok: res.ok };
+  const isProblemJson = resContType?.includes("application/problem+json");
+  const isResJson = isProblemJson || resContType?.includes("application/json");
+  const result = { ok: res.ok, status: res.status };
 
-  // A JSON error body is `{ error, ...data }` (see respondForbidden); the
-  // whole object still goes on `value` because the extra data (e.g. a
-  // WebAuthn signal) is useful even on failure.
+  // Errors are served as Problem Details (RFC 9457, see respondForbidden and
+  // friends): `code` is the machine-readable extension member to branch on,
+  // `detail` is the human-readable explanation to display as-is (RFC 9457
+  // §3.1 — never parse `detail` for information). The whole object still
+  // goes on `value` because the extra data (e.g. a WebAuthn signal) is
+  // useful even on failure.
   if (isResJson) {
     const data = await res.json();
     result.value = data;
-    if (!res.ok || data.error) {
-      result.error = data.error;
+    if (isProblemJson) {
+      result.code = data.code;
+      result.detail = data.detail;
     }
   } else {
     const data = await res.text();
     if (!res.ok) {
-      result.error = data;
+      // No structured Problem Details available (e.g. an infra-level error
+      // page); the raw text is the best-effort message.
+      result.detail = data;
     } else {
       result.value = data;
     }

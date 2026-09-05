@@ -20,11 +20,11 @@ async function handleFormSubmit(event) {
     // The server refuses unless the passkey ceremony was recent. Reauth
     // replaces the session (same cookie name), then the delete is retried
     // transparently — the user only sees the passkey prompt.
-    if (accountDelete.error === "ReauthRequired") {
+    if (accountDelete.code === "REAUTH_REQUIRED") {
       const reauth = await authenticateWithPasskey();
 
       if (!reauth.ok) {
-        handleError(reauth.error);
+        handleError(reauth);
         return;
       }
 
@@ -32,7 +32,7 @@ async function handleFormSubmit(event) {
     }
 
     if (!accountDelete.ok) {
-      handleError(accountDelete.error);
+      handleError(accountDelete);
       return;
     }
 
@@ -49,9 +49,11 @@ async function handleFormSubmit(event) {
 }
 
 function handleError(error) {
-  // Session vanished mid-flow (revoked elsewhere, expired); reloading shows
-  // the logged-out page with whatever flash the server set.
-  if (error === "Unauthorized") {
+  // Session vanished mid-flow (revoked elsewhere, expired, or never existed);
+  // reloading shows the logged-out page with whatever flash the server set.
+  // A plain HTTP status check rather than a `code`, since it's a generic
+  // "not authenticated" outcome rather than a domain-specific one.
+  if (error.status === 401) {
     location.reload();
     return;
   }
@@ -59,9 +61,7 @@ function handleError(error) {
   toggleFormBuisy(form);
 
   let msg;
-  if (error === "PasskeyAccountMismatch") {
-    msg = "That passkey belongs to a different account.";
-  } else if (error instanceof Error) {
+  if (error instanceof Error) {
     // The user dismissed the passkey prompt; not an error worth showing.
     if (error.name === "NotAllowedError") {
       return;
@@ -70,6 +70,9 @@ function handleError(error) {
     if (!navigator.onLine) {
       msg = "Network is offline";
     }
+  } else {
+    // Server-provided, human-readable explanation (RFC 9457 `detail`).
+    msg = error.detail;
   }
 
   showAlert(msg || "Something went wrong");

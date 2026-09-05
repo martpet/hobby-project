@@ -3,23 +3,23 @@ import { FlashMessage } from "./types.ts";
 // Only the key travels in the cookie; the message text lives here so it can
 // be changed without invalidating cookies already in the wild.
 export const FLASH = {
-  "LoggedOut": {
+  "LOGGED_OUT": {
     type: "success",
     msg: "Signed Out",
   },
-  "SessionRevoked": {
+  "SESSION_REVOKED": {
     type: "success",
     msg: "Session Revoked",
   },
-  "SessionExpired": {
+  "SESSION_EXPIRED": {
     type: "warning",
-    msg: "Session Expired",
+    msg: "Your session expired",
   },
-  "Reauthenticated": {
+  "REAUTHENTICATED": {
     type: "success",
-    msg: "Reauthenticated",
+    msg: "Successfully reauthenticated",
   },
-  "AccountDeleted": {
+  "ACCOUNT_DELETED": {
     type: "success",
     msg: "Account Deleted",
   },

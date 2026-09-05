@@ -34,5 +34,7 @@ export const csrfMid: Middleware = (next) => (c) => {
     return next(c);
   }
 
-  return respondForbidden(c, { reason: "CSRF validation failed" });
+  return respondForbidden(c, {
+    detail: "This request could not be verified as coming from this site.",
+  });
 };

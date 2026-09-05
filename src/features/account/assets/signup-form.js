@@ -10,7 +10,6 @@ async function handleFormSubmit(event) {
   toggleFormBuisy(form);
 
   const username = form.username.value;
-  const handleError = createErrorHandler(username);
 
   try {
     // Start the ceremony and load the WebAuthn library in parallel; the
@@ -21,7 +20,7 @@ async function handleFormSubmit(event) {
     ]);
 
     if (!signupStart.ok) {
-      handleError(signupStart.error);
+      handleError(signupStart);
       return;
     }
 
@@ -35,7 +34,7 @@ async function handleFormSubmit(event) {
     });
 
     if (!signupFinish.ok) {
-      handleError(signupFinish.error);
+      handleError(signupFinish);
       return;
     }
 
@@ -58,28 +57,31 @@ function handleUsernameInput() {
   form.username.setCustomValidity("");
 }
 
-function createErrorHandler(username) {
-  return (error) => {
-    toggleFormBuisy(form);
+function handleError(error) {
+  toggleFormBuisy(form);
 
-    if (error === "UsernameTaken") {
-      form.username.setCustomValidity(`Sorry, username "${username}" is taken`);
-      form.username.reportValidity();
+  // Routed to the field itself rather than a generic alert; `detail` already
+  // has the username baked in (see respondConflict in handleSignupStart).
+  if (error.code === "USERNAME_TAKEN") {
+    form.username.setCustomValidity(error.detail);
+    form.username.reportValidity();
+    return;
+  }
+
+  let msg;
+  if (error instanceof Error) {
+    // The user dismissed the passkey prompt; not an error worth showing.
+    if (error.name === "NotAllowedError") {
       return;
     }
-
-    let msg;
-    if (error instanceof Error) {
-      // The user dismissed the passkey prompt; not an error worth showing.
-      if (error.name === "NotAllowedError") {
-        return;
-      }
-      console.error(error);
-      if (!navigator.onLine) {
-        msg = "Network is offline";
-      }
+    console.error(error);
+    if (!navigator.onLine) {
+      msg = "Network is offline";
     }
+  } else {
+    // Server-provided, human-readable explanation (RFC 9457 `detail`).
+    msg = error.detail;
+  }
 
-    showAlert(msg || "Something went wrong");
-  };
+  showAlert(msg || "Something went wrong");
 }

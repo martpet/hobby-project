@@ -1,5 +1,8 @@
 import { createRegOptions } from "@features/passkeys/ceremony/reg-options.ts";
-import { USERNAME_PATTERN_REGEX } from "@features/users/const.ts";
+import {
+  USERNAME_PATTERN_DESCRIPTION,
+  USERNAME_PATTERN_REGEX,
+} from "@features/users/const.ts";
 import { getUserByUsername } from "@features/users/kv.ts";
 import { Context } from "@shared/context.ts";
 import { respondBadRequest } from "@shared/responses/bad-request.ts";
@@ -14,11 +17,11 @@ export async function handleSignupStart(c: Context) {
   const { username } = await c.req.json();
 
   if (!username) {
-    return respondBadRequest("UsernameMissing");
+    return respondBadRequest({ detail: "A username is required" });
   }
 
   if (!USERNAME_PATTERN_REGEX.test(username)) {
-    return respondBadRequest("BadUsernameFormat");
+    return respondBadRequest({ detail: USERNAME_PATTERN_DESCRIPTION });
   }
 
   // Early rejection for UX only; the authoritative uniqueness check is the
@@ -26,7 +29,9 @@ export async function handleSignupStart(c: Context) {
   const entry = await getUserByUsername(username);
 
   if (entry.value) {
-    return respondConflict("UsernameTaken");
+    return respondConflict("USERNAME_TAKEN", {
+      detail: `Sorry, username "${username}" is taken`,
+    });
   }
 
   const headers = new Headers();
