@@ -5,18 +5,17 @@
 // ready-made, human-readable message — without caring whether the server
 // sent JSON or a plain-text body. Network failures still reject like
 // `fetch` does.
-export async function apiFetch(path, opts = {}) {
-  let { method, body, json, headers = {} } = opts;
-  headers = new Headers(headers);
+export async function apiFetch(path, { json, ...init } = {}) {
+  init.headers = new Headers(init.headers);
 
   if (json) {
-    body = JSON.stringify(json);
-    headers.set("content-type", "application/json");
+    init.body = JSON.stringify(json);
+    init.headers.set("content-type", "application/json");
   }
-  const res = await fetch(path, { method, body, headers });
-  const resContType = res.headers.get("content-type");
-  const isProblemJson = resContType?.includes("application/problem+json");
-  const isResJson = isProblemJson || resContType?.includes("application/json");
+  const res = await fetch(path, init);
+  const contType = res.headers.get("content-type");
+  const isProblemJson = contType?.includes("application/problem+json");
+  const isJson = isProblemJson || contType?.includes("application/json");
   const result = { ok: res.ok, status: res.status };
 
   // Errors are served as Problem Details (RFC 9457, see respondForbidden and
@@ -25,21 +24,21 @@ export async function apiFetch(path, opts = {}) {
   // §3.1 — never parse `detail` for information). The whole object still
   // goes on `value` because the extra data (e.g. a WebAuthn signal) is
   // useful even on failure.
-  if (isResJson) {
-    const data = await res.json();
-    result.value = data;
+  if (isJson) {
+    const resJson = await res.json();
+    result.value = resJson;
     if (isProblemJson) {
-      result.code = data.code;
-      result.detail = data.detail;
+      result.code = resJson.code;
+      result.detail = resJson.detail;
     }
   } else {
-    const data = await res.text();
+    const resText = await res.text();
     if (!res.ok) {
       // No structured Problem Details available (e.g. an infra-level error
       // page); the raw text is the best-effort message.
-      result.detail = data;
+      result.detail = resText;
     } else {
-      result.value = data;
+      result.value = resText;
     }
   }
   return result;
