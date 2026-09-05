@@ -17,10 +17,6 @@ export const FLASH = {
     type: "success",
     msg: "Reauthenticated",
   },
-  "PasskeyAccountMismatch": {
-    type: "info",
-    msg: "That passkey belongs to a different account.",
-  },
   "AccountDeleted": {
     type: "success",
     msg: "Account Deleted",

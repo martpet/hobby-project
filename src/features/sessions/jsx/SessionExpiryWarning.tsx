@@ -1,7 +1,10 @@
 import { Context } from "@shared/context.ts";
 import { relativeTime } from "@shared/intl.ts";
 import { CloseButton } from "@shared/jsx/CloseButton.tsx";
-import { getAbsoluteExpiresAt, isSessionExpiringSoon } from "../helpers.ts";
+import {
+  getSessionAbsoluteExpiresAt,
+  isSessionExpiringSoon,
+} from "../helpers.ts";
 import { LogInButton } from "./LogInButton.tsx";
 
 const SESSION_EXPIRY_DIALOG = "session-expiry-dialog";
@@ -11,7 +14,7 @@ export function SessionExpiryWarning(_props: unknown, c: Context) {
     return;
   }
 
-  const expiryDelta = getAbsoluteExpiresAt(c.session) - Date.now();
+  const expiryDelta = getSessionAbsoluteExpiresAt(c.session) - Date.now();
   const expiresIn = relativeTime(c, expiryDelta);
 
   return (

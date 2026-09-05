@@ -1,6 +1,11 @@
-import { DAY, MINUTE, WEEK } from "@std/datetime";
+import { DAY, MINUTE, SECOND, WEEK } from "@std/datetime";
 
 export const SESSION_IDLE_TIMEOUT = DAY;
 export const SESSION_ABSOLUTE_TIMEOUT = WEEK;
 export const SESSION_ACTIVITY_INTERVAL = MINUTE * 5;
 export const SESSION_EXPIRY_WARNING_THRESHOLD = DAY;
+
+// How recently the user must have completed a passkey ceremony (login or
+// reauth) for sensitive actions like account deletion to proceed without
+// prompting for reauthentication.
+export const SENSITIVE_ACTION_MAX_AUTH_AGE = SECOND * 20;

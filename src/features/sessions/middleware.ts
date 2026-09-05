@@ -8,7 +8,7 @@ import { deleteSessionCookie, getSessionCookie } from "./cookie.ts";
 import {
   destroySessionIfUnchanged,
   extendCurrentSession,
-  getAbsoluteExpiresAt,
+  getSessionAbsoluteExpiresAt,
 } from "./helpers.ts";
 import { getSessionByCookie } from "./kv.ts";
 
@@ -41,7 +41,7 @@ export const sessionMid: Middleware = (next) => async (c) => {
   }
 
   const now = Date.now();
-  const absoluteExpiresAt = getAbsoluteExpiresAt(session);
+  const absoluteExpiresAt = getSessionAbsoluteExpiresAt(session);
 
   if (
     session.expiresAt <= now ||

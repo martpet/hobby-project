@@ -57,7 +57,9 @@ export function showAlert(msg, type = "danger") {
   dialog.append(closeButton);
 
   (document.getElementById("alerts") ?? document.body).append(dialog);
-  dialog.show();
+  // showModal (not show) so the alert enters the top layer, rendering
+  // above any already-open modal dialog rather than behind it.
+  dialog.showModal();
 }
 
 // WebAuthn signals are fire-and-forget and unsupported in some browsers, so
@@ -69,4 +71,35 @@ export async function trySendWebAuthnSignal(opts) {
   } catch (error) {
     console.debug(error);
   }
+}
+
+// Runs a passkey authentication ceremony against the login endpoints. When
+// already authenticated, the server treats this as a reauth and refreshes
+// the session. May reject (e.g. NotAllowedError if the user cancels).
+export async function authenticateWithPasskey() {
+  const [loginStart, { startAuthentication }] = await Promise.all([
+    apiFetch("/login/start", { method: "POST" }),
+    import("simplewebauthn"),
+  ]);
+
+  if (!loginStart.ok) {
+    return loginStart;
+  }
+
+  const authResponseJson = await startAuthentication({
+    optionsJSON: loginStart.value,
+  });
+
+  const loginFinish = await apiFetch("/login/finish", {
+    method: "POST",
+    json: authResponseJson,
+  });
+
+  // Present on both outcomes: unknownCredential on a rejected passkey,
+  // allAcceptedCredentials after a successful login.
+  if (loginFinish.value?.signal) {
+    await trySendWebAuthnSignal(loginFinish.value.signal);
+  }
+
+  return loginFinish;
 }

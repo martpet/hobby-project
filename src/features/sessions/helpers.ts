@@ -6,6 +6,7 @@ import { generateToken } from "@shared/crypto.ts";
 import { kv } from "@shared/kv.ts";
 import { decodeTime } from "@std/ulid";
 import {
+  SENSITIVE_ACTION_MAX_AUTH_AGE,
   SESSION_ABSOLUTE_TIMEOUT,
   SESSION_EXPIRY_WARNING_THRESHOLD,
   SESSION_IDLE_TIMEOUT,
@@ -18,13 +19,24 @@ import {
 } from "./kv.ts";
 import { Session } from "./types.ts";
 
-export function getAbsoluteExpiresAt(session: Session) {
-  return decodeTime(session.id) + SESSION_ABSOLUTE_TIMEOUT;
+// The session id is a ULID minted whenever a passkey ceremony completes
+// (login or reauth), so decoding it gives the time of last authentication.
+export function getSessionAuthTime(session: Session) {
+  return decodeTime(session.id);
+}
+
+export function getSessionAbsoluteExpiresAt(session: Session) {
+  return getSessionAuthTime(session) + SESSION_ABSOLUTE_TIMEOUT;
 }
 
 export function isSessionExpiringSoon(session: Session) {
-  return getAbsoluteExpiresAt(session) - Date.now() <=
+  return getSessionAbsoluteExpiresAt(session) - Date.now() <=
     SESSION_EXPIRY_WARNING_THRESHOLD;
+}
+
+export function isReauthRequiredForSensitiveAction(session: Session) {
+  return Date.now() - getSessionAuthTime(session) >
+    SENSITIVE_ACTION_MAX_AUTH_AGE;
 }
 
 export async function createSession(c: Context, res: Response, userId: string) {
@@ -69,7 +81,7 @@ export async function extendCurrentSession(
   const session = sessionEntry.value;
   const now = Date.now();
 
-  const absoluteExpiresAt = getAbsoluteExpiresAt(session);
+  const absoluteExpiresAt = getSessionAbsoluteExpiresAt(session);
 
   const duration = Math.min(
     SESSION_IDLE_TIMEOUT,

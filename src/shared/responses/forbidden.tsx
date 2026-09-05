@@ -8,18 +8,19 @@ export function respondForbidden(
   c: Context,
   reason?: string,
   data?: Record<string, unknown>,
+  init?: ResponseInit,
 ) {
   const status = STATUS_CODE["Forbidden"];
 
   if (requestAcceptsHtml(c)) {
-    return render(c, <ForbiddenPage reason={reason} />, { status });
+    return render(c, <ForbiddenPage reason={reason} />, { ...init, status });
   }
 
   const msg = reason || STATUS_TEXT[status];
 
   if (data) {
-    return Response.json({ error: msg, ...data }, { status });
+    return Response.json({ error: msg, ...data }, { ...init, status });
   }
 
-  return new Response(msg, { status });
+  return new Response(msg, { ...init, status });
 }

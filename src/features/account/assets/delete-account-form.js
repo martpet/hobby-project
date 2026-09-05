@@ -1,5 +1,6 @@
 import {
   apiFetch,
+  authenticateWithPasskey,
   showAlert,
   toggleFormBuisy,
   trySendWebAuthnSignal,
@@ -14,7 +15,18 @@ async function handleFormSubmit(event) {
   toggleFormBuisy(form);
 
   try {
-    const accountDelete = await apiFetch(form.action, { method: "POST" });
+    let accountDelete = await apiFetch(form.action, { method: "POST" });
+
+    if (accountDelete.error === "ReauthRequired") {
+      const reauth = await authenticateWithPasskey();
+
+      if (!reauth.ok) {
+        handleError(reauth.error);
+        return;
+      }
+
+      accountDelete = await apiFetch(form.action, { method: "POST" });
+    }
 
     if (!accountDelete.ok) {
       handleError(accountDelete.error);
@@ -40,7 +52,12 @@ function handleError(error) {
   toggleFormBuisy(form);
 
   let msg;
-  if (error instanceof Error) {
+  if (error === "PasskeyAccountMismatch") {
+    msg = "That passkey belongs to a different account.";
+  } else if (error instanceof Error) {
+    if (error.name === "NotAllowedError") {
+      return;
+    }
     console.error(error);
     if (!navigator.onLine) {
       msg = "Network is offline";

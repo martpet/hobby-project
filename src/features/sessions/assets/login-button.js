@@ -1,9 +1,4 @@
-import {
-  apiFetch,
-  showAlert,
-  toggleButtonLoading,
-  trySendWebAuthnSignal,
-} from "util";
+import { authenticateWithPasskey, showAlert, toggleButtonLoading } from "util";
 
 const loginButtons = document.getElementsByClassName("login-button");
 
@@ -17,30 +12,7 @@ async function handleButtonClick({ target }) {
   const handleError = createErrorHandler(target);
 
   try {
-    const [loginStart, { startAuthentication }] = await Promise.all([
-      apiFetch("/login/start", { method: "POST" }),
-      import("simplewebauthn"),
-    ]);
-
-    if (!loginStart.ok) {
-      handleError(loginStart.error);
-      return;
-    }
-
-    const authResponseJson = await startAuthentication({
-      optionsJSON: loginStart.value,
-    });
-
-    const loginFinish = await apiFetch("/login/finish", {
-      method: "POST",
-      json: authResponseJson,
-    });
-
-    // Present on both outcomes: unknownCredential on a rejected passkey,
-    // allAcceptedCredentials after a successful login.
-    if (loginFinish.value?.signal) {
-      await trySendWebAuthnSignal(loginFinish.value.signal);
-    }
+    const loginFinish = await authenticateWithPasskey();
 
     if (!loginFinish.ok) {
       handleError(loginFinish.error);
@@ -62,7 +34,9 @@ function createErrorHandler(button) {
       msg = "This passkey is no longer valid";
     } else if (error === "AccountDeleted") {
       msg =
-        "This account has been deleted. You can delete your passkey from the authenticator.";
+        "Your account has been deleted. You can delete the passkey from the authenticator.";
+    } else if (error === "PasskeyAccountMismatch") {
+      msg = "That passkey belongs to a different account.";
     } else if (error instanceof Error) {
       if (error.name === "NotAllowedError") {
         return;

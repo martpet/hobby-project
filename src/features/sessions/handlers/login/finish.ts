@@ -24,19 +24,23 @@ export async function handleLogInFinish(c: Context) {
 
   if (!verification.ok) {
     const { reason, signal } = verification;
-    return respondForbidden(c, reason, { signal });
+    return respondForbidden(c, reason, { signal }, { headers: res.headers });
   }
 
   const { passkey } = verification;
   const isReauthenticating = isAuthenticatedContext(c);
 
   if (isReauthenticating && c.session.userId !== passkey.userId) {
-    setFlash(res, "PasskeyAccountMismatch");
-    return res;
+    // A real error response (rather than a flash cookie on `res`), so
+    // fetch-driven reauth flows can detect and act on the mismatch
+    // immediately instead of relying on a subsequent page reload.
+    return respondForbidden(c, "PasskeyAccountMismatch", undefined, {
+      headers: res.headers,
+    });
   }
 
   if (!await createSession(c, res, passkey.userId)) {
-    return respondForbidden(c);
+    return respondForbidden(c, undefined, undefined, { headers: res.headers });
   }
 
   if (isReauthenticating) {
