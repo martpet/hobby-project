@@ -39,6 +39,33 @@ export function isReauthRequiredForSensitiveAction(session: Session) {
     SENSITIVE_ACTION_MAX_AUTH_AGE;
 }
 
+// Queues a fresh session for `userId` on `atomic`, built from the request's
+// UA/IP. The caller commits and, on success, calls `setNewSessionCookie`.
+// Lets signup create user, passkey and session in one commit.
+export function stageSession(
+  c: Context,
+  userId: string,
+  atomic: Deno.AtomicOperation,
+) {
+  const now = Date.now();
+
+  return setSession({
+    cookie: generateToken(),
+    userId,
+    expiresAt: now + SESSION_IDLE_TIMEOUT,
+    lastActive: now,
+    browser: c.ua.browser.name,
+    os: c.ua.os.name,
+    ip: c.ip,
+  }, atomic);
+}
+
+export function setNewSessionCookie(headers: Headers, session: Session) {
+  setSessionCookie(headers, session.expiresAt - Date.now(), session.cookie);
+}
+
+// Standalone login: verifies the user still exists and commits the session
+// on its own. Signup uses `stageSession` directly instead.
 export async function createSession(
   c: Context,
   headers: Headers,
@@ -50,23 +77,13 @@ export async function createSession(
     return false;
   }
 
-  const now = Date.now();
   const atomic = kv.atomic();
-  const cookie = generateToken();
 
   // Fails the commit if the user was modified or deleted in between, so a
   // session can't be minted for an account that was just removed.
   atomic.check(userEntry);
 
-  setSession({
-    cookie,
-    userId,
-    expiresAt: now + SESSION_IDLE_TIMEOUT,
-    lastActive: now,
-    browser: c.ua.browser.name,
-    os: c.ua.os.name,
-    ip: c.ip,
-  }, atomic);
+  const session = stageSession(c, userId, atomic);
 
   const result = await atomic.commit();
 
@@ -74,7 +91,7 @@ export async function createSession(
     return false;
   }
 
-  setSessionCookie(headers, SESSION_IDLE_TIMEOUT, cookie);
+  setNewSessionCookie(headers, session);
 
   return true;
 }

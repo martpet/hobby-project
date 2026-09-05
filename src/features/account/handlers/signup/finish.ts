@@ -1,6 +1,9 @@
 import { verifyRegResponseJson } from "@features/passkeys/ceremony/reg-verify.ts";
 import { setPasskey } from "@features/passkeys/kv.ts";
-import { createSession } from "@features/sessions/helpers.ts";
+import {
+  setNewSessionCookie,
+  stageSession,
+} from "@features/sessions/helpers.ts";
 import { setUser, USERS_BY_USERNAME } from "@features/users/kv.ts";
 import { Context } from "@shared/context.ts";
 import { kv } from "@shared/kv.ts";
@@ -38,17 +41,18 @@ export async function handleSignupFinish(c: Context) {
 
   setPasskey({ ...passkey, userId: user.id }, atomic);
 
+  // User, passkey and session land in one commit, so there is no window in
+  // which the account exists but the signup response can't log the user in.
+  const session = stageSession(c, user.id, atomic);
+
   const commit = await atomic.commit();
 
+  // The username check above is the only thing that can fail the commit.
   if (!commit.ok) {
     return respondConflict("UsernameTaken", { init: { headers } });
   }
 
-  // Only a KV race can fail this; the account itself was committed above, so
-  // the user can simply sign in with the passkey they just registered.
-  if (!await createSession(c, headers, user.id)) {
-    return respondForbidden(c, { init: { headers } });
-  }
+  setNewSessionCookie(headers, session);
 
   return new Response(null, { headers });
 }
