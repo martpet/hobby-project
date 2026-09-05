@@ -3,7 +3,7 @@ import {
   CACHEABLE_STATUS_CODES,
   DEFAULT_UNAUTHENTICATED_CACHE_CONTROL,
 } from "./const.ts";
-import { addVaryCookie, toPrivateCacheControl } from "@shared/cache-control.ts";
+import { addVaryCookie, toPrivateCacheControl } from "@shared/header/cache-control.ts";
 import { isAuthenticatedContext } from "@shared/context.ts";
 import { Middleware } from "@shared/types.ts";
 import { StatusCode } from "@std/http";

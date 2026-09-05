@@ -3,7 +3,7 @@ import { Session } from "@features/sessions/types.ts";
 import { User } from "@features/users/types.ts";
 import { ScriptKey } from "@shared/asset/registry.ts";
 import { DEFAULT_LOCALE } from "@shared/const.ts";
-import { getAcceptLanguage } from "@shared/header.ts";
+import { getAcceptLanguage } from "@shared/header/negotiation.ts";
 import { UserAgent } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { Method } from "@std/http/unstable-method";

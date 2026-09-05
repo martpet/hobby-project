@@ -1,4 +1,4 @@
-import { getSharedFreshnessLifetime } from "@shared/cache-control.ts";
+import { getSharedFreshnessLifetime } from "@shared/header/cache-control.ts";
 import { Context } from "@shared/context.ts";
 import { SECOND } from "@std/datetime";
 import { isErrorStatus, StatusCode } from "@std/http";

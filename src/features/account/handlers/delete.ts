@@ -10,7 +10,7 @@ import { isReauthRequiredForSensitiveAction } from "@features/sessions/helpers.t
 import { deleteSession, listSessionsByUserId } from "@features/sessions/kv.ts";
 import { deleteUser } from "@features/users/kv.ts";
 import { Context, isAuthenticatedContext } from "@shared/context.ts";
-import { requestAcceptsHtml } from "@shared/header.ts";
+import { requestAcceptsHtml } from "@shared/header/negotiation.ts";
 import { kv } from "@shared/kv.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
 import { respondMethodNotAllowed } from "@shared/responses/method-not-allowed.tsx";

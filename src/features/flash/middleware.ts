@@ -1,5 +1,5 @@
-import { cacheNoStoreOnCookieChange } from "@shared/cache-control.ts";
-import { responseIsHtml } from "@shared/header.ts";
+import { cacheNoStoreOnCookieChange } from "@shared/header/cache-control.ts";
+import { responseIsHtml } from "@shared/header/negotiation.ts";
 import { Middleware } from "@shared/types.ts";
 import { deleteFlashCookie, getFlashCookie, hasFlashCookie } from "./cookie.ts";
 

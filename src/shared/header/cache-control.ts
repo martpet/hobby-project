@@ -1,5 +1,5 @@
 import { Context } from "@shared/context.ts";
-import { isWebKit } from "@shared/header.ts";
+import { isWebKit } from "@shared/header/user-agent.ts";
 import { MINUTE, SECOND } from "@std/datetime";
 import { HEADER } from "@std/http/unstable-header";
 

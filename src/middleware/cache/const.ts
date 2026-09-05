@@ -1,6 +1,6 @@
-import { DEFAULT_MAX_AGE } from "@shared/cache-control.ts";
+import { DEFAULT_MAX_AGE } from "@shared/header/cache-control.ts";
 import { APP_ID, GIT_SHA } from "@shared/const.ts";
-import { toStructuredFieldItem } from "@shared/header.ts";
+import { toStructuredFieldItem } from "@shared/header/structured-field.ts";
 import { STATUS_CODE, StatusCode } from "@std/http";
 import { METHOD, Method } from "@std/http/unstable-method";
 

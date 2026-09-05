@@ -1,4 +1,4 @@
-import { DEFAULT_MAX_AGE } from "@shared/cache-control.ts";
+import { DEFAULT_MAX_AGE } from "@shared/header/cache-control.ts";
 import { Context } from "@shared/context.ts";
 import { NotFoundPage } from "@shared/jsx/pages/NotFound.tsx";
 import { respondPageOrBody } from "@shared/responses/page-or-body.tsx";

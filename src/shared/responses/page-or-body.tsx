@@ -1,5 +1,5 @@
 import { Context } from "@shared/context.ts";
-import { requestAcceptsHtml } from "@shared/header.ts";
+import { requestAcceptsHtml } from "@shared/header/negotiation.ts";
 import { render } from "@shared/render.ts";
 import { StatusCode } from "@std/http";
 import { VNode } from "preact";

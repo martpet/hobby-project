@@ -1,6 +1,6 @@
 import { Middleware } from "@shared/types.ts";
-import { appCacheMid } from "./app-cache.ts";
-import { cacheControlMid } from "./cache-control.ts";
+import { appCacheMid } from "./app-cache-mid.ts";
+import { cacheControlMid } from "./cache-control-mid.ts";
 
 // The cache middleware registered in `main.ts`. `appCacheMid` (server-side
 // store) wraps `cacheControlMid` (downstream headers) so responses stored in
