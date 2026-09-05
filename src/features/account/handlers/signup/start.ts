@@ -1,4 +1,4 @@
-import { respondRegOptions } from "@features/passkeys/ceremony/reg-options.ts";
+import { createRegOptions } from "@features/passkeys/ceremony/reg-options.ts";
 import { USERNAME_PATTERN_REGEX } from "@features/users/const.ts";
 import { getUserByUsername } from "@features/users/kv.ts";
 import { Context } from "@shared/context.ts";
@@ -32,5 +32,8 @@ export async function handleSignupStart(c: Context) {
     return respondConflict("UsernameTaken");
   }
 
-  return respondRegOptions(username);
+  const headers = new Headers();
+  const regOptions = await createRegOptions(headers, username);
+
+  return Response.json(regOptions, { headers });
 }

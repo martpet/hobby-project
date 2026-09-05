@@ -1,4 +1,3 @@
-import { cacheNoStore } from "@shared/cache-control.ts";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import {
   WEBAUTHN_RP_ID,
@@ -8,22 +7,18 @@ import {
 import { setPasskeyAuthCookie } from "../cookie.ts";
 import { setPasskeyAuthOptions } from "../kv.ts";
 
-export async function respondAuthOptions() {
+export async function createAuthOptions(headers: Headers) {
   const authOptions = await generateAuthenticationOptions({
     rpID: WEBAUTHN_RP_ID,
     userVerification: WEBAUTHN_USER_VERIFICATION,
     timeout: WEBAUTHN_TIMEOUT,
   });
 
-  const res = Response.json(authOptions);
-
-  cacheNoStore(res.headers);
-
   await setPasskeyAuthOptions({
-    cookie: setPasskeyAuthCookie(res.headers),
+    cookie: setPasskeyAuthCookie(headers),
     value: authOptions,
     expiresAt: Date.now() + WEBAUTHN_TIMEOUT,
   });
 
-  return res;
+  return authOptions;
 }

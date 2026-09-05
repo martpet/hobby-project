@@ -25,7 +25,7 @@ export async function handleSignupFinish(c: Context) {
   const verification = await verifyRegResponseJson(c, headers, regResponseJson);
 
   if (!verification.ok) {
-    return respondForbidden(c);
+    return respondForbidden(c, { init: { headers } });
   }
 
   const { username, passkey } = verification;
@@ -43,11 +43,11 @@ export async function handleSignupFinish(c: Context) {
   const commit = await atomic.commit();
 
   if (!commit.ok) {
-    return respondConflict("UsernameTaken");
+    return respondConflict("UsernameTaken", { init: { headers } });
   }
 
   if (!await createSession(c, headers, user.id)) {
-    return respondForbidden(c);
+    return respondForbidden(c, { init: { headers } });
   }
 
   return new Response(null, { headers });
