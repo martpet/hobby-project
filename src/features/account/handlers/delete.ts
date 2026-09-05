@@ -4,7 +4,7 @@ import {
   listPasskeysByUserId,
   tombstonePasskey,
 } from "@features/passkeys/kv.ts";
-import { getNoAcceptedCredentialsSignals } from "@features/passkeys/webauthn-signals.ts";
+import { getNoAcceptedCredentialsSignals } from "@features/passkeys/signals.ts";
 import { deleteSessionCookie } from "@features/sessions/cookie.ts";
 import { isReauthRequiredForSensitiveAction } from "@features/sessions/helpers.ts";
 import { deleteSession, listSessionsByUserId } from "@features/sessions/kv.ts";

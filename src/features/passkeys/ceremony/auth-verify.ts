@@ -15,7 +15,7 @@ import {
   setPasskey,
 } from "../kv.ts";
 import { Passkey } from "../types.ts";
-import { getUnknownCredentialSignal } from "../webauthn-signals.ts";
+import { getUnknownCredentialSignal } from "../signals.ts";
 
 type AuthVerificationResult = {
   ok: true;

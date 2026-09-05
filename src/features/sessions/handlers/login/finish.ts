@@ -1,6 +1,6 @@
 import { setFlash } from "@features/flash/helpers.ts";
 import { verifiyAuthResponseJson } from "@features/passkeys/ceremony/auth-verify.ts";
-import { getAllAcceptedCredentialsSignal } from "@features/passkeys/webauthn-signals.ts";
+import { getAllAcceptedCredentialsSignal } from "@features/passkeys/signals.ts";
 import { Context, isAuthenticatedContext } from "@shared/context.ts";
 import { respondBadRequest } from "@shared/responses/bad-request.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
