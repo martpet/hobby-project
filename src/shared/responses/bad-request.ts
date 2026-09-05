@@ -1,6 +1,10 @@
 import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 
-export function respondBadRequest(input?: string | object) {
+export function respondBadRequest(
+  input?: string | object,
+  opts?: { init?: ResponseInit },
+) {
+  const { init } = opts ?? {};
   const status = STATUS_CODE["BadRequest"];
   let body;
 
@@ -12,5 +16,5 @@ export function respondBadRequest(input?: string | object) {
     body = JSON.stringify(input);
   }
 
-  return new Response(body, { status });
+  return new Response(body, { ...init, status });
 }

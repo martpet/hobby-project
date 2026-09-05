@@ -1,8 +1,7 @@
 import { DEFAULT_MAX_AGE } from "@shared/cache-control.ts";
 import { Context } from "@shared/context.ts";
-import { requestAcceptsHtml } from "@shared/header.ts";
 import { NotFoundPage } from "@shared/jsx/pages/NotFound.tsx";
-import { render } from "@shared/render.ts";
+import { respondPageOrBody } from "@shared/responses/page-or-body.tsx";
 import { STATUS_CODE, STATUS_TEXT } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 
@@ -12,11 +11,7 @@ const CACHE_CONTROL = `private, max-age=${DEFAULT_MAX_AGE}`;
 
 export function respondNotFound(c: Context) {
   const status = STATUS_CODE["NotFound"];
-  const headers = { [HEADER.CacheControl]: CACHE_CONTROL };
+  const init = { status, headers: { [HEADER.CacheControl]: CACHE_CONTROL } };
 
-  if (requestAcceptsHtml(c)) {
-    return render(c, <NotFoundPage />, { status, headers });
-  }
-
-  return new Response(STATUS_TEXT[status], { status, headers });
+  return respondPageOrBody(c, <NotFoundPage />, STATUS_TEXT[status], init);
 }
