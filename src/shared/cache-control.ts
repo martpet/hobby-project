@@ -31,8 +31,8 @@ function stringifyDirectives(directives: Map<string, string | null>) {
   ).join(", ");
 }
 
-export function cacheNoStore(res: Response) {
-  res.headers.set(HEADER.CacheControl, "no-store");
+export function cacheNoStore(headers: Headers) {
+  headers.set(HEADER.CacheControl, "no-store");
 }
 
 // Call this on any cacheable response that changes a cookie the response
@@ -48,20 +48,20 @@ export function cacheNoStore(res: Response) {
 // Blink and Gecko snapshot the request's Cookie header and need nothing.
 // `max-age=0, must-revalidate` would be the only equivalent alternative;
 // `Vary` tricks are not (Vary only matches *request* headers).
-export function cacheNoStoreOnCookieChange(c: Context, res: Response) {
+export function cacheNoStoreOnCookieChange(c: Context, headers: Headers) {
   if (isWebKit(c.ua.engine)) {
-    cacheNoStore(res);
+    cacheNoStore(headers);
   }
 }
 
-export function toPrivateCacheControl(res: Response) {
-  const directives = parseDirectives(res.headers.get(HEADER.CacheControl));
+export function toPrivateCacheControl(headers: Headers) {
+  const directives = parseDirectives(headers.get(HEADER.CacheControl));
 
   directives.delete("public");
   directives.delete("s-maxage");
   directives.set("private", null);
 
-  res.headers.set(HEADER.CacheControl, stringifyDirectives(directives));
+  headers.set(HEADER.CacheControl, stringifyDirectives(directives));
 }
 
 // Freshness lifetime in seconds for a shared cache (`s-maxage` wins over
@@ -74,10 +74,10 @@ export function getSharedFreshnessLifetime(res: Response) {
   return Number.isFinite(seconds) && seconds >= 0 ? seconds : undefined;
 }
 
-export function addVaryCookie(res: Response) {
-  const directives = parseDirectives(res.headers.get(HEADER.Vary));
+export function addVaryCookie(headers: Headers) {
+  const directives = parseDirectives(headers.get(HEADER.Vary));
 
   directives.set("cookie", null);
 
-  res.headers.set(HEADER.Vary, stringifyDirectives(directives));
+  headers.set(HEADER.Vary, stringifyDirectives(directives));
 }

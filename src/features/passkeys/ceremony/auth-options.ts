@@ -17,12 +17,10 @@ export async function respondAuthOptions() {
 
   const res = Response.json(authOptions);
 
-  cacheNoStore(res);
-
-  const cookie = setPasskeyAuthCookie(res);
+  cacheNoStore(res.headers);
 
   await setPasskeyAuthOptions({
-    cookie,
+    cookie: setPasskeyAuthCookie(res.headers),
     value: authOptions,
     expiresAt: Date.now() + WEBAUTHN_TIMEOUT,
   });

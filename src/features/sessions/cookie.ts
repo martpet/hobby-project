@@ -12,11 +12,11 @@ const COOKIE_ATTRIBUTES = {
 };
 
 export function setSessionCookie(
-  res: Response,
+  headers: Headers,
   duration: number,
   value: string,
 ) {
-  setCookie(res.headers, {
+  setCookie(headers, {
     name: SESSION_COOKIE,
     value,
     sameSite: "Lax",
@@ -31,6 +31,6 @@ export function getSessionCookie(c: Context) {
   return getCookies(c.req.headers)[SESSION_COOKIE];
 }
 
-export function deleteSessionCookie(res: Response) {
-  deleteCookie(res.headers, SESSION_COOKIE, COOKIE_ATTRIBUTES);
+export function deleteSessionCookie(headers: Headers) {
+  deleteCookie(headers, SESSION_COOKIE, COOKIE_ATTRIBUTES);
 }

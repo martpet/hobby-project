@@ -28,7 +28,7 @@ export const cacheControlMid: Middleware = (next) => async (c) => {
   const cacheControl = res.headers.get(HEADER.CacheControl) ?? "";
 
   if (isAuthenticatedContext(c)) {
-    toPrivateCacheControl(res);
+    toPrivateCacheControl(res.headers);
   } else if (!cacheControl) {
     res.headers.set(HEADER.CacheControl, DEFAULT_UNAUTHENTICATED_CACHE_CONTROL);
   }
@@ -40,7 +40,7 @@ export const cacheControlMid: Middleware = (next) => async (c) => {
     !finalCacheControl.includes("no-store") &&
     !finalCacheControl.includes("immutable")
   ) {
-    addVaryCookie(res);
+    addVaryCookie(res.headers);
   }
 
   return res;

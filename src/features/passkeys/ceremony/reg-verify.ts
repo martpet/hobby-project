@@ -18,7 +18,7 @@ type RegVerificationResult = {
 
 export async function verifyRegResponseJson(
   c: Context,
-  res: Response,
+  headers: Headers,
   regResponseJson: RegistrationResponseJSON,
 ): Promise<RegVerificationResult> {
   const cookie = getPasskeyRegCookie(c);
@@ -27,7 +27,7 @@ export async function verifyRegResponseJson(
 
   if (cookie) {
     regOptions = (await getPasskeyRegOptions(cookie)).value;
-    deletePasskeyRegCookie(res);
+    deletePasskeyRegCookie(headers);
   }
 
   if (regOptions) {

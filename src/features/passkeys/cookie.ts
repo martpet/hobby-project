@@ -14,10 +14,10 @@ const COOKIE_ATTRIBUTES = {
   httpOnly: true,
 };
 
-export function setPasskeyRegCookie(res: Response) {
+export function setPasskeyRegCookie(headers: Headers) {
   const value = generateToken();
 
-  setCookie(res.headers, {
+  setCookie(headers, {
     name: PASSKEY_REG_COOKIE,
     value,
     sameSite: "Strict",
@@ -28,10 +28,10 @@ export function setPasskeyRegCookie(res: Response) {
   return value;
 }
 
-export function setPasskeyAuthCookie(res: Response) {
+export function setPasskeyAuthCookie(headers: Headers) {
   const value = generateToken();
 
-  setCookie(res.headers, {
+  setCookie(headers, {
     name: PASSKEY_AUTH_COOKIE,
     value,
     sameSite: "Strict",
@@ -50,10 +50,10 @@ export function getPasskeyAuthCookie(c: Context) {
   return getCookies(c.req.headers)[PASSKEY_AUTH_COOKIE];
 }
 
-export function deletePasskeyRegCookie(res: Response) {
-  deleteCookie(res.headers, PASSKEY_REG_COOKIE, COOKIE_ATTRIBUTES);
+export function deletePasskeyRegCookie(headers: Headers) {
+  deleteCookie(headers, PASSKEY_REG_COOKIE, COOKIE_ATTRIBUTES);
 }
 
-export function deletePasskeyAuthCookie(res: Response) {
-  deleteCookie(res.headers, PASSKEY_AUTH_COOKIE, COOKIE_ATTRIBUTES);
+export function deletePasskeyAuthCookie(headers: Headers) {
+  deleteCookie(headers, PASSKEY_AUTH_COOKIE, COOKIE_ATTRIBUTES);
 }

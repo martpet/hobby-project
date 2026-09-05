@@ -28,7 +28,7 @@ type AuthVerificationResult = {
 
 export async function verifiyAuthResponseJson(
   c: Context,
-  res: Response,
+  headers: Headers,
   authResponseJson: AuthenticationResponseJSON,
 ): Promise<AuthVerificationResult> {
   const cookie = getPasskeyAuthCookie(c);
@@ -37,7 +37,7 @@ export async function verifiyAuthResponseJson(
 
   if (cookie) {
     authOptions = (await getPasskeyAuthOptions(cookie)).value;
-    deletePasskeyAuthCookie(res);
+    deletePasskeyAuthCookie(headers);
   }
 
   if (authOptions) {

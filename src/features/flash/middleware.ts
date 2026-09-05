@@ -11,8 +11,8 @@ export const flashMid: Middleware = (next) => async (c) => {
   // Clear the cookie once shown — or immediately if its value is unknown, so
   // a stale cookie doesn't keep being sent.
   if (hasFlashCookie(c) && c.method === "GET" && responseIsHtml(res)) {
-    deleteFlashCookie(res);
-    cacheNoStoreOnCookieChange(c, res);
+    deleteFlashCookie(res.headers);
+    cacheNoStoreOnCookieChange(c, res.headers);
   }
 
   return res;

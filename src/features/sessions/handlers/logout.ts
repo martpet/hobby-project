@@ -35,7 +35,7 @@ export async function handleLogOut(c: Context) {
     }
 
     await destroySession(session);
-    setFlash(res, "SessionRevoked");
+    setFlash(res.headers, "SessionRevoked");
 
     return res;
   }
@@ -43,8 +43,8 @@ export async function handleLogOut(c: Context) {
   const res = respondRedirect("/");
 
   await destroySession(c.session);
-  deleteSessionCookie(res);
-  setFlash(res, "LoggedOut");
+  deleteSessionCookie(res.headers);
+  setFlash(res.headers, "LoggedOut");
 
   return res;
 }

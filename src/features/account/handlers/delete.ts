@@ -56,8 +56,8 @@ export async function handleAccountDelete(c: Context) {
     ? respondRedirect("/")
     : Response.json({ signals: getNoAcceptedCredentialsSignals(passkeys) });
 
-  deleteSessionCookie(res);
-  setFlash(res, "AccountDeleted");
+  deleteSessionCookie(res.headers);
+  setFlash(res.headers, "AccountDeleted");
 
   return res;
 }

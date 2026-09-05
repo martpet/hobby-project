@@ -18,16 +18,20 @@ export async function handleLogInFinish(c: Context) {
     return respondBadRequest("AuthResponseJsonMissing");
   }
 
-  const res = new Response();
+  const headers = new Headers();
 
-  const verification = await verifiyAuthResponseJson(c, res, authResponseJson);
+  const verification = await verifiyAuthResponseJson(
+    c,
+    headers,
+    authResponseJson,
+  );
 
   if (!verification.ok) {
     const { reason, signal } = verification;
     return respondForbidden(c, {
       reason,
       data: { signal },
-      init: { headers: res.headers },
+      init: { headers },
     });
   }
 
@@ -35,25 +39,22 @@ export async function handleLogInFinish(c: Context) {
   const isReauthenticating = isAuthenticatedContext(c);
 
   if (isReauthenticating && c.session.userId !== passkey.userId) {
-    // A real error response (rather than a flash cookie on `res`), so
-    // fetch-driven reauth flows can detect and act on the mismatch
-    // immediately instead of relying on a subsequent page reload.
     return respondForbidden(c, {
       reason: "PasskeyAccountMismatch",
-      init: { headers: res.headers },
+      init: { headers },
     });
   }
 
-  if (!await createSession(c, res, passkey.userId)) {
-    return respondForbidden(c, { init: { headers: res.headers } });
+  if (!await createSession(c, headers, passkey.userId)) {
+    return respondForbidden(c, { init: { headers } });
   }
 
   if (isReauthenticating) {
     await destroySession(c.session);
-    setFlash(res, "Reauthenticated");
+    setFlash(headers, "Reauthenticated");
   }
 
   const signal = await getAllAcceptedCredentialsSignal(passkey);
 
-  return Response.json({ signal }, { headers: res.headers });
+  return Response.json({ signal }, { headers });
 }

@@ -20,9 +20,9 @@ export async function handleSignupFinish(c: Context) {
     return respondBadRequest("RegResponseJsonMissing");
   }
 
-  const res = new Response();
+  const headers = new Headers();
 
-  const verification = await verifyRegResponseJson(c, res, regResponseJson);
+  const verification = await verifyRegResponseJson(c, headers, regResponseJson);
 
   if (!verification.ok) {
     return respondForbidden(c);
@@ -46,9 +46,9 @@ export async function handleSignupFinish(c: Context) {
     return respondConflict("UsernameTaken");
   }
 
-  if (!await createSession(c, res, user.id)) {
+  if (!await createSession(c, headers, user.id)) {
     return respondForbidden(c);
   }
 
-  return res;
+  return new Response(null, { headers });
 }

@@ -24,12 +24,10 @@ export async function respondRegOptions(username: string) {
 
   const res = Response.json(regOptions);
 
-  cacheNoStore(res);
-
-  const cookie = setPasskeyRegCookie(res);
+  cacheNoStore(res.headers);
 
   await setPasskeyRegOptions({
-    cookie,
+    cookie: setPasskeyRegCookie(res.headers),
     value: regOptions,
     expiresAt: Date.now() + WEBAUTHN_TIMEOUT,
   });

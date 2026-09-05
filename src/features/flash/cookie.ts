@@ -13,10 +13,10 @@ const COOKIE_ATTRIBUTES = {
 };
 
 export function setFlashCookie(
-  res: Response,
+  headers: Headers,
   value: FlashKey,
 ) {
-  setCookie(res.headers, {
+  setCookie(headers, {
     name: FLASH_COOKIE,
     value,
     sameSite: "Strict",
@@ -38,6 +38,6 @@ export function getFlashCookie(c: Context): FlashKey | undefined {
     : undefined;
 }
 
-export function deleteFlashCookie(res: Response) {
-  deleteCookie(res.headers, FLASH_COOKIE, COOKIE_ATTRIBUTES);
+export function deleteFlashCookie(headers: Headers) {
+  deleteCookie(headers, FLASH_COOKIE, COOKIE_ATTRIBUTES);
 }

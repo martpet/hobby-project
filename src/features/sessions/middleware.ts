@@ -35,8 +35,8 @@ export const sessionMid: Middleware = (next) => async (c) => {
 
   if (!session) {
     const res = await next(c);
-    deleteSessionCookie(res);
-    cacheNoStoreOnCookieChange(c, res);
+    deleteSessionCookie(res.headers);
+    cacheNoStoreOnCookieChange(c, res.headers);
     return res;
   }
 
@@ -52,9 +52,9 @@ export const sessionMid: Middleware = (next) => async (c) => {
     const res = await next(c);
 
     if (destroyed) {
-      deleteSessionCookie(res);
-      setFlash(res, "SessionExpired");
-      cacheNoStoreOnCookieChange(c, res);
+      deleteSessionCookie(res.headers);
+      setFlash(res.headers, "SessionExpired");
+      cacheNoStoreOnCookieChange(c, res.headers);
     }
 
     return res;
@@ -68,8 +68,8 @@ export const sessionMid: Middleware = (next) => async (c) => {
     const res = await next(c);
 
     if (destroyed) {
-      deleteSessionCookie(res);
-      cacheNoStoreOnCookieChange(c, res);
+      deleteSessionCookie(res.headers);
+      cacheNoStoreOnCookieChange(c, res.headers);
     }
 
     return res;
@@ -84,7 +84,7 @@ export const sessionMid: Middleware = (next) => async (c) => {
     Date.now() - session.lastActive >= SESSION_ACTIVITY_INTERVAL;
 
   if (shouldExtendSession) {
-    await extendCurrentSession(c, res, sessionEntry);
+    await extendCurrentSession(c, res.headers, sessionEntry);
   }
 
   return res;

@@ -39,7 +39,7 @@ export function isReauthRequiredForSensitiveAction(session: Session) {
     SENSITIVE_ACTION_MAX_AUTH_AGE;
 }
 
-export async function createSession(c: Context, res: Response, userId: string) {
+export async function createSession(c: Context, headers: Headers, userId: string) {
   const userEntry = await getUserById(userId);
 
   if (!userEntry.value) {
@@ -68,14 +68,14 @@ export async function createSession(c: Context, res: Response, userId: string) {
     return false;
   }
 
-  setSessionCookie(res, SESSION_IDLE_TIMEOUT, cookie);
+  setSessionCookie(headers, SESSION_IDLE_TIMEOUT, cookie);
 
   return true;
 }
 
 export async function extendCurrentSession(
   c: AuthenticatedContext,
-  res: Response,
+  headers: Headers,
   sessionEntry: Deno.KvEntry<Session>,
 ) {
   const session = sessionEntry.value;
@@ -90,9 +90,9 @@ export async function extendCurrentSession(
 
   if (duration <= 0) {
     await destroySessionIfUnchanged(sessionEntry);
-    deleteSessionCookie(res);
-    setFlash(res, "SessionExpired");
-    cacheNoStoreOnCookieChange(c, res);
+    deleteSessionCookie(headers);
+    setFlash(headers, "SessionExpired");
+    cacheNoStoreOnCookieChange(c, headers);
     return;
   }
 
@@ -116,7 +116,7 @@ export async function extendCurrentSession(
   }
 
   setSessionCookie(
-    res,
+    headers,
     duration,
     updatedSession.cookie,
   );
