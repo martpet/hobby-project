@@ -22,6 +22,8 @@ export interface Context {
   session?: Session;
   user?: User;
   flash?: FlashKey;
+  // Filled in by components as they render (e.g. `c.head.modules.add(...)`)
+  // and emitted by `<Assets />`, which `Page` defers until the body is done.
   head: {
     title?: string;
     modules: Set<ScriptKey>;
@@ -39,6 +41,9 @@ export function buildContext(
   const url = new URL(req.url);
   const proto = req.headers.get("x-forwarded-proto");
 
+  // In production the app sits behind a TLS-terminating reverse proxy, so the
+  // socket only ever sees plain HTTP from localhost. The forwarded headers
+  // are what `httpsMid` and the session's recorded IP actually need.
   if (proto) {
     url.protocol = `${proto}:`;
   }

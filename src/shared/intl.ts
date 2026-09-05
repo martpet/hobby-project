@@ -18,6 +18,9 @@ const RTF_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ["second", SECOND],
 ];
 
+// Largest unit first; picks the first one the delta reaches, so 90 minutes
+// reads "in 2 hours" rather than "in 90 minutes". `numeric: "auto"` gives
+// "yesterday"/"tomorrow" where the locale has them.
 export function relativeTime(
   c: Context,
   deltaMs: number,

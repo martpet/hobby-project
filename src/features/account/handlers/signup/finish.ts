@@ -26,6 +26,9 @@ export async function handleSignupFinish(c: Context) {
   const { username, passkey } = verification;
   const atomic = kv.atomic();
 
+  // `versionstamp: null` asserts the key does not exist, making the username
+  // unique even if two signups for it finish at the same moment; the loser
+  // gets 409. `handleSignupStart` already checked, but that was a race.
   atomic.check({
     key: [USERS_BY_USERNAME, username],
     versionstamp: null,
@@ -41,6 +44,8 @@ export async function handleSignupFinish(c: Context) {
     return respondConflict("UsernameTaken", { init: { headers } });
   }
 
+  // Only a KV race can fail this; the account itself was committed above, so
+  // the user can simply sign in with the passkey they just registered.
   if (!await createSession(c, headers, user.id)) {
     return respondForbidden(c, { init: { headers } });
   }

@@ -17,6 +17,8 @@ export function DeleteAccountDialog(
   c.head.importmap.add("util");
   c.head.importmap.add("simplewebauthn");
 
+  // `command`/`commandfor` (Invoker Commands API) open/close the dialog with
+  // no script; the same applies to `DeleteAccountButton`.
   return (
     <dialog id={DELETE_ACCOUNT_DIALOG}>
       <h2>Delete account?</h2>
@@ -28,6 +30,7 @@ export function DeleteAccountDialog(
         action="/account/delete"
       >
         <label for="username">Username:</label>
+        {/* Type-to-confirm guard via HTML validation only; not sent to server. */}
         <input
           id="username"
           type="text"
@@ -46,6 +49,7 @@ export function DeleteAccountDialog(
         >
           Cancel
         </button>
+        {/* Outside the form so it can share the footer; linked via `form=`. */}
         <button
           form={DELETE_ACCOUNT_FORM}
           class="danger"

@@ -16,11 +16,14 @@ export async function handleLogOut(c: Context) {
   const formData = await c.req.formData();
   const sessionId = formData.get("sessionId");
 
+  // With a `sessionId` this revokes one of the user's *other* sessions from
+  // the sessions table and stays on the page; without, it is a plain logout.
   if (typeof sessionId === "string") {
     const session = (await getSessionById(sessionId)).value;
 
     const res = redirectBack(c);
 
+    // Already gone (expired, or revoked from another tab): nothing to report.
     if (!session) {
       return res;
     }

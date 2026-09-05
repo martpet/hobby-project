@@ -17,6 +17,9 @@ async function handleFormSubmit(event) {
   try {
     let accountDelete = await apiFetch(form.action, { method: "POST" });
 
+    // The server refuses unless the passkey ceremony was recent. Reauth
+    // replaces the session (same cookie name), then the delete is retried
+    // transparently — the user only sees the passkey prompt.
     if (accountDelete.error === "ReauthRequired") {
       const reauth = await authenticateWithPasskey();
 
@@ -33,6 +36,8 @@ async function handleFormSubmit(event) {
       return;
     }
 
+    // Sequential on purpose: browsers may serialise credential-manager calls,
+    // and each one is best-effort anyway (see trySendWebAuthnSignal).
     for (const signal of accountDelete.value.signals) {
       await trySendWebAuthnSignal(signal);
     }
@@ -44,6 +49,8 @@ async function handleFormSubmit(event) {
 }
 
 function handleError(error) {
+  // Session vanished mid-flow (revoked elsewhere, expired); reloading shows
+  // the logged-out page with whatever flash the server set.
   if (error === "Unauthorized") {
     location.reload();
     return;
@@ -55,6 +62,7 @@ function handleError(error) {
   if (error === "PasskeyAccountMismatch") {
     msg = "That passkey belongs to a different account.";
   } else if (error instanceof Error) {
+    // The user dismissed the passkey prompt; not an error worth showing.
     if (error.name === "NotAllowedError") {
       return;
     }

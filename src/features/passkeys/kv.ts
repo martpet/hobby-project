@@ -51,6 +51,9 @@ export function deletePasskey(passkey: Passkey, atomic: Deno.AtomicOperation) {
   }
 }
 
+// Remembers that the passkeys for a WebAuthn user handle were deleted, so a
+// later login attempt with one of them can say "account deleted" rather than
+// a confusing "passkey not found". Set alongside `deletePasskey`.
 export function tombstonePasskey(
   passkey: Passkey,
   atomic: Deno.AtomicOperation,

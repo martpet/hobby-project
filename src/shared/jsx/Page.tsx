@@ -18,6 +18,7 @@ export function Page({ children }: PropsWithChildren, { head }: Context) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <Link href="/assets/logo.png" rel="icon" type="image/png" />
         <Link href="/assets/styles.css" rel="stylesheet" />
+        {/* Deferred: body components register scripts while rendering. */}
         <Deferred>
           <Assets />
         </Deferred>

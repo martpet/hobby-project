@@ -12,6 +12,9 @@ import {
 } from "./helpers.ts";
 import { getSessionByCookie } from "./kv.ts";
 
+// Paths that never need a user and would otherwise cost a KV read (and a
+// possible session write) per request. Substring/regex matched against the
+// pathname.
 const SKIP = [
   "/assets/",
   "^/webhook/",
@@ -19,6 +22,10 @@ const SKIP = [
   "^/apple-touch-icon",
 ];
 
+// Resolves the session cookie into `c.session`/`c.user` for everything
+// downstream, cleans up dead cookies, and slides the idle expiry on activity.
+// Runs inside `cacheMid` so `cacheControlMid` can see whether the request
+// ended up authenticated.
 export const sessionMid: Middleware = (next) => async (c) => {
   if (SKIP.some((rule) => c.url.pathname.match(rule))) {
     return next(c);
@@ -33,6 +40,8 @@ export const sessionMid: Middleware = (next) => async (c) => {
   const sessionEntry = await getSessionByCookie(cookie);
   const session = sessionEntry.value;
 
+  // Cookie for a session that no longer exists (revoked elsewhere, KV TTL
+  // expired, DB reset): let the request through anonymously and drop it.
   if (!session) {
     const res = await next(c);
     deleteSessionCookie(res.headers);
@@ -43,6 +52,10 @@ export const sessionMid: Middleware = (next) => async (c) => {
   const now = Date.now();
   const absoluteExpiresAt = getSessionAbsoluteExpiresAt(session);
 
+  // The KV TTL is only a backstop and can lag, so expiry is checked here too.
+  // Deletion is conditional on the entry being unchanged: if a concurrent
+  // request has already extended it, this one must not tear it down, and
+  // must not tell the browser to drop a cookie that is valid again.
   if (
     session.expiresAt <= now ||
     absoluteExpiresAt <= now
@@ -60,6 +73,8 @@ export const sessionMid: Middleware = (next) => async (c) => {
     return res;
   }
 
+  // Account deleted while a session was still around (e.g. a race with the
+  // atomic delete): treat it like an expired session, minus the flash.
   const user = (await getUserById(session.userId)).value;
 
   if (!user) {
@@ -80,6 +95,11 @@ export const sessionMid: Middleware = (next) => async (c) => {
 
   const res = await next(c);
 
+  // Extend *after* the handler ran: the refreshed cookie has to go on the
+  // response, and a handler that logged out (clearing `c.session`) must not
+  // have its session resurrected — hence re-checking `isAuthenticatedContext`.
+  // Throttled by `SESSION_ACTIVITY_INTERVAL` so a burst of requests doesn't
+  // rewrite four KV keys each time.
   const shouldExtendSession = isAuthenticatedContext(c) &&
     Date.now() - session.lastActive >= SESSION_ACTIVITY_INTERVAL;
 

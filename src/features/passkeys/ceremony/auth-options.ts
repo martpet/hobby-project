@@ -7,6 +7,10 @@ import {
 import { setPasskeyAuthCookie } from "../cookie.ts";
 import { setPasskeyAuthOptions } from "../kv.ts";
 
+// Issues a challenge with no `allowCredentials`: the authenticator picks any
+// discoverable credential for this RP, which is what makes usernameless
+// login possible. The challenge is stored server-side and tied to the
+// browser by the `passkey_auth` cookie.
 export async function createAuthOptions(headers: Headers) {
   const authOptions = await generateAuthenticationOptions({
     rpID: WEBAUTHN_RP_ID,

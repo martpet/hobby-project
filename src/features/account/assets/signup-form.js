@@ -13,6 +13,8 @@ async function handleFormSubmit(event) {
   const handleError = createErrorHandler(username);
 
   try {
+    // Start the ceremony and load the WebAuthn library in parallel; the
+    // library is only imported on demand since most page views never need it.
     const [signupStart, { startRegistration }] = await Promise.all([
       apiFetch("/signup/start", { method: "POST", json: { username } }),
       import("simplewebauthn"),
@@ -50,6 +52,8 @@ async function handleFormSubmit(event) {
   }
 }
 
+// Clear the "taken" message as soon as the user edits the field, otherwise
+// the browser keeps blocking submission with the stale custom validity.
 function handleUsernameInput() {
   form.username.setCustomValidity("");
 }
@@ -66,6 +70,7 @@ function createErrorHandler(username) {
 
     let msg;
     if (error instanceof Error) {
+      // The user dismissed the passkey prompt; not an error worth showing.
       if (error.name === "NotAllowedError") {
         return;
       }

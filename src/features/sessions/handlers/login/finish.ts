@@ -31,6 +31,10 @@ export async function handleLogInFinish(c: Context) {
   }
 
   const { passkey } = verification;
+
+  // Same endpoint serves login and reauth; the only difference is whether a
+  // session already exists. Reauth swaps the old session for a new one, which
+  // is what resets the absolute timeout and the sensitive-action auth age.
   const isReauthenticating = isAuthenticatedContext(c);
 
   if (isReauthenticating && c.session.userId !== passkey.userId) {
@@ -44,6 +48,8 @@ export async function handleLogInFinish(c: Context) {
     return respondForbidden(c, { init: { headers } });
   }
 
+  // Create before destroy, so a failure above leaves the user logged in with
+  // the old session rather than with none.
   if (isReauthenticating) {
     await destroySession(c.session);
     setFlash(headers, "Reauthenticated");

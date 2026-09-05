@@ -14,8 +14,12 @@ export async function createRegOptions(headers: Headers, username: string) {
     rpName: WEBAUTHN_RP_NAME,
     timeout: WEBAUTHN_TIMEOUT,
     userName: username,
+    // No attestation: we don't care which authenticator model made the key,
+    // and asking would trigger an extra consent prompt in some browsers.
     attestationType: "none",
     authenticatorSelection: {
+      // Required (not preferred) so the credential is discoverable and login
+      // never needs a username first.
       residentKey: "required",
       userVerification: WEBAUTHN_USER_VERIFICATION,
     },

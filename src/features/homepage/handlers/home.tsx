@@ -10,6 +10,7 @@ export async function handleHomepage(c: Context) {
 
   const sessions = await listSessionsByUserId(c.user.id);
 
+  // Current session first, the rest most recently active first.
   sessions.sort((a, b) => {
     if (a.id === c.session.id) return -1;
     if (b.id === c.session.id) return 1;

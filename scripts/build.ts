@@ -13,9 +13,13 @@ const args = [
   "--permission-set=build",
   `--output=${outputBinary}`,
   `--target=${compileTarget}`,
-  "--include=src/", // needed for all "assets/" (pattern support: https://github.com/denoland/deno/issues/35037)
+  // Static assets are read at runtime via `import.meta.dirname`, so the whole
+  // `src/` tree is embedded (pattern support: https://github.com/denoland/deno/issues/35037)
+  "--include=src/",
 ];
 
+// Runtime permissions baked into the binary (KV path, GeoIP DB, cache dir).
+// Come from the per-env `.env.<name>` loaded above.
 if (allowRead) {
   args.push(`--allow-read=${allowRead}`);
 }

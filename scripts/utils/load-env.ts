@@ -4,6 +4,8 @@ import { exists } from "@std/fs/exists";
 const ENV_NAMES = ["prod", "staging"];
 const DEFAULT_ENV = "staging";
 
+// Loads `scripts/.env.<prod|staging>` into the process env and returns the
+// env name. Called first by build/deploy since everything else reads env.
 export async function loadEnv() {
   const envName = Deno.args[0] ?? DEFAULT_ENV;
   const envPath = `./scripts/.env.${envName}`;

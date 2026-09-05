@@ -4,6 +4,7 @@ import { SetOptional } from "type-fest";
 import { User } from "./types.ts";
 
 const USERS_BY_ID = "users_by_id";
+// Exported for the `versionstamp: null` uniqueness check in signup.
 export const USERS_BY_USERNAME = "users_by_username";
 
 function getUserKeys(user: User) {

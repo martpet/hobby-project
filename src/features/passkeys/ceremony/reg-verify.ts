@@ -16,6 +16,9 @@ type RegVerificationResult = {
   ok: false;
 };
 
+// Checks a WebAuthn attestation against the challenge issued by
+// `createRegOptions`. Returns the passkey to store minus `id`/`userId`, since
+// the user row doesn't exist yet — `handleSignupFinish` creates both together.
 export async function verifyRegResponseJson(
   c: Context,
   headers: Headers,
@@ -30,6 +33,7 @@ export async function verifyRegResponseJson(
     deletePasskeyRegCookie(headers);
   }
 
+  // Single-use challenge; see `verifiyAuthResponseJson`.
   if (regOptions) {
     await deletePasskeyRegOptions(regOptions);
   }
@@ -64,6 +68,9 @@ export async function verifyRegResponseJson(
 
   return {
     ok: true,
+    // The username was validated and checked for collisions in
+    // `handleSignupStart`; taking it from the stored options (not the request
+    // body) means the client can't swap it between the two steps.
     username: regOptions.value.user.name,
     passkey: {
       credId: credential.id,

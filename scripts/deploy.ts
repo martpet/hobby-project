@@ -27,12 +27,19 @@ try {
     `📦 Copying "${localBinary}" to "${remoteHost}:${remoteBinaryTemp}"...`,
   );
 
+  // Upload to a temp name, then `mv` (atomic on the same filesystem) so the
+  // service never sees a half-written binary.
   await command("scp", [localBinary, `${remoteHost}:${remoteBinaryTemp}`]);
 
   console.log(
     `⚙️  Updating file and restarting "${remoteService}"...`,
   );
 
+  // `-n` keeps ssh from swallowing this script's stdin. The remote script:
+  // - writes the SHA as a systemd drop-in so the app sees GIT_SHA (asset
+  //   versioning and the app cache name depend on it),
+  // - removes the previous deploy's app cache directory *after* the restart,
+  //   since the new process opens a fresh cache named after the new SHA.
   await command("ssh", [
     "-n",
     remoteHost,

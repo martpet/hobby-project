@@ -21,6 +21,8 @@ export async function handleSignupStart(c: Context) {
     return respondBadRequest("BadUsernameFormat");
   }
 
+  // Early rejection for UX only; the authoritative uniqueness check is the
+  // atomic commit in `handleSignupFinish`.
   const entry = await getUserByUsername(username);
 
   if (entry.value) {

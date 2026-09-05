@@ -39,7 +39,11 @@ export function isReauthRequiredForSensitiveAction(session: Session) {
     SENSITIVE_ACTION_MAX_AUTH_AGE;
 }
 
-export async function createSession(c: Context, headers: Headers, userId: string) {
+export async function createSession(
+  c: Context,
+  headers: Headers,
+  userId: string,
+) {
   const userEntry = await getUserById(userId);
 
   if (!userEntry.value) {
@@ -50,6 +54,8 @@ export async function createSession(c: Context, headers: Headers, userId: string
   const atomic = kv.atomic();
   const cookie = generateToken();
 
+  // Fails the commit if the user was modified or deleted in between, so a
+  // session can't be minted for an account that was just removed.
   atomic.check(userEntry);
 
   setSession({
@@ -83,6 +89,8 @@ export async function extendCurrentSession(
 
   const absoluteExpiresAt = getSessionAbsoluteExpiresAt(session);
 
+  // Sliding idle window, clamped so it never outlives the absolute timeout.
+  // Near the end of the week the cookie and KV TTL shrink accordingly.
   const duration = Math.min(
     SESSION_IDLE_TIMEOUT,
     absoluteExpiresAt - now,
@@ -105,12 +113,16 @@ export async function extendCurrentSession(
 
   const atomic = kv.atomic();
 
+  // `lastActive` is part of one index key, so the old entry has to go or it
+  // would linger as a duplicate until its TTL.
   atomic.check(sessionEntry);
   deleteSessionLastActiveIndex(session, atomic);
   setSession(updatedSession, atomic);
 
   const result = await atomic.commit();
 
+  // Lost a race with another request extending the same session; that one
+  // already set a fresh cookie, so there is nothing to do.
   if (!result.ok) {
     return;
   }
@@ -122,6 +134,8 @@ export async function extendCurrentSession(
   );
 }
 
+// Unconditional delete, for explicit logout/revoke. Prefer
+// `destroySessionIfUnchanged` when reacting to state that may be stale.
 export async function destroySession(session: Session) {
   const atomic = kv.atomic();
 

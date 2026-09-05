@@ -8,6 +8,11 @@ const SESSIONS_BY_COOKIE = "sessions_by_cookie";
 const SESSIONS_BY_USER_ID = "sessions_by_user_id";
 const SESSIONS_BY_LAST_ACTIVE = "sessions_by_last_active";
 
+// Deno KV has no secondary indexes, so the full session is written under
+// every key it needs to be found by, and all writes go through one atomic
+// operation to keep them in sync. The last two are prefix-listable: by user
+// (for the sessions table) and by activity (oldest first; no reader yet,
+// intended for a future cleanup job).
 function getSessionKeys(session: Session): Deno.KvKey[] {
   return [
     [SESSIONS_BY_ID, session.id],
@@ -30,11 +35,6 @@ export function listSessionsByUserId(userId: Session["userId"]) {
   return Array.fromAsync(iter, (entry) => entry.value);
 }
 
-export function listSessionsByLastActive() {
-  const iter = kv.list<Session>({ prefix: [SESSIONS_BY_LAST_ACTIVE] });
-  return Array.fromAsync(iter, (entry) => entry.value);
-}
-
 export function setSession(
   partialSession: SetOptional<Session, "id">,
   atomic: Deno.AtomicOperation,
@@ -44,6 +44,7 @@ export function setSession(
     id: partialSession.id ?? ulid(),
   };
 
+  // KV's TTL is best-effort cleanup; `sessionMid` still enforces expiry.
   const expireIn = session.expiresAt - Date.now();
 
   for (const key of getSessionKeys(session)) {
@@ -53,6 +54,8 @@ export function setSession(
   return session;
 }
 
+// Needed whenever `lastActive` changes, since it is embedded in that key
+// (see `extendCurrentSession`).
 export function deleteSessionLastActiveIndex(
   session: Session,
   atomic: Deno.AtomicOperation,

@@ -30,6 +30,8 @@ export async function handleAccountDelete(c: Context) {
   const { user } = c;
   const atomic = kv.atomic();
 
+  // Everything belonging to the user goes in one atomic op so a crash
+  // midway can't leave live sessions or passkeys pointing at a missing user.
   const sessions = await listSessionsByUserId(user.id);
   for (const session of sessions) {
     deleteSession(session, atomic);

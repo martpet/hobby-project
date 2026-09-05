@@ -39,6 +39,8 @@ export function ActiveSessions(
         const idleMs = now - session.lastActive;
         let lastSeen = "a few seconds ago";
 
+        // `lastActive` only updates every `SESSION_ACTIVITY_INTERVAL`, so for
+        // the session making this very request it can read minutes old.
         if (!isCurrentSession && idleMs >= MINUTE) {
           lastSeen = relativeTime(c, -idleMs);
         }

@@ -14,6 +14,8 @@ const COOKIE_ATTRIBUTES = {
   httpOnly: true,
 };
 
+// Both ceremony cookies are `Strict`: they are only ever read by a same-site
+// `fetch()` seconds after being set, so there is no cross-site case to allow.
 export function setPasskeyRegCookie(headers: Headers) {
   const value = generateToken();
 

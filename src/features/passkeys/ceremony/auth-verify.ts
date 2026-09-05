@@ -26,6 +26,8 @@ type AuthVerificationResult = {
   signal?: SendSignalUnknownCredentialOpts;
 };
 
+// Checks a WebAuthn assertion against the challenge issued by
+// `createAuthOptions`, looked up via the short-lived `passkey_auth` cookie.
 export async function verifiyAuthResponseJson(
   c: Context,
   headers: Headers,
@@ -40,6 +42,8 @@ export async function verifiyAuthResponseJson(
     deletePasskeyAuthCookie(headers);
   }
 
+  // A challenge is single-use: consume it before verifying so a replayed
+  // assertion, or a second attempt with the same options, is always rejected.
   if (authOptions) {
     await deletePasskeyAuthOptions(authOptions);
   }
@@ -52,6 +56,9 @@ export async function verifiyAuthResponseJson(
   const passkeyEntry = await getPasskeyByCredId(authResponseJson.id);
   const passkey = passkeyEntry.value;
 
+  // Discoverable credentials mean the browser may offer a passkey whose
+  // account was deleted here. The tombstone tells those users what happened,
+  // and the signal lets the credential manager stop offering it.
   if (!passkey) {
     const userHandle = authResponseJson.response.userHandle;
     const tombstoned = userHandle &&
@@ -66,6 +73,8 @@ export async function verifiyAuthResponseJson(
 
   let authVerification;
 
+  // The library throws on malformed input or a bad signature (rather than
+  // returning `verified: false`), so a reject here is expected, not a bug.
   try {
     authVerification = await verifyAuthenticationResponse({
       response: authResponseJson,
@@ -90,6 +99,10 @@ export async function verifiyAuthResponseJson(
     return { ok: false };
   }
 
+  // Persist the new signature counter (used by the library to detect cloned
+  // authenticators; many passkey providers keep it at 0). The check makes
+  // two concurrent assertions with the same passkey fail one of them, so the
+  // counter can't be rolled back.
   const atomic = kv.atomic();
   const updatedPasskey = { ...passkey, counter: authenticationInfo.newCounter };
 

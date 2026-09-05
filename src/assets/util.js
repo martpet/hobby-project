@@ -1,3 +1,7 @@
+// Thin `fetch` wrapper normalising every response into `{ ok, value?, error? }`
+// so callers can branch on `error` codes (e.g. "UsernameTaken") without
+// caring whether the server sent JSON or a plain-text body. Network failures
+// still reject like `fetch` does.
 export async function apiFetch(path, opts = {}) {
   let { method, body, json, headers = {} } = opts;
   headers = new Headers(headers);
@@ -11,6 +15,9 @@ export async function apiFetch(path, opts = {}) {
   const isResJson = resContType?.includes("application/json");
   const result = { ok: res.ok };
 
+  // A JSON error body is `{ error, ...data }` (see respondForbidden); the
+  // whole object still goes on `value` because the extra data (e.g. a
+  // WebAuthn signal) is useful even on failure.
   if (isResJson) {
     const data = await res.json();
     result.value = data;
@@ -33,6 +40,8 @@ export function toggleButtonLoading(button, force) {
   button.classList.toggle("loading", force);
 }
 
+// Disables the whole form during a request. Submit buttons get the spinner;
+// other fields are merely disabled. `force` works like `classList.toggle`.
 export function toggleFormBuisy(form, force) {
   for (const element of form.elements) {
     if (element.type === "submit") {

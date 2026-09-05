@@ -19,6 +19,8 @@ export function setSessionCookie(
   setCookie(headers, {
     name: SESSION_COOKIE,
     value,
+    // `Lax` (not `Strict`) so a user following a link to the site from
+    // elsewhere arrives logged in. CSRF is covered by `csrfMid`, not by this.
     sameSite: "Lax",
     maxAge: duration / SECOND,
     ...COOKIE_ATTRIBUTES,
