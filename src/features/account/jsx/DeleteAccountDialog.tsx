@@ -45,7 +45,6 @@ export function DeleteAccountDialog(
         <button
           command="close"
           commandfor={DELETE_ACCOUNT_DIALOG}
-          autofocus
         >
           Cancel
         </button>
