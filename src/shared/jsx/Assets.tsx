@@ -11,9 +11,6 @@ import { Script } from "@shared/jsx/Script.tsx";
 export function Assets(_props: unknown, { head }: Context) {
   return (
     <>
-      {[...head.modulepreloads].map((key) => (
-        <Link href={SCRIPTS_REGISTRY[key]} rel="modulepreload" />
-      ))}
       {head.importmap.size > 0 && (
         <ImportMap
           imports={Object.fromEntries(
@@ -21,6 +18,9 @@ export function Assets(_props: unknown, { head }: Context) {
           )}
         />
       )}
+      {[...head.modulepreloads].map((key) => (
+        <Link href={SCRIPTS_REGISTRY[key]} rel="modulepreload" />
+      ))}
       {[...head.modules].map((key) => (
         <Script src={SCRIPTS_REGISTRY[key]} type="module" />
       ))}
