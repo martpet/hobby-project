@@ -1,5 +1,5 @@
 import { getSessionCookie } from "@features/sessions/cookie.ts";
-import { APP_CACHE_ENABLED, GIT_SHA } from "@shared/const.ts";
+import { GIT_SHA, SERVER_CACHE_ENABLED } from "@shared/const.ts";
 import { Middleware } from "@shared/types.ts";
 import { HEADER } from "@std/http/unstable-header";
 import { METHOD } from "@std/http/unstable-method";
@@ -12,11 +12,11 @@ import {
   notStorableReason,
 } from "./helpers.ts";
 
-let appCache: Cache;
+let serverCache: Cache;
 
-if (APP_CACHE_ENABLED) {
+if (SERVER_CACHE_ENABLED) {
   // One cache per deploy; without a SHA (local runs) one per process start.
-  appCache = await caches.open(GIT_SHA || new Date().toISOString());
+  serverCache = await caches.open(GIT_SHA || new Date().toISOString());
 }
 
 // Serves public GET/HEAD responses from a server-side Cache API instance, keyed
@@ -25,18 +25,18 @@ if (APP_CACHE_ENABLED) {
 // without `Set-Cookie` are stored. HEAD is answered from the GET entry with
 // the body stripped (RFC 9111 §4.3.5) and never stores. Unsafe requests evict
 // what they may have changed. Every response gets a `Cache-Status` entry.
-export const appCacheMid: Middleware = (next) => async (c) => {
+export const serverCacheMid: Middleware = (next) => async (c) => {
   if (!CACHEABLE_METHODS.has(c.method)) {
     const res = await next(c);
 
-    if (APP_CACHE_ENABLED) {
-      await invalidateAfterUnsafeRequest(appCache, c, res);
+    if (SERVER_CACHE_ENABLED) {
+      await invalidateAfterUnsafeRequest(serverCache, c, res);
     }
 
     return appendCacheStatus(res, { fwd: "method" });
   }
 
-  if (!APP_CACHE_ENABLED) {
+  if (!SERVER_CACHE_ENABLED) {
     return appendCacheStatus(await next(c), {
       fwd: "bypass",
       detail: "DISABLED",
@@ -57,7 +57,7 @@ export const appCacheMid: Middleware = (next) => async (c) => {
   const isHead = c.method === METHOD.Head;
   const cacheKey = isHead ? new Request(c.req, { method: METHOD.Get }) : c.req;
 
-  const match = await appCache.match(cacheKey);
+  const match = await serverCache.match(cacheKey);
   const age = match ? getAge(match) : undefined;
   const ttl = match ? getRemainingTtl(match, age) : undefined;
 
@@ -91,7 +91,7 @@ export const appCacheMid: Middleware = (next) => async (c) => {
     res.headers.set(HEADER.Date, new Date().toUTCString());
   }
 
-  await appCache.put(cacheKey, res.clone());
+  await serverCache.put(cacheKey, res.clone());
 
   return appendCacheStatus(res, { fwd, stored: true });
 };

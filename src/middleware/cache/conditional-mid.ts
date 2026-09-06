@@ -5,7 +5,7 @@ import { CACHEABLE_METHODS } from "./const.ts";
 
 // Answers a GET/HEAD whose `If-None-Match` matches the response's `ETag` with
 // an empty 304 (RFC 9110 §13.1.2, §15.4.5), keeping the header fields the
-// client needs to refresh its stored copy. Wraps `appCacheMid`, so the app
+// client needs to refresh its stored copy. Wraps `serverCacheMid`, so the server
 // cache still receives and stores the full 200 and the check also covers
 // entries served from it.
 export const conditionalMid: Middleware = (next) => async (c) => {

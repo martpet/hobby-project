@@ -14,7 +14,7 @@ import { HEADER } from "@std/http/unstable-header";
 // Sets `Cache-Control`/`Vary` on cacheable responses for downstream caches
 // (browser, CDN): authenticated responses become `private`, anonymous ones
 // without an explicit policy get the public default, and anything revalidated
-// against cookies gets `Vary: Cookie`. Composed inside `appCacheMid` (so
+// against cookies gets `Vary: Cookie`. Composed inside `serverCacheMid` (so
 // stored responses carry these headers) and outside `sessionMid` (so
 // `isAuthenticatedContext` reflects the resolved session).
 export const cacheControlMid: Middleware = (next) => async (c) => {
