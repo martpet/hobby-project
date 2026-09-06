@@ -1,6 +1,8 @@
 import { DeleteAccountButton } from "@features/account/jsx/DeleteAccountButton.tsx";
-import { ActiveSessions } from "@features/sessions/jsx/ActiveSessions.tsx";
-import { LogOutForm } from "@features/sessions/jsx/LogOutForm.tsx";
+import { PasskeysTable } from "@features/passkeys/jsx/PasskeysTable.tsx";
+import { Passkey } from "@features/passkeys/types.ts";
+import { ActiveSessionsTable } from "@features/sessions/jsx/ActiveSessionsTable.tsx";
+import { LogOutButton } from "@features/sessions/jsx/LogOutButton.tsx";
 import { Session } from "@features/sessions/types.ts";
 import { User } from "@features/users/types.ts";
 import { Page } from "@shared/jsx/Page.tsx";
@@ -9,23 +11,32 @@ interface PrivateHomeProps {
   user: User;
   sessions: Session[];
   currentSession: Session;
+  passkeys: Passkey[];
 }
 
-export function PrivateHome(props: PrivateHomeProps) {
+export function PrivateHome(
+  { user, sessions, currentSession, passkeys }: PrivateHomeProps,
+) {
   return (
     <Page>
-      <h1>Welcome {props.user.username}</h1>
+      <h1>Welcome {user.username}</h1>
 
-      <LogOutForm />
+      {/* type="submit" is only for Safari's default blue button styling —
+          the button already submits by default as the form's only button. */}
+      <LogOutButton type="submit" />
 
       <h2>Active sessions</h2>
-      <ActiveSessions
-        sessions={props.sessions}
-        currentSession={props.currentSession}
+      <ActiveSessionsTable
+        sessions={sessions}
+        currentSession={currentSession}
+        passkeys={passkeys}
       />
 
+      <h2>Passkeys</h2>
+      <PasskeysTable passkeys={passkeys} />
+
       <h2>Delete account</h2>
-      <DeleteAccountButton user={props.user} />
+      <DeleteAccountButton user={user} />
     </Page>
   );
 }

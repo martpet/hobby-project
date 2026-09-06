@@ -61,6 +61,12 @@ export function toggleFormBuisy(form, force) {
   }
 }
 
+// Builds the dialog with createElement/textContent rather than an innerHTML
+// template literal (as in confirmReauth), since msg may be server-provided
+// (e.g. RFC 9457 detail) and must never be interpreted as markup. The
+// Sanitizer API (Element.setHTML()) could allow a template literal here too,
+// but it sanitizes markup rather than escaping plain text, and isn't yet
+// supported everywhere.
 export function showAlert(msg, type = "danger") {
   const dialog = document.createElement("dialog");
   dialog.id = `alert-${crypto.randomUUID()}`;
@@ -75,49 +81,6 @@ export function showAlert(msg, type = "danger") {
   dialog.append(closeButton);
 
   (document.getElementById("alerts") ?? document.body).append(dialog);
-  // showModal (not show) so the alert enters the top layer, rendering
-  // above any already-open modal dialog rather than behind it.
-  dialog.showModal();
-}
 
-// WebAuthn signals are fire-and-forget and unsupported in some browsers, so
-// a failure is never surfaced to the user.
-export async function trySendWebAuthnSignal(opts) {
-  try {
-    const { sendSignal } = await import("simplewebauthn");
-    await sendSignal(opts);
-  } catch (error) {
-    console.debug(error);
-  }
-}
-
-// Runs a passkey authentication ceremony against the login endpoints. When
-// already authenticated, the server treats this as a reauth and refreshes
-// the session. May reject (e.g. NotAllowedError if the user cancels).
-export async function authenticateWithPasskey() {
-  const [loginStart, { startAuthentication }] = await Promise.all([
-    apiFetch("/login/start", { method: "POST" }),
-    import("simplewebauthn"),
-  ]);
-
-  if (!loginStart.ok) {
-    return loginStart;
-  }
-
-  const authResponseJson = await startAuthentication({
-    optionsJSON: loginStart.value,
-  });
-
-  const loginFinish = await apiFetch("/login/finish", {
-    method: "POST",
-    json: authResponseJson,
-  });
-
-  // Present on both outcomes: unknownCredential on a rejected passkey,
-  // allAcceptedCredentials after a successful login.
-  if (loginFinish.value?.signal) {
-    await trySendWebAuthnSignal(loginFinish.value.signal);
-  }
-
-  return loginFinish;
+  dialog.show();
 }

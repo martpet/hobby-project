@@ -1,16 +1,15 @@
+import {
+  ProblemDetailsOpts,
+  respondProblemDetails,
+} from "@shared/responses/problem-details.ts";
 import { STATUS_CODE } from "@std/http";
-import { createProblemDetailsResponse } from "@std/http/unstable-problem-details";
 
-// `detail` is a human-readable explanation of this occurrence (RFC 9457
-// §3.1), safe for clients to display as-is.
+// `code`/`detail` are documented on respondProblemDetails.
 export function respondBadRequest(
-  opts?: { detail?: string; init?: ResponseInit },
+  opts?: Omit<ProblemDetailsOpts, "status">,
 ) {
-  const { detail, init } = opts ?? {};
-  const status = STATUS_CODE["BadRequest"];
-
-  return createProblemDetailsResponse(
-    { status, detail },
-    { headers: init?.headers, statusText: init?.statusText },
-  );
+  return respondProblemDetails({
+    ...opts,
+    status: STATUS_CODE["BadRequest"],
+  });
 }

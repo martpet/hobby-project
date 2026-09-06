@@ -1,14 +1,12 @@
 import { Context } from "@shared/context.ts";
 import { UnauthorizedPage } from "@shared/jsx/pages/Unauthorized.tsx";
-import { respondPageOrBody } from "@shared/responses/page-or-body.tsx";
+import { respondPageOrProblemDetails } from "@shared/responses/page-or-problem-details.tsx";
 import { STATUS_CODE } from "@std/http";
 
 export function respondUnauthorized(c: Context, heading?: string) {
-  const status = STATUS_CODE["Unauthorized"];
-
-  return respondPageOrBody(
+  return respondPageOrProblemDetails(
     c,
     <UnauthorizedPage heading={heading} />,
-    { status },
+    { status: STATUS_CODE["Unauthorized"] },
   );
 }

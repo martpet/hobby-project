@@ -23,4 +23,24 @@ export const FLASH = {
     type: "success",
     msg: "Account Deleted",
   },
+  "PASSKEY_ADDED": {
+    type: "success",
+    msg: "Passkey Added",
+  },
+  "PASSKEY_DELETED": {
+    type: "success",
+    msg: "Passkey Deleted",
+  },
+  "PASSKEY_RENAMED": {
+    type: "success",
+    msg: "Passkey Renamed",
+  },
+  "PASSKEY_LAST_ONE": {
+    type: "warning",
+    msg: "You can't delete your last passkey — delete the account instead",
+  },
+  "PASSKEY_NAME_TAKEN": {
+    type: "danger",
+    msg: "Another passkey already has that name",
+  },
 } as const satisfies Record<string, FlashMessage>;

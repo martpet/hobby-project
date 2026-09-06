@@ -13,6 +13,14 @@ export interface Passkey {
   webauthnUserId: string;
   credId: string;
   credPublicKey: Uint8Array;
+  // Display name, unique per user (it identifies the passkey in the sessions
+  // table). Derived from the AAGUID at registration; renameable by the user.
+  name: string;
+  // The authenticator's AAGUID from the attestation; all-zero when the
+  // client anonymises it. Used to derive the default `name`.
+  aaguid: string;
+  // Last assertion (or registration, which counts as a use) with this key.
+  lastUsedAt: number;
   // Signature counter reported by the authenticator; stored so the library
   // can flag a clone if it ever goes backwards.
   counter: number;

@@ -1,6 +1,6 @@
 import { Context } from "@shared/context.ts";
 import { NotFoundPage } from "@shared/jsx/pages/NotFound.tsx";
-import { respondPageOrBody } from "@shared/responses/page-or-body.tsx";
+import { respondPageOrProblemDetails } from "@shared/responses/page-or-problem-details.tsx";
 import { STATUS_CODE } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { Method } from "@std/http/unstable-method";
@@ -11,11 +11,12 @@ export function respondMethodNotAllowed(
   c: Context,
   allow: Method | Method[],
 ) {
-  const status = STATUS_CODE["MethodNotAllowed"];
-  const init = {
-    status,
-    headers: { [HEADER["Allow"]]: [allow].flat().join() },
-  };
-
-  return respondPageOrBody(c, <NotFoundPage />, init);
+  return respondPageOrProblemDetails(
+    c,
+    <NotFoundPage />,
+    {
+      status: STATUS_CODE["MethodNotAllowed"],
+      headers: { [HEADER["Allow"]]: [allow].flat().join() },
+    },
+  );
 }

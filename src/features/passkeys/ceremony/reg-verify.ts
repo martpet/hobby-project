@@ -10,15 +10,17 @@ import { Passkey } from "../types.ts";
 
 type RegVerificationResult = {
   ok: true;
-  passkey: Omit<Passkey, "id" | "userId">;
+  passkey: Omit<Passkey, "id" | "userId" | "name">;
   username: string;
 } | {
   ok: false;
 };
 
 // Checks a WebAuthn attestation against the challenge issued by
-// `createRegOptions`. Returns the passkey to store minus `id`/`userId`, since
-// the user row doesn't exist yet — `handleSignupFinish` creates both together.
+// `createRegOptions`. Returns the passkey to store minus `id`/`userId`/`name`:
+// the user row doesn't exist yet — `handleSignupFinish` creates both together
+// — and the name is derived by the caller, which knows the user's other
+// passkeys and can keep names unique.
 export async function verifyRegResponseJson(
   c: Context,
   headers: Headers,
@@ -63,7 +65,7 @@ export async function verifyRegResponseJson(
     return { ok: false };
   }
 
-  const { credential, credentialDeviceType, credentialBackedUp } =
+  const { credential, credentialDeviceType, credentialBackedUp, aaguid } =
     registrationInfo;
 
   return {
@@ -76,6 +78,9 @@ export async function verifyRegResponseJson(
       credId: credential.id,
       credPublicKey: credential.publicKey,
       webauthnUserId: regOptions.value.user.id,
+      aaguid,
+      // Registration counts as a use, so "Last used" is set from the start.
+      lastUsedAt: Date.now(),
       counter: credential.counter,
       transports: credential.transports,
       deviceType: credentialDeviceType,

@@ -8,11 +8,11 @@ import { getNoAcceptedCredentialsSignals } from "@features/passkeys/signals.ts";
 import { deleteSessionCookie } from "@features/sessions/cookie.ts";
 import { isReauthRequiredForSensitiveAction } from "@features/sessions/helpers.ts";
 import { deleteSession, listSessionsByUserId } from "@features/sessions/kv.ts";
+import { respondReauthRequired } from "@features/sessions/responses/reauth-required.ts";
 import { deleteUser } from "@features/users/kv.ts";
 import { Context, isAuthenticatedContext } from "@shared/context.ts";
 import { requestAcceptsHtml } from "@shared/header/negotiation.ts";
 import { kv } from "@shared/kv.ts";
-import { respondForbidden } from "@shared/responses/forbidden.tsx";
 import { respondRedirect } from "@shared/responses/redirect.ts";
 import { respondUnauthorized } from "@shared/responses/unauthorized.tsx";
 
@@ -24,7 +24,7 @@ export async function handleAccountDelete(c: Context) {
   // Deleting an account is irreversible, so require a recent passkey
   // ceremony rather than trusting a possibly long-lived session cookie.
   if (isReauthRequiredForSensitiveAction(c.session)) {
-    return respondForbidden(c, { code: "REAUTH_REQUIRED" });
+    return respondReauthRequired(c);
   }
 
   const { user } = c;

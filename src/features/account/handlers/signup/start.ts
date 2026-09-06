@@ -6,8 +6,8 @@ import {
 import { getUserByUsername } from "@features/users/kv.ts";
 import { Context } from "@shared/context.ts";
 import { respondBadRequest } from "@shared/responses/bad-request.ts";
-import { respondConflict } from "@shared/responses/conflict.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
+import { respondUsernameTaken } from "../../responses/username-taken.ts";
 
 export async function handleSignupStart(c: Context) {
   if (c.user) {
@@ -29,13 +29,11 @@ export async function handleSignupStart(c: Context) {
   const entry = await getUserByUsername(username);
 
   if (entry.value) {
-    return respondConflict("USERNAME_TAKEN", {
-      detail: `Sorry, username "${username}" is taken`,
-    });
+    return respondUsernameTaken(username);
   }
 
   const headers = new Headers();
-  const regOptions = await createRegOptions(headers, username);
+  const regOptions = await createRegOptions(headers, { username });
 
   return Response.json(regOptions, { headers });
 }

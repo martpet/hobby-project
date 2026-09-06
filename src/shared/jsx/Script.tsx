@@ -1,4 +1,4 @@
-import { assetPath } from "@shared/asset/path.ts";
+import { versionAssetPath } from "@shared/asset/path.ts";
 import { ScriptHTMLAttributes } from "preact";
 
 interface ScriptProps extends Omit<ScriptHTMLAttributes, "src"> {
@@ -6,5 +6,5 @@ interface ScriptProps extends Omit<ScriptHTMLAttributes, "src"> {
 }
 
 export function Script({ src, ...attr }: ScriptProps) {
-  return <script {...attr} src={assetPath(src)} />;
+  return <script {...attr} src={versionAssetPath(src)} />;
 }

@@ -13,9 +13,6 @@ export function DeleteAccountDialog(
   c: Context,
 ) {
   c.head.modules.add("delete-account-form");
-  c.head.modulepreloads.add("util");
-  c.head.importmap.add("util");
-  c.head.importmap.add("simplewebauthn");
 
   // `command`/`commandfor` (Invoker Commands API) open/close the dialog with
   // no script; the same applies to `DeleteAccountButton`.

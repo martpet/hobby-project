@@ -6,9 +6,6 @@ import { Context } from "@shared/context.ts";
 
 export function SignUpForm(_props: unknown, c: Context) {
   c.head.modules.add("signup-form");
-  c.head.modulepreloads.add("util");
-  c.head.importmap.add("util");
-  c.head.importmap.add("simplewebauthn");
 
   return (
     <form id="signup-form">

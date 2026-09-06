@@ -27,8 +27,6 @@ export interface Context {
   head: {
     title?: string;
     modules: Set<ScriptKey>;
-    modulepreloads: Set<ScriptKey>;
-    importmap: Set<ScriptKey>;
   };
 }
 
@@ -58,8 +56,6 @@ export function buildContext(
     ua: new UserAgent(req.headers.get(HEADER.UserAgent)),
     head: {
       modules: new Set(),
-      modulepreloads: new Set(),
-      importmap: new Set(),
     },
   };
 }

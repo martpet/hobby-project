@@ -1,87 +1,14 @@
-import { apiFetch, showAlert, toggleFormBuisy } from "util";
+import { signupWithPasskey } from "passkeys";
 
 const form = document.getElementById("signup-form");
 
-form.addEventListener("submit", handleFormSubmit);
-form.username.addEventListener("input", handleUsernameInput);
-
-async function handleFormSubmit(event) {
+form.addEventListener("submit", (event) => {
   event.preventDefault();
-  toggleFormBuisy(form);
-
-  const username = form.username.value;
-
-  try {
-    // Start the ceremony and load the WebAuthn library in parallel; the
-    // library is only imported on demand since most page views never need it.
-    const [signupStart, { startRegistration }] = await Promise.all([
-      apiFetch("/signup/start", { method: "POST", json: { username } }),
-      import("simplewebauthn"),
-    ]);
-
-    if (!signupStart.ok) {
-      handleFailure(signupStart);
-      return;
-    }
-
-    const regResponseJson = await startRegistration({
-      optionsJSON: signupStart.value,
-    });
-
-    const signupFinish = await apiFetch("/signup/finish", {
-      method: "POST",
-      json: regResponseJson,
-    });
-
-    if (!signupFinish.ok) {
-      handleFailure(signupFinish);
-      return;
-    }
-
-    // Reload rather than navigate to "/": the server redirects an
-    // authenticated /signup there anyway, and a reload skips WebKit's disk
-    // cache, which may otherwise serve the anonymous "/" stored before signup.
-    // Same root cause as https://bugs.webkit.org/show_bug.cgi?id=323342 (see
-    // cacheNoStoreOnCookieChange in shared/cache-control.ts): WebKit's
-    // `Vary: Cookie` check reads the cookie jar instead of the request's
-    // Cookie header, and the jar can lag behind the Set-Cookie just received.
-    location.reload();
-  } catch (error) {
-    handleFailure(error);
-  }
-}
+  signupWithPasskey(form);
+});
 
 // Clear the "taken" message as soon as the user edits the field, otherwise
 // the browser keeps blocking submission with the stale custom validity.
-function handleUsernameInput() {
+form.username.addEventListener("input", () => {
   form.username.setCustomValidity("");
-}
-
-function handleFailure(failure) {
-  toggleFormBuisy(form);
-
-  // Routed to the field itself rather than a generic alert; `detail` already
-  // has the username baked in (see respondConflict in handleSignupStart).
-  if (failure.code === "USERNAME_TAKEN") {
-    form.username.setCustomValidity(failure.detail);
-    form.username.reportValidity();
-    return;
-  }
-
-  let msg;
-  if (failure instanceof Error) {
-    // The user dismissed the passkey prompt; not an error worth showing.
-    if (failure.name === "NotAllowedError") {
-      return;
-    }
-    console.error(failure);
-    if (!navigator.onLine) {
-      msg = "Network is offline";
-    }
-  } else {
-    // Server-provided, human-readable explanation (RFC 9457 `detail`).
-    msg = failure.detail;
-  }
-
-  showAlert(msg || "Something went wrong");
-}
+});

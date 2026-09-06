@@ -6,6 +6,11 @@ import { respondBadRequest } from "@shared/responses/bad-request.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
 import { createSession, destroySession } from "../../helpers.ts";
 
+// Must match STEP_UP_REAUTH_HEADER in passkeys/assets/passkeys.js — client
+// assets can't import server modules, so the name is duplicated rather than
+// shared.
+const STEP_UP_REAUTH_HEADER = "X-Step-Up-Reauth";
+
 export async function handleLogInFinish(c: Context) {
   const authResponseJson = await c.req.json();
 
@@ -28,7 +33,7 @@ export async function handleLogInFinish(c: Context) {
     return respondForbidden(c, {
       detail,
       extensions: { signal },
-      init: { headers },
+      headers,
     });
   }
 
@@ -42,19 +47,29 @@ export async function handleLogInFinish(c: Context) {
   if (isReauthenticating && c.session.userId !== passkey.userId) {
     return respondForbidden(c, {
       detail: "That passkey belongs to a different account.",
-      init: { headers },
+      headers,
     });
   }
 
-  if (!await createSession(c, headers, passkey.userId)) {
-    return respondForbidden(c, { init: { headers } });
+  if (!await createSession(c, headers, passkey.userId, passkey.id)) {
+    return respondForbidden(c, { headers });
   }
 
   // Create before destroy, so a failure above leaves the user logged in with
   // the old session rather than with none.
   if (isReauthenticating) {
     await destroySession(c.session);
-    setFlash(headers, "REAUTHENTICATED");
+
+    // The header marks a reauth the user didn't explicitly ask for — the
+    // step-up hop `withReauth` does mid-flow for another action (e.g.
+    // deleting a passkey) — as opposed to the "Reauthenticate" button.
+    // Flashing here would ride that action's own reload and could outlive
+    // it: if the action then fails or is cancelled, nothing overwrites the
+    // flash and the user sees a stray "Successfully reauthenticated" later,
+    // on an unrelated page.
+    if (!c.req.headers.has(STEP_UP_REAUTH_HEADER)) {
+      setFlash(headers, "REAUTHENTICATED");
+    }
   }
 
   const signal = await getAllAcceptedCredentialsSignal(passkey);

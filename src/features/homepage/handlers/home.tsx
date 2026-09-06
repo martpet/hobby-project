@@ -1,5 +1,7 @@
+import { listPasskeysByUserId } from "@features/passkeys/kv.ts";
 import { listSessionsByUserId } from "@features/sessions/kv.ts";
 import { Context, isAuthenticatedContext } from "@shared/context.ts";
+import { decodeTime } from "@std/ulid";
 import { PrivateHome } from "../jsx/PrivateHome.tsx";
 import { PublicHome } from "../jsx/PublicHome.tsx";
 
@@ -8,7 +10,10 @@ export async function handleHomepage(c: Context) {
     return <PublicHome />;
   }
 
-  const sessions = await listSessionsByUserId(c.user.id);
+  const [sessions, passkeys] = await Promise.all([
+    listSessionsByUserId(c.user.id),
+    listPasskeysByUserId(c.user.id),
+  ]);
 
   // Current session first, the rest most recently active first.
   sessions.sort((a, b) => {
@@ -18,11 +23,15 @@ export async function handleHomepage(c: Context) {
     return b.lastActive - a.lastActive;
   });
 
+  // Oldest first, matching the order the passkeys were created in.
+  passkeys.sort((a, b) => decodeTime(a.id) - decodeTime(b.id));
+
   return (
     <PrivateHome
       user={c.user}
       sessions={sessions}
       currentSession={c.session}
+      passkeys={passkeys}
     />
   );
 }

@@ -16,6 +16,10 @@ noscript {
 
 table {
   border-collapse: collapse;
+  .actions {
+    display: flex;
+    gap: 0.2em;
+  }
 }
 
 th {

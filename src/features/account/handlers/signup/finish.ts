@@ -1,4 +1,5 @@
 import { verifyRegResponseJson } from "@features/passkeys/ceremony/reg-verify.ts";
+import { uniquePasskeyName } from "@features/passkeys/helpers.ts";
 import { setPasskey } from "@features/passkeys/kv.ts";
 import {
   setNewSessionCookie,
@@ -8,8 +9,8 @@ import { setUser, USERS_BY_USERNAME } from "@features/users/kv.ts";
 import { Context } from "@shared/context.ts";
 import { kv } from "@shared/kv.ts";
 import { respondBadRequest } from "@shared/responses/bad-request.ts";
-import { respondConflict } from "@shared/responses/conflict.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
+import { respondUsernameTaken } from "../../responses/username-taken.ts";
 
 export async function handleSignupFinish(c: Context) {
   const regResponseJson = await c.req.json();
@@ -25,7 +26,7 @@ export async function handleSignupFinish(c: Context) {
   const verification = await verifyRegResponseJson(c, headers, regResponseJson);
 
   if (!verification.ok) {
-    return respondForbidden(c, { init: { headers } });
+    return respondForbidden(c, { headers });
   }
 
   const { username, passkey } = verification;
@@ -41,20 +42,26 @@ export async function handleSignupFinish(c: Context) {
 
   const user = setUser({ username }, atomic);
 
-  setPasskey({ ...passkey, userId: user.id }, atomic);
+  // First passkey of a new user: the plain authenticator-derived name always
+  // wins (`uniquePasskeyName` falls back to "Passkey •<credId tail>").
+  const storedPasskey = setPasskey(
+    {
+      ...passkey,
+      userId: user.id,
+      name: uniquePasskeyName([], passkey.aaguid, passkey.credId),
+    },
+    atomic,
+  );
 
   // User, passkey and session land in one commit, so there is no window in
   // which the account exists but the signup response can't log the user in.
-  const session = stageSession(c, user.id, atomic);
+  const session = stageSession(c, user.id, storedPasskey.id, atomic);
 
   const commit = await atomic.commit();
 
   // The username check above is the only thing that can fail the commit.
   if (!commit.ok) {
-    return respondConflict("USERNAME_TAKEN", {
-      detail: `Sorry, username "${username}" is taken`,
-      init: { headers },
-    });
+    return respondUsernameTaken(username, { headers });
   }
 
   setNewSessionCookie(headers, session);

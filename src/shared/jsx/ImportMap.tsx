@@ -1,4 +1,4 @@
-import { assetPath } from "@shared/asset/path.ts";
+import { versionAssetPath } from "@shared/asset/path.ts";
 import { mapEntries } from "@std/collections";
 
 interface ImportMapProps {
@@ -7,7 +7,7 @@ interface ImportMapProps {
 
 export function ImportMap({ imports }: ImportMapProps) {
   const importMapJson = {
-    imports: mapEntries(imports, ([k, v]) => [k, assetPath(v)]),
+    imports: mapEntries(imports, ([k, v]) => [k, versionAssetPath(v)]),
   };
 
   return (

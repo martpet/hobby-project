@@ -67,8 +67,8 @@ export async function verifiyAuthResponseJson(
     return {
       ok: false,
       detail: tombstoned
-        ? "Your account has been deleted. You can delete the passkey from the authenticator."
-        : "This passkey is no longer valid",
+        ? "This account was deleted. You can remove this passkey from your device or password manager."
+        : "This passkey was removed from your account. Try another passkey.",
       signal: getUnknownCredentialSignal(authResponseJson.id),
     };
   }
@@ -102,11 +102,15 @@ export async function verifiyAuthResponseJson(
   }
 
   // Persist the new signature counter (used by the library to detect cloned
-  // authenticators; many passkey providers keep it at 0). The check makes
-  // two concurrent assertions with the same passkey fail one of them, so the
-  // counter can't be rolled back.
+  // authenticators; many passkey providers keep it at 0) and the time of this
+  // assertion. The check makes two concurrent assertions with the same
+  // passkey fail one of them, so the counter can't be rolled back.
   const atomic = kv.atomic();
-  const updatedPasskey = { ...passkey, counter: authenticationInfo.newCounter };
+  const updatedPasskey = {
+    ...passkey,
+    counter: authenticationInfo.newCounter,
+    lastUsedAt: Date.now(),
+  };
 
   atomic.check(passkeyEntry);
   setPasskey(updatedPasskey, atomic);

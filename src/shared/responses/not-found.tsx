@@ -1,7 +1,7 @@
-import { DEFAULT_MAX_AGE } from "@shared/header/cache-control.ts";
 import { Context } from "@shared/context.ts";
+import { DEFAULT_MAX_AGE } from "@shared/header/cache-control.ts";
 import { NotFoundPage } from "@shared/jsx/pages/NotFound.tsx";
-import { respondPageOrBody } from "@shared/responses/page-or-body.tsx";
+import { respondPageOrProblemDetails } from "@shared/responses/page-or-problem-details.tsx";
 import { STATUS_CODE } from "@std/http";
 import { formatCacheControl } from "@std/http/unstable-cache-control";
 import { HEADER } from "@std/http/unstable-header";
@@ -14,8 +14,12 @@ const CACHE_CONTROL = formatCacheControl({
 });
 
 export function respondNotFound(c: Context) {
-  const status = STATUS_CODE["NotFound"];
-  const init = { status, headers: { [HEADER.CacheControl]: CACHE_CONTROL } };
-
-  return respondPageOrBody(c, <NotFoundPage />, init);
+  return respondPageOrProblemDetails(
+    c,
+    <NotFoundPage />,
+    {
+      status: STATUS_CODE["NotFound"],
+      headers: { [HEADER.CacheControl]: CACHE_CONTROL },
+    },
+  );
 }

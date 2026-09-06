@@ -15,7 +15,7 @@ export function DeleteAccountButton({ user }: DeleteAccountButtonProps) {
         command="show-modal"
         commandfor={DELETE_ACCOUNT_DIALOG}
       >
-        Delete Your Account
+        Delete your account
       </button>
 
       <DeleteAccountDialog user={user} />

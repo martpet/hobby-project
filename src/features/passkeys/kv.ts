@@ -7,6 +7,8 @@ import { Passkey, PasskeyAuthOptions, PasskeyRegOptions } from "./types.ts";
 const PASSKEYS_BY_ID = "passkeys_by_id";
 const PASSKEYS_BY_CRED_ID = "passkeys_by_cred_id";
 const PASSKEYS_BY_USER_ID = "passkeys_by_user_id";
+// Exported for the `versionstamp: null` uniqueness check in rename.
+export const PASSKEYS_BY_USER_ID_AND_NAME = "passkeys_by_user_id_and_name";
 const PASSKEYS_REG_OPTIONS_BY_COOKIE = "passkeys_reg_options_by_cookie";
 const PASSKEYS_AUTH_OPTIONS_BY_COOKIE = "passkeys_auth_options_by_cookie";
 const PASSKEYS_DELETED_BY_WEBAUTHN_USER_ID =
@@ -17,7 +19,12 @@ function getPasskeyKeys(passkey: Passkey) {
     [PASSKEYS_BY_ID, passkey.id],
     [PASSKEYS_BY_CRED_ID, passkey.credId],
     [PASSKEYS_BY_USER_ID, passkey.userId, passkey.id],
+    [PASSKEYS_BY_USER_ID_AND_NAME, passkey.userId, passkey.name],
   ];
+}
+
+export function getPasskeyById(id: Passkey["id"]) {
+  return kv.get<Passkey>([PASSKEYS_BY_ID, id]);
 }
 
 export function getPasskeyByCredId(credId: Passkey["credId"]) {
@@ -32,11 +39,23 @@ export function listPasskeysByUserId(userId: Passkey["userId"]) {
 export function setPasskey(
   partialPasskey: SetOptional<Passkey, "id">,
   atomic: Deno.AtomicOperation,
+  previous?: Passkey,
 ) {
   const passkey: Passkey = {
     ...partialPasskey,
     id: partialPasskey.id ?? ulid(),
   };
+
+  // A rename leaves the old name→passkey index entry behind unless it's
+  // explicitly cleared; every other key is keyed by an id that doesn't
+  // change, so only the name index can go stale like this.
+  if (previous && previous.name !== passkey.name) {
+    atomic.delete([
+      PASSKEYS_BY_USER_ID_AND_NAME,
+      previous.userId,
+      previous.name,
+    ]);
+  }
 
   for (const key of getPasskeyKeys(passkey)) {
     atomic.set(key, passkey);

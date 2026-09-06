@@ -45,6 +45,7 @@ export function isReauthRequiredForSensitiveAction(session: Session) {
 export function stageSession(
   c: Context,
   userId: string,
+  passkeyId: string,
   atomic: Deno.AtomicOperation,
 ) {
   const now = Date.now();
@@ -52,6 +53,7 @@ export function stageSession(
   return setSession({
     cookie: generateToken(),
     userId,
+    passkeyId,
     expiresAt: now + SESSION_IDLE_TIMEOUT,
     lastActive: now,
     browser: c.ua.browser.name,
@@ -70,6 +72,7 @@ export async function createSession(
   c: Context,
   headers: Headers,
   userId: string,
+  passkeyId: string,
 ) {
   const userEntry = await getUserById(userId);
 
@@ -83,7 +86,7 @@ export async function createSession(
   // session can't be minted for an account that was just removed.
   atomic.check(userEntry);
 
-  const session = stageSession(c, userId, atomic);
+  const session = stageSession(c, userId, passkeyId, atomic);
 
   const result = await atomic.commit();
 
