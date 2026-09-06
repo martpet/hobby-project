@@ -34,7 +34,7 @@ export function isSessionExpiringSoon(session: Session) {
     SESSION_EXPIRY_WARNING_THRESHOLD;
 }
 
-export function isREAUTH_REQUIREDForSensitiveAction(session: Session) {
+export function isReauthRequiredForSensitiveAction(session: Session) {
   return Date.now() - getSessionAuthTime(session) >
     SENSITIVE_ACTION_MAX_AUTH_AGE;
 }
