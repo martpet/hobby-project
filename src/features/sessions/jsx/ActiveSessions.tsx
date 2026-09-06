@@ -3,7 +3,7 @@ import { Context } from "@shared/context.ts";
 import { lookupLocation } from "@shared/geoip.ts";
 import { dateTimeFormat, relativeTime } from "@shared/intl.ts";
 import { MINUTE } from "@std/datetime";
-import { decodeTime } from "@std/ulid/decode-time";
+import { decodeTime } from "@std/ulid";
 import { Session } from "../types.ts";
 
 interface ActiveSessionsProps {

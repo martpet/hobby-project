@@ -1,5 +1,5 @@
 import { load } from "@std/dotenv";
-import { exists } from "@std/fs/exists";
+import { exists } from "@std/fs";
 
 const ENV_NAMES = ["prod", "staging"];
 const DEFAULT_ENV = "staging";

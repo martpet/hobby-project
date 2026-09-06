@@ -1,4 +1,4 @@
-import { eTag } from "@std/http/etag";
+import { eTag } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 
 // The strong `ETag` lets clients revalidate rendered pages with

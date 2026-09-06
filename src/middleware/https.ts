@@ -1,7 +1,7 @@
 import { IS_DEV } from "@shared/const.ts";
 import { respondRedirect } from "@shared/responses/redirect.ts";
 import { Middleware } from "@shared/types.ts";
-import { DAY, SECOND } from "@std/datetime/constants";
+import { DAY, SECOND } from "@std/datetime";
 import { HEADER } from "@std/http/unstable-header";
 
 // Two years with `preload` meets the requirements for the browser preload

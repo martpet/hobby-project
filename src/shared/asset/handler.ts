@@ -1,6 +1,6 @@
 import { VERSION_PARAM } from "@shared/asset/path.ts";
 import { Context } from "@shared/context.ts";
-import { DAY, SECOND } from "@std/datetime/constants";
+import { DAY, SECOND } from "@std/datetime";
 import { serveFile } from "@std/http";
 import { formatCacheControl } from "@std/http/unstable-cache-control";
 import { HEADER } from "@std/http/unstable-header";

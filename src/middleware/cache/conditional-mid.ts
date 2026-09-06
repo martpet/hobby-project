@@ -1,6 +1,5 @@
 import { Middleware } from "@shared/types.ts";
-import { STATUS_CODE, STATUS_TEXT } from "@std/http";
-import { ifNoneMatch } from "@std/http/etag";
+import { ifNoneMatch, STATUS_CODE, STATUS_TEXT } from "@std/http";
 import { HEADER } from "@std/http/unstable-header";
 import { CACHEABLE_METHODS } from "./const.ts";
 
