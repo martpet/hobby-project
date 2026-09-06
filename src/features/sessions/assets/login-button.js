@@ -8,16 +8,14 @@ for (const button of loginButtons) {
   button.addEventListener("click", handleButtonClick);
 }
 
-async function handleButtonClick({ target }) {
-  toggleButtonLoading(target);
-
-  const handleError = createErrorHandler(target);
+async function handleButtonClick({ currentTarget }) {
+  setLoginButtonsBusy(true, currentTarget);
 
   try {
     const loginFinish = await authenticateWithPasskey();
 
     if (!loginFinish.ok) {
-      handleError(loginFinish);
+      handleFailure(loginFinish);
       return;
     }
 
@@ -26,29 +24,34 @@ async function handleButtonClick({ target }) {
     // rather than `location.assign` matters on WebKit.
     location.reload();
   } catch (error) {
-    handleError(error);
+    handleFailure(error);
   }
 }
 
-function createErrorHandler(button) {
-  return (error) => {
-    toggleButtonLoading(button);
+function setLoginButtonsBusy(force, loadingButton) {
+  for (const button of loginButtons) {
+    toggleButtonLoading(button, force && button === loadingButton);
+    button.toggleAttribute("disabled", force);
+  }
+}
 
-    let msg;
-    if (error instanceof Error) {
-      // The user dismissed the passkey prompt; not an error worth showing.
-      if (error.name === "NotAllowedError") {
-        return;
-      }
-      console.error(error);
-      if (!navigator.onLine) {
-        msg = "Network is offline";
-      }
-    } else {
-      // Server-provided, human-readable explanation (RFC 9457 `detail`).
-      msg = error.detail;
+function handleFailure(failure) {
+  setLoginButtonsBusy(false);
+
+  let msg;
+  if (failure instanceof Error) {
+    // The user dismissed the passkey prompt; not an error worth showing.
+    if (failure.name === "NotAllowedError") {
+      return;
     }
+    console.error(failure);
+    if (!navigator.onLine) {
+      msg = "Network is offline";
+    }
+  } else {
+    // Server-provided, human-readable explanation (RFC 9457 `detail`).
+    msg = failure.detail;
+  }
 
-    showAlert(msg || "Something went wrong");
-  };
+  showAlert(msg || "Something went wrong");
 }

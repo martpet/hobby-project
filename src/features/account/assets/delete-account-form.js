@@ -24,7 +24,7 @@ async function handleFormSubmit(event) {
       const reauth = await authenticateWithPasskey();
 
       if (!reauth.ok) {
-        handleError(reauth);
+        handleFailure(reauth);
         return;
       }
 
@@ -32,7 +32,7 @@ async function handleFormSubmit(event) {
     }
 
     if (!accountDelete.ok) {
-      handleError(accountDelete);
+      handleFailure(accountDelete);
       return;
     }
 
@@ -44,16 +44,16 @@ async function handleFormSubmit(event) {
 
     location.assign("/");
   } catch (error) {
-    handleError(error);
+    handleFailure(error);
   }
 }
 
-function handleError(error) {
+function handleFailure(failure) {
   // Session vanished mid-flow (revoked elsewhere, expired, or never existed);
   // reloading shows the logged-out page with whatever flash the server set.
   // A plain HTTP status check rather than a `code`, since it's a generic
   // "not authenticated" outcome rather than a domain-specific one.
-  if (error.status === 401) {
+  if (failure.status === 401) {
     location.reload();
     return;
   }
@@ -61,18 +61,18 @@ function handleError(error) {
   toggleFormBuisy(form);
 
   let msg;
-  if (error instanceof Error) {
+  if (failure instanceof Error) {
     // The user dismissed the passkey prompt; not an error worth showing.
-    if (error.name === "NotAllowedError") {
+    if (failure.name === "NotAllowedError") {
       return;
     }
-    console.error(error);
+    console.error(failure);
     if (!navigator.onLine) {
       msg = "Network is offline";
     }
   } else {
     // Server-provided, human-readable explanation (RFC 9457 `detail`).
-    msg = error.detail;
+    msg = failure.detail;
   }
 
   showAlert(msg || "Something went wrong");

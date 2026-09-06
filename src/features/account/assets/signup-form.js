@@ -20,7 +20,7 @@ async function handleFormSubmit(event) {
     ]);
 
     if (!signupStart.ok) {
-      handleError(signupStart);
+      handleFailure(signupStart);
       return;
     }
 
@@ -34,7 +34,7 @@ async function handleFormSubmit(event) {
     });
 
     if (!signupFinish.ok) {
-      handleError(signupFinish);
+      handleFailure(signupFinish);
       return;
     }
 
@@ -47,7 +47,7 @@ async function handleFormSubmit(event) {
     // Cookie header, and the jar can lag behind the Set-Cookie just received.
     location.reload();
   } catch (error) {
-    handleError(error);
+    handleFailure(error);
   }
 }
 
@@ -57,30 +57,30 @@ function handleUsernameInput() {
   form.username.setCustomValidity("");
 }
 
-function handleError(error) {
+function handleFailure(failure) {
   toggleFormBuisy(form);
 
   // Routed to the field itself rather than a generic alert; `detail` already
   // has the username baked in (see respondConflict in handleSignupStart).
-  if (error.code === "USERNAME_TAKEN") {
-    form.username.setCustomValidity(error.detail);
+  if (failure.code === "USERNAME_TAKEN") {
+    form.username.setCustomValidity(failure.detail);
     form.username.reportValidity();
     return;
   }
 
   let msg;
-  if (error instanceof Error) {
+  if (failure instanceof Error) {
     // The user dismissed the passkey prompt; not an error worth showing.
-    if (error.name === "NotAllowedError") {
+    if (failure.name === "NotAllowedError") {
       return;
     }
-    console.error(error);
+    console.error(failure);
     if (!navigator.onLine) {
       msg = "Network is offline";
     }
   } else {
     // Server-provided, human-readable explanation (RFC 9457 `detail`).
-    msg = error.detail;
+    msg = failure.detail;
   }
 
   showAlert(msg || "Something went wrong");
