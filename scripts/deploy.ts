@@ -1,9 +1,9 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { exists } from "@std/fs";
-import { command, commandOutput } from "./utils/command.ts";
-import { remoteHealthCheckScript } from "./utils/health.ts";
-import { loadEnv } from "./utils/load-env.ts";
-import { purgeCloudflareCache } from "./utils/purge-cache.ts";
+import { command, commandOutput } from "./helpers/command.ts";
+import { remoteHealthCheckScript } from "./helpers/health.ts";
+import { loadEnv } from "./helpers/load-env.ts";
+import { purgeCloudflareCache } from "./helpers/purge-cache.ts";
 
 const envName = await loadEnv();
 const badge = `[${envName.toUpperCase()}]`;

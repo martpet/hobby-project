@@ -1,6 +1,6 @@
 import { getRequiredEnv } from "@shared/environment.ts";
-import { command } from "./utils/command.ts";
-import { loadEnv } from "./utils/load-env.ts";
+import { command } from "./helpers/command.ts";
+import { loadEnv } from "./helpers/load-env.ts";
 
 const envName = await loadEnv();
 const badge = `[${envName.toUpperCase()}]`;
