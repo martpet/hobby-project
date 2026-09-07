@@ -13,11 +13,16 @@ export function remoteHealthCheckScript(
 
   // systemd can report the process active before Deno binds its listener.
   // The forwarded protocol bypasses the app's HTTPS redirect for loopback.
+  // Ends by falling through rather than `exit 0`, so callers can keep running
+  // (e.g. to clean up) after a successful check.
   return `
+    health_ok=false
+
     for attempt in $(seq 1 10); do
       if health=$(curl --connect-timeout 1 --max-time 2 --fail --silent --header 'X-Forwarded-Proto: https' http://127.0.0.1:${remoteAppPort}/health); then
         if [ "$health" = '{"gitSha":"${expectedGitSha}"}' ]; then
-          exit 0
+          health_ok=true
+          break
         fi
       fi
 
@@ -25,8 +30,10 @@ export function remoteHealthCheckScript(
       sleep 1
     done
 
-    echo "Health check failed: expected deployed SHA ${expectedGitSha}."
-    sudo systemctl status ${remoteService} --no-pager
-    exit 1
+    if [ "$health_ok" != true ]; then
+      echo "Health check failed: expected deployed SHA ${expectedGitSha}."
+      sudo systemctl status ${remoteService} --no-pager || true
+      false
+    fi
   `;
 }

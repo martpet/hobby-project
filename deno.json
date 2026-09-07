@@ -3,6 +3,7 @@
     "dev": "deno --env-file --permission-set=dev --watch src/main.ts",
     "build": "deno -A scripts/build.ts",
     "deploy": "deno -A scripts/deploy.ts",
+    "purge-cloudflare-cache": "deno -A scripts/purge-cloudflare-cache.ts",
     "health": "deno -A scripts/health.ts",
     "staging": "deno run build staging && deno run deploy staging",
     "prod": "deno run build prod && deno run deploy prod",
