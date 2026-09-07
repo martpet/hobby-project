@@ -2,10 +2,12 @@ import { VERSION_PARAM } from "@shared/asset/path.ts";
 import { Context } from "@shared/context.ts";
 import { IS_DEV } from "@shared/const.ts";
 import { cacheNoStore } from "@shared/header/cache-control.ts";
+import { Route } from "@shared/router.ts";
 import { DAY, SECOND } from "@std/datetime";
 import { serveFile } from "@std/http";
 import { formatCacheControl } from "@std/http/unstable-cache-control";
 import { HEADER } from "@std/http/unstable-header";
+import { METHOD } from "@std/http/unstable-method";
 import { join } from "@std/path";
 
 const IMMUTABLE_CACHE_CONTROL = formatCacheControl({
@@ -14,14 +16,24 @@ const IMMUTABLE_CACHE_CONTROL = formatCacheControl({
   immutable: true,
 });
 
-// Serves `<caller dir>/assets/<file>` where `file` is the `:file` route
-// parameter. `serveFile` sets `ETag`/`Last-Modified` and answers conditional
-// requests with 304 itself.
-export async function handleAsset(c: Context, meta: ImportMeta) {
+export function assetRoute(meta: ImportMeta, prefix = ""): Route {
+  const assetsPath = join(meta.dirname!, "assets");
+
+  return {
+    pattern: new URLPattern({ pathname: `${prefix}/assets/:file` }),
+    method: METHOD.Get,
+    handler: (c) => handleAsset(c, assetsPath),
+  };
+}
+
+// Serves `<assetsPath>/<file>` where `file` is the `:file` route parameter.
+// `serveFile` sets `ETag`/`Last-Modified` and answers conditional requests
+// with 304 itself.
+async function handleAsset(c: Context, assetsPath: string) {
   // `:file` matches a single path segment and the URL is already normalised
   // by the time it is routed, so `file` can't contain `/` or `..` and the
   // result stays inside `assets/`.
-  const filePath = join(meta.dirname!, "assets", c.params.file!);
+  const filePath = join(assetsPath, c.params.file!);
   const res = await serveFile(c.req, filePath);
 
   if (IS_DEV) {

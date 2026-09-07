@@ -1,4 +1,4 @@
-import { handleAsset } from "@shared/asset/handler.ts";
+import { assetRoute } from "@shared/asset/handler.ts";
 import { Route } from "@shared/router.ts";
 import { handlePasskeyAddFinish } from "./handlers/add/finish.ts";
 import { handlePasskeyAddStart } from "./handlers/add/start.ts";
@@ -6,11 +6,7 @@ import { handlePasskeyDelete } from "./handlers/delete.ts";
 import { handlePasskeyRename } from "./handlers/rename.ts";
 
 export const passkeyRoutes: Route[] = [
-  {
-    pattern: new URLPattern({ pathname: "/passkeys/assets/:file" }),
-    method: "GET",
-    handler: (c) => handleAsset(c, import.meta),
-  },
+  assetRoute(import.meta, "/passkeys"),
   {
     pattern: new URLPattern({ pathname: "/passkeys/add/start" }),
     method: "POST",

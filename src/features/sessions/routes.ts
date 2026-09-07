@@ -1,15 +1,11 @@
-import { handleAsset } from "@shared/asset/handler.ts";
+import { assetRoute } from "@shared/asset/handler.ts";
 import { Route } from "@shared/router.ts";
 import { handleLogInFinish } from "./handlers/login/finish.ts";
 import { handleLogInStart } from "./handlers/login/start.ts";
 import { handleLogOut } from "./handlers/logout.ts";
 
 export const sessionRoutes: Route[] = [
-  {
-    pattern: new URLPattern({ pathname: "/session/assets/:file" }),
-    method: "GET",
-    handler: (c) => handleAsset(c, import.meta),
-  },
+  assetRoute(import.meta, "/session"),
   {
     pattern: new URLPattern({ pathname: "/login/start" }),
     method: "POST",
