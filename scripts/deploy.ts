@@ -3,6 +3,7 @@ import { exists } from "@std/fs";
 import { command, commandOutput } from "./utils/command.ts";
 import { remoteHealthCheckScript } from "./utils/health.ts";
 import { loadEnv } from "./utils/load-env.ts";
+import { purgeCloudflareCache } from "./utils/purge-cache.ts";
 
 const envName = await loadEnv();
 const badge = `[${envName.toUpperCase()}]`;
@@ -39,7 +40,7 @@ try {
 
   // `-n` keeps ssh from swallowing this script's stdin. The remote script:
   // - writes the SHA as a systemd drop-in so the app sees GIT_SHA (asset
-  //   versioning and the app cache name depend on it),
+  //   versioning and the app cache name depend on it);
   // - removes the previous deploy's app cache directory *after* the restart,
   //   since the new process opens a fresh cache named after the new SHA.
   await command("ssh", [
@@ -66,6 +67,10 @@ try {
   ]);
 
   console.log(`✅ Deployment to ${badge} completed successfully!`);
+
+  // Purges only this environment's HTML cache tag, so staging and prod
+  // deploys never evict each other's cache despite sharing a zone.
+  await purgeCloudflareCache(envName);
 } catch (error) {
   console.error("❌ Deployment failed!", error);
   Deno.exit(1);

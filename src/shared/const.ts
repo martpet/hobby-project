@@ -1,15 +1,18 @@
-import { getBooleanEnv, getEnv, getRequiredEnv } from "./environment.ts";
+import {
+  getBooleanEnv,
+  getEnv,
+  getEnvName,
+  getRequiredEnv,
+} from "./environment.ts";
 
-const port = getEnv("PORT");
-
+export const PORT = Number(getEnv("PORT") ?? 8000);
+export const ORIGIN = getRequiredEnv("ORIGIN");
 export const APP_ID = "hobproj";
 export const WEBSITE_TITLE = "Hobby Project";
 export const DEFAULT_LOCALE = "en-GB";
-// Unset → `Deno.serve` default (8000).
-export const PORT = port ? Number(port) : undefined;
-export const ORIGIN = getRequiredEnv("ORIGIN");
 // Set by the deploy script via a systemd drop-in; drives asset versioning
 // and the per-deploy server cache name. Absent in local dev.
 export const GIT_SHA = getEnv("GIT_SHA");
-export const IS_DEV = getBooleanEnv("DEV");
+export const ENV_NAME = getEnvName();
+export const IS_DEV = ENV_NAME === "dev";
 export const SERVER_CACHE_ENABLED = getBooleanEnv("SERVER_CACHE_ENABLED");
