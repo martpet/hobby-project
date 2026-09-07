@@ -1,6 +1,7 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { exists } from "@std/fs";
 import { command, commandOutput } from "./utils/command.ts";
+import { remoteHealthCheckScript } from "./utils/health.ts";
 import { loadEnv } from "./utils/load-env.ts";
 
 const envName = await loadEnv();
@@ -11,6 +12,7 @@ const remoteBinaryTemp = `${remoteBinary}.tmp`;
 const remoteHost = getRequiredEnv("REMOTE_HOST");
 const remoteService = getRequiredEnv("REMOTE_SERVICE");
 const appCachePath = getRequiredEnv("REMOTE_CACHE_PATH");
+const remoteAppPort = getRequiredEnv("REMOTE_APP_PORT");
 const gitSha = await commandOutput("git", ["rev-parse", "--short", "HEAD"]);
 const serviceUnit = remoteService.replace(/\.service$/, "");
 
@@ -58,6 +60,8 @@ try {
         sudo systemctl status ${remoteService} --no-pager
         exit 1
       fi
+
+      ${remoteHealthCheckScript(remoteService, remoteAppPort, gitSha)}
     `,
   ]);
 
