@@ -11,7 +11,7 @@
       "runtimeArgs": [
         "run",
         "--inspect-wait",
-        "--permission-set=dev",
+        "--allow-all",
         "--env-file",
         "--unstable-kv"
       ],

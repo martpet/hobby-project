@@ -1,30 +1,18 @@
 {
   "tasks": {
-    "dev": "deno --env-file --permission-set=dev --watch src/main.ts",
-    "build": "deno -A scripts/build.ts",
-    "deploy": "deno -A scripts/deploy.ts",
-    "purge-cloudflare-cache": "deno -A scripts/purge-cloudflare-cache.ts",
-    "health": "deno -A scripts/health.ts",
-    "staging": "deno run build staging && deno run deploy staging",
-    "prod": "deno run build prod && deno run deploy prod",
-    "simplewebauthn": "deno bundle -o src/features/passkeys/assets/simplewebauthn.js jsr:@simplewebauthn/browser@^14.0.0"
-  },
-  "permissions": {
-    "dev": {
-      "net": true,
-      "env": true,
-      "read": true
-    },
-    "build": {
-      "net": true,
-      "env": true
-    }
+    "dev": "deno --allow-all --env-file --watch src/main.ts",
+    "deploy": "deno -A tasks/deploy.ts",
+    "staging": "deno task deploy staging",
+    "prod": "deno task deploy prod",
+    "install-remote-deployer": "deno -A tasks/install-remote-deployer.ts",
+    "get-simplewebauthn": "deno bundle -o src/features/passkeys/assets/simplewebauthn.js jsr:@simplewebauthn/browser@^14.0.0"
   },
   "unstable": ["kv"],
   "imports": {
     "@shared/": "./src/shared/",
     "@features/": "./src/features/",
     "@middleware/": "./src/middleware/",
+    "@std/async": "jsr:@std/async@^1.0.14",
     "@josh-hemphill/maxminddb-wasm": "jsr:@josh-hemphill/maxminddb-wasm@^2.1.8",
     "@simplewebauthn/server": "jsr:@simplewebauthn/server@^14.0.0",
     "@std/collections": "jsr:@std/collections@^1.3.0",
@@ -33,6 +21,7 @@
     "@std/fs": "jsr:@std/fs@^1.0.24",
     "@std/http": "jsr:@std/http@^1.1.3",
     "@std/path": "jsr:@std/path@^1.1.6",
+    "@std/tar": "jsr:@std/tar@^0.1.10",
     "@std/dotenv": "jsr:@std/dotenv@^0.225.8",
     "@std/ulid": "jsr:@std/ulid@^1.0.0",
     "preact": "npm:preact@^10.29.8",

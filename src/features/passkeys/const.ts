@@ -1,4 +1,4 @@
-import { ORIGIN, WEBSITE_TITLE } from "@shared/const.ts";
+import { APP_ORIGIN, WEBSITE_TITLE } from "@shared/const.ts";
 import { MINUTE } from "@std/datetime";
 
 export const WEBAUTHN_TIMEOUT = 5 * MINUTE;
@@ -7,7 +7,7 @@ export const WEBAUTHN_TIMEOUT = 5 * MINUTE;
 // while some security keys have no PIN/biometric and would otherwise fail.
 export const WEBAUTHN_USER_VERIFICATION = "preferred";
 export const WEBAUTHN_RP_NAME = WEBSITE_TITLE;
-export const WEBAUTHN_ORIGIN = ORIGIN;
+export const WEBAUTHN_ORIGIN = APP_ORIGIN;
 
 // Passkeys are bound to the RP ID; changing the hostname orphans them all.
 export const WEBAUTHN_RP_ID = new URL(WEBAUTHN_ORIGIN).hostname;

@@ -7,7 +7,7 @@ import { httpsMid } from "@middleware/https.ts";
 import { jsxMid } from "@middleware/jsx.ts";
 import { secureHeadersMid } from "@middleware/secure-headers.ts";
 import { trailingSlashMid } from "@middleware/trailing-slash.ts";
-import { PORT } from "@shared/const.ts";
+import { APP_PORT } from "@shared/const.ts";
 import { buildContext } from "@shared/context.ts";
 import { router } from "@shared/router.ts";
 import { routes } from "./routes.ts";
@@ -42,6 +42,6 @@ const composed = middlewares.reduceRight(
   jsxMid(router(routes)),
 );
 
-Deno.serve({ port: PORT }, (req, info) => {
+Deno.serve({ port: APP_PORT }, (req, info) => {
   return composed(buildContext(req, info));
 });

@@ -1,4 +1,4 @@
-deno# Hobby Project
+# Hobproj
 
 A lightweight web application showcasing passkey authentication (WebAuthn).\
 Built without a heavy framework or single-page application (SPA) architecture.
@@ -21,5 +21,5 @@ Built without a heavy framework or single-page application (SPA) architecture.
 
 4. **Run the development server:**
    ```sh
-   deno run dev
+   deno task dev
    ```

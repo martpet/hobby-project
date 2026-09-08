@@ -4,7 +4,7 @@ import { Page } from "@shared/jsx/Page.tsx";
 export function PublicHome() {
   return (
     <Page>
-      <h1>Hobby Project</h1>
+      <h1>Hobproj</h1>
       <noscript>JavaScript is required to sign in.</noscript>
       <LogInButton />
       <p>

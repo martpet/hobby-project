@@ -1,14 +1,19 @@
-import { EnvName, getEnv } from "@shared/environment.ts";
+import type { EnvName } from "@shared/environment.ts";
 import { getHtmlCacheTag } from "@shared/cache-tag.ts";
+
+interface PurgeCloudflareCacheOptions {
+  readonly zoneId?: string;
+  readonly apiToken?: string;
+}
 
 // Purges Cloudflare's cache for this environment's HTML tag, leaving other
 // environments' cached HTML (and all static assets) untouched, since
 // prod/staging share one Cloudflare zone. A missing token disables purging
 // entirely (feature flag) rather than failing the deploy.
-export async function purgeCloudflareCache(envName: EnvName) {
-  const zoneId = getEnv("CLOUDFLARE_ZONE_ID");
-  const apiToken = getEnv("CLOUDFLARE_API_TOKEN");
-
+export async function purgeCloudflareCache(
+  envName: EnvName,
+  { zoneId, apiToken }: PurgeCloudflareCacheOptions,
+) {
   if (!apiToken) {
     console.log("ℹ️  CLOUDFLARE_API_TOKEN not set, skipping cache purge.");
     return;

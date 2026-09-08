@@ -1,5 +1,5 @@
 // The app cache reports itself via the standard `Cache-Status` header
-// (RFC 9211), e.g. `Cache-Status: Hobby; hit; ttl=120`. Any cache in front
+// (RFC 9211), e.g. `Cache-Status: Hobproj; hit; ttl=120`. Any cache in front
 // (CDN, browser) appends its own entry to the same header.
 //
 // - `hit`                served from the app cache.
