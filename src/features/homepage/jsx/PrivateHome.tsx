@@ -21,8 +21,10 @@ export function PrivateHome(
     <Page>
       <h1>Welcome {user.username}</h1>
 
-      {/* type="submit" is only for Safari's default blue button styling —
-          the button already submits by default as the form's only button. */}
+      {
+        /* type="submit" is only for Safari's default blue button styling —
+          the button already submits by default as the form's only button. */
+      }
       <LogOutButton type="submit" />
 
       <h2>Active sessions</h2>

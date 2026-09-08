@@ -4,6 +4,9 @@ import { loadEnv } from "./utils/load-env.ts";
 import { run } from "./utils/run.ts";
 import { createSourceArchive } from "./utils/source-archive.ts";
 
+console.log("🔍 Running local checks...");
+await run("deno", ["task", "check"]);
+
 const envName = await loadEnv();
 const badge = `[${envName.toUpperCase()}]`;
 const localSourceArchive = `dist/${envName}-source.tar.gz`;
