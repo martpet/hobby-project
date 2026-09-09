@@ -1,4 +1,4 @@
-import { delay } from "@std/async/delay";
+import { delay } from "@std/async";
 
 interface HealthCheckOptions {
   readonly service: string;

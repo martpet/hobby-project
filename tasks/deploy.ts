@@ -1,5 +1,5 @@
 import { getRequiredEnv } from "@shared/environment.ts";
-import { join } from "@std/path/posix";
+import { join } from "@std/path";
 import { loadEnv } from "./utils/load-env.ts";
 import { run } from "./utils/run.ts";
 import { createSourceArchive } from "./utils/source-archive.ts";
