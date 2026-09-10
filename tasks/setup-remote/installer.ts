@@ -24,7 +24,6 @@ interface Config {
   readonly prodKeepIdleRunning: string;
   readonly stagingAppOrigin: string;
   readonly prodAppOrigin: string;
-  readonly compileTarget: string;
   readonly cloudflareTunnelToken: string;
   readonly cloudflareZoneId: string;
   readonly cloudflareApiToken: string;
@@ -121,7 +120,6 @@ async function loadConfig(): Promise<Config> {
     prodKeepIdleRunning: (env.PROD_KEEP_IDLE_RUNNING ?? "false").trim(),
     stagingAppOrigin: required("STAGING_APP_ORIGIN"),
     prodAppOrigin: required("PROD_APP_ORIGIN"),
-    compileTarget: required("COMPILE_TARGET"),
     cloudflareTunnelToken: required("CLOUDFLARE_TUNNEL_TOKEN"),
     cloudflareZoneId: required("CLOUDFLARE_ZONE_ID"),
     cloudflareApiToken: required("CLOUDFLARE_API_TOKEN"),
@@ -725,7 +723,6 @@ async function ensureDeployerConfigFiles(
   config: Config,
 ): Promise<StepResult[]> {
   const commonDeployerEnv = [
-    `COMPILE_TARGET=${config.compileTarget}`,
     "BINARY=./bin",
     `CLOUDFLARE_ZONE_ID=${config.cloudflareZoneId}`,
     `CLOUDFLARE_API_TOKEN=${config.cloudflareApiToken}`,

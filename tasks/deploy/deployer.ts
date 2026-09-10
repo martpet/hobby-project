@@ -31,7 +31,6 @@ interface DeployConfig {
   readonly denoDir: string;
   readonly cloudflareZoneId?: string;
   readonly cloudflareApiToken?: string;
-  readonly compileTarget?: string;
   readonly allowRead?: string;
   readonly allowWrite?: string;
   readonly blue: ColorConfig;
@@ -105,7 +104,6 @@ async function loadConfig(gitSha: string | undefined): Promise<DeployConfig> {
     denoDir: getAbsoluteEnvPath(env, "DENO_DIR"),
     cloudflareZoneId: env.CLOUDFLARE_ZONE_ID,
     cloudflareApiToken: env.CLOUDFLARE_API_TOKEN,
-    compileTarget: env.COMPILE_TARGET,
     allowRead: env.ALLOW_READ,
     allowWrite: env.ALLOW_WRITE,
     blue: buildColorConfig("blue"),
@@ -240,10 +238,6 @@ async function compileSource(
     "--allow-env",
     "--include=src/",
   ];
-
-  if (config.compileTarget) {
-    args.push(`--target=${config.compileTarget}`);
-  }
 
   if (config.allowRead) {
     args.push(`--allow-read=${config.allowRead}`);
