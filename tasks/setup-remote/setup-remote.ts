@@ -1,7 +1,7 @@
 import { getEnv, getRequiredEnv } from "@shared/environment.ts";
 import { join } from "@std/path";
 import { loadSetupEnv } from "./load-env.ts";
-import { getRemotePaths } from "../utils/remote-paths.ts";
+import { remotePaths } from "../utils/remote-paths.ts";
 import { run } from "../utils/run.ts";
 
 // Local orchestrator for `deno task setup-remote`. Verifies SSH/sudo access,
@@ -13,12 +13,8 @@ import { run } from "../utils/run.ts";
 await loadSetupEnv();
 
 const remoteHost = getRequiredEnv("REMOTE_HOST");
-const paths = getRemotePaths(
-  getRequiredEnv("REMOTE_RUNTIME_ROOT"),
-  getRequiredEnv("REMOTE_STATE_ROOT"),
-);
 const remoteInstaller = join(
-  paths.installer,
+  remotePaths.installer,
   "installer",
 );
 const remoteConfigTemp = ".env.setup-remote";
@@ -44,8 +40,6 @@ const CONFIG_KEYS = [
   "CLOUDFLARE_API_TOKEN",
   "GEOIP_ACCOUNT_ID",
   "GEOIP_LICENSE_KEY",
-  "REMOTE_RUNTIME_ROOT",
-  "REMOTE_STATE_ROOT",
 ];
 
 // Optional; each defaults (on the remote installer side) to "false" if

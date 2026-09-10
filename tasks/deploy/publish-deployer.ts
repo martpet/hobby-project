@@ -1,7 +1,7 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { join } from "@std/path";
 import { loadEnv } from "./load-env.ts";
-import { getRemotePaths } from "../utils/remote-paths.ts";
+import { remotePaths } from "../utils/remote-paths.ts";
 import { run } from "../utils/run.ts";
 import { loadEnvFile } from "../utils/env-file.ts";
 
@@ -12,15 +12,11 @@ if (usbMountPath === undefined) {
   throw new Error("Missing USB_MOUNT_PATH in tasks/setup-remote/.env.setup.");
 }
 const badge = `[${envName.toUpperCase()}]`;
-const paths = getRemotePaths(
-  getRequiredEnv("REMOTE_RUNTIME_ROOT"),
-  getRequiredEnv("REMOTE_STATE_ROOT"),
-);
 const localRemoteDeployer = `dist/remote-deployer-${envName}`;
-const remoteDeployerRoot = paths.deployer;
-const remoteAppRoot = paths.app;
-const remoteUploadRoot = paths.upload;
-const remoteCacheRoot = paths.cache;
+const remoteDeployerRoot = remotePaths.deployer;
+const remoteAppRoot = remotePaths.app;
+const remoteUploadRoot = remotePaths.upload;
+const remoteCacheRoot = remotePaths.cache;
 // Matches the `ETC_ROOT` constant in `tasks/setup-remote/installer.ts`,
 // where the per-env active-color file and Caddy upstream snippet live.
 const remoteEtcRoot = "/etc/hobproj";
