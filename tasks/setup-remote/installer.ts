@@ -15,6 +15,8 @@ interface Config {
   readonly deployProdUsers: string[];
   readonly stagingAppPort: string;
   readonly prodAppPort: string;
+  readonly stagingAppOrigin: string;
+  readonly prodAppOrigin: string;
   readonly compileTarget: string;
   readonly cloudflareTunnelToken: string;
   readonly cloudflareZoneId: string;
@@ -97,6 +99,8 @@ async function loadConfig(): Promise<Config> {
     deployProdUsers: splitUsers(env.DEPLOY_PROD_USERS),
     stagingAppPort: required("STAGING_APP_PORT"),
     prodAppPort: required("PROD_APP_PORT"),
+    stagingAppOrigin: required("STAGING_APP_ORIGIN"),
+    prodAppOrigin: required("PROD_APP_ORIGIN"),
     compileTarget: required("COMPILE_TARGET"),
     cloudflareTunnelToken: required("CLOUDFLARE_TUNNEL_TOKEN"),
     cloudflareZoneId: required("CLOUDFLARE_ZONE_ID"),
@@ -590,12 +594,16 @@ async function ensureEtcHobprojEnvFiles(config: Config): Promise<StepResult[]> {
     staging: config.stagingAppPort,
     prod: config.prodAppPort,
   };
+  const origins: Record<Env, string> = {
+    staging: config.stagingAppOrigin,
+    prod: config.prodAppOrigin,
+  };
 
   for (const env of ENVS) {
     const envContent = [
       `ENV_NAME=${env}`,
       `APP_PORT=${ports[env]}`,
-      `APP_ORIGIN=http://localhost:${ports[env]}`,
+      `APP_ORIGIN=${origins[env]}`,
       `HOME=${config.remoteCacheRoot}/${env}`,
       "",
     ].join("\n");
