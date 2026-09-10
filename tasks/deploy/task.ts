@@ -1,6 +1,7 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { join } from "@std/path";
 import { loadEnv } from "./load-env.ts";
+import { getRemotePaths } from "../utils/remote-paths.ts";
 import { run } from "../utils/run.ts";
 import { createSourceArchive } from "./source-archive.ts";
 
@@ -8,10 +9,14 @@ console.log("🔍 Running local checks...");
 await run("deno", ["task", "check"]);
 
 const envName = await loadEnv();
+const paths = getRemotePaths(
+  getRequiredEnv("REMOTE_RUNTIME_ROOT"),
+  getRequiredEnv("REMOTE_STATE_ROOT"),
+);
 const badge = `[${envName.toUpperCase()}]`;
 const localSourceArchive = `dist/${envName}-source.tar.gz`;
 const remoteDeployer = join(
-  getRequiredEnv("REMOTE_DEPLOYER_PATH"),
+  paths.deployer,
   envName,
   "deployer",
 );
@@ -19,7 +24,7 @@ const remoteHost = getRequiredEnv("REMOTE_HOST");
 const { stdout: gitSha } = await run("git", ["rev-parse", "--short", "HEAD"], {
   stdout: "piped",
 });
-const remoteUploadPath = join(getRequiredEnv("REMOTE_UPLOAD_PATH"), envName);
+const remoteUploadPath = join(paths.upload, envName);
 const remoteSourceArchive = join(
   remoteUploadPath,
   `source-${gitSha}.tar.gz`,

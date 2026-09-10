@@ -6,6 +6,7 @@
 // `deployer.ts`, but for one-time/occasional server provisioning rather
 // than app deploys.
 import { run } from "../utils/run.ts";
+import { getRemotePaths } from "../utils/remote-paths.ts";
 
 interface Config {
   readonly usbLabel: string;
@@ -29,10 +30,9 @@ interface Config {
   readonly cloudflareApiToken: string;
   readonly geoipAccountId: string;
   readonly geoipLicenseKey: string;
-  readonly remoteAppRoot: string;
-  readonly remoteUploadRoot: string;
-  readonly remoteCacheRoot: string;
-  readonly remoteDeployerRoot: string;
+  readonly persistentDataRoot: string;
+  readonly runtimeRoot: string;
+  readonly stateRoot: string;
 }
 
 interface StepResult {
@@ -66,6 +66,7 @@ try {
   results.push(await ensureDenoInstalled());
   results.push(await ensureStorageMounted(config));
   results.push(await ensureAptPackage("geoipupdate"));
+  results.push(await ensureAptPackage("sqlite3"));
   results.push(await ensureCloudflaredRepoAndPackage());
   results.push(await ensureCaddyRepoAndPackage());
   results.push(await ensureUsersAndGroups(config));
@@ -128,10 +129,9 @@ async function loadConfig(): Promise<Config> {
     cloudflareApiToken: required("CLOUDFLARE_API_TOKEN"),
     geoipAccountId: required("GEOIP_ACCOUNT_ID"),
     geoipLicenseKey: required("GEOIP_LICENSE_KEY"),
-    remoteAppRoot: required("REMOTE_APP_PATH"),
-    remoteUploadRoot: required("REMOTE_UPLOAD_PATH"),
-    remoteCacheRoot: required("REMOTE_CACHE_PATH"),
-    remoteDeployerRoot: required("REMOTE_DEPLOYER_PATH"),
+    persistentDataRoot: required("USB_MOUNT_PATH"),
+    runtimeRoot: required("REMOTE_RUNTIME_ROOT"),
+    stateRoot: required("REMOTE_STATE_ROOT"),
   };
 }
 
@@ -568,18 +568,22 @@ async function ensureUsersAndGroups(config: Config): Promise<StepResult> {
 
 async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
   const results: StepResult[] = [];
+  const paths = getRemotePaths(config.runtimeRoot, config.stateRoot);
 
   results.push(
-    await ensureDirectory(config.remoteAppRoot, "root", "hobproj", "710"),
+    await ensureDirectory(paths.app, "root", "hobproj", "710"),
   );
   results.push(
-    await ensureDirectory(config.remoteUploadRoot, "root", "root", "711"),
+    await ensureDirectory(paths.upload, "root", "root", "711"),
   );
   results.push(
-    await ensureDirectory(config.remoteCacheRoot, "root", "hobproj", "710"),
+    await ensureDirectory(config.stateRoot, "root", "root", "711"),
   );
   results.push(
-    await ensureDirectory(config.remoteDeployerRoot, "root", "hobproj", "750"),
+    await ensureDirectory(paths.cache, "root", "hobproj", "710"),
+  );
+  results.push(
+    await ensureDirectory(paths.deployer, "root", "hobproj", "750"),
   );
   results.push(await ensureDirectory(ETC_ROOT, "root", "hobproj", "750"));
   results.push(await ensureDirectory(GEOIP_DIR, "root", "root", "755"));
@@ -588,7 +592,7 @@ async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
   for (const env of ENVS) {
     results.push(
       await ensureDirectory(
-        `${config.remoteAppRoot}/${env}`,
+        `${paths.app}/${env}`,
         "hobproj",
         "hobproj",
         "700",
@@ -596,7 +600,15 @@ async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
     );
     results.push(
       await ensureDirectory(
-        `${config.remoteAppRoot}/${env}/db`,
+        `${config.persistentDataRoot}/${env}`,
+        "hobproj",
+        "hobproj",
+        "700",
+      ),
+    );
+    results.push(
+      await ensureDirectory(
+        `${config.persistentDataRoot}/${env}/db`,
         "hobproj",
         "hobproj",
         "700",
@@ -605,7 +617,7 @@ async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
     for (const color of COLORS) {
       results.push(
         await ensureDirectory(
-          `${config.remoteAppRoot}/${env}/${color}`,
+          `${paths.app}/${env}/${color}`,
           "hobproj",
           "hobproj",
           "700",
@@ -613,7 +625,7 @@ async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
       );
       results.push(
         await ensureDirectory(
-          `${config.remoteCacheRoot}/${env}/${color}`,
+          `${paths.cache}/${env}/${color}`,
           "hobproj",
           "hobproj",
           "700",
@@ -630,7 +642,7 @@ async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
     );
     results.push(
       await ensureDirectory(
-        `${config.remoteUploadRoot}/${env}`,
+        `${paths.upload}/${env}`,
         "hobproj",
         `hobproj-deploy-${env}`,
         "2730",
@@ -638,7 +650,7 @@ async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
     );
     results.push(
       await ensureDirectory(
-        `${config.remoteCacheRoot}/${env}`,
+        `${paths.cache}/${env}`,
         "hobproj",
         "hobproj",
         "700",
@@ -646,7 +658,7 @@ async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
     );
     results.push(
       await ensureDirectory(
-        `${config.remoteDeployerRoot}/${env}`,
+        `${paths.deployer}/${env}`,
         "root",
         "hobproj",
         "750",
@@ -684,7 +696,7 @@ async function ensureEtcHobprojEnvFiles(config: Config): Promise<StepResult[]> {
   };
 
   for (const env of ENVS) {
-    const appPath = `${config.remoteAppRoot}/${env}`;
+    const appPath = `${config.persistentDataRoot}/${env}`;
     // `KV_PATH` is absolute (rather than the previous `./db/kv.sqlite`)
     // because each color now has its own `WorkingDirectory`
     // (`${appPath}/<color>`), while the KV store itself stays shared at
@@ -717,6 +729,7 @@ async function ensureEtcHobprojEnvFiles(config: Config): Promise<StepResult[]> {
 async function ensureDeployerConfigFiles(
   config: Config,
 ): Promise<StepResult[]> {
+  const paths = getRemotePaths(config.runtimeRoot, config.stateRoot);
   const commonDeployerEnv = [
     `COMPILE_TARGET=${config.compileTarget}`,
     "BINARY=./bin",
@@ -727,7 +740,7 @@ async function ensureDeployerConfigFiles(
 
   const results = [
     await ensureFile(
-      `${config.remoteDeployerRoot}/.env.deployer`,
+      `${paths.deployer}/.env.deployer`,
       commonDeployerEnv,
       "root",
       "hobproj",
@@ -745,7 +758,7 @@ async function ensureDeployerConfigFiles(
   };
 
   for (const env of ENVS) {
-    const appPath = `${config.remoteAppRoot}/${env}`;
+    const appPath = `${paths.app}/${env}`;
     const etcEnvRoot = `${ETC_ROOT}/${env}`;
     // Absolute (rather than the previous relative `./db`) since each
     // color's `WorkingDirectory` is now its own subdirectory, while the KV
@@ -753,16 +766,16 @@ async function ensureDeployerConfigFiles(
     const envDeployerEnv = [
       `ENV_NAME=${env}`,
       `APP_PATH=${appPath}`,
-      `UPLOAD_PATH=${config.remoteUploadRoot}/${env}`,
-      `ALLOW_READ=${appPath}/db,${GEOIP_DIR}`,
-      `ALLOW_WRITE=${appPath}/db`,
+      `UPLOAD_PATH=${paths.upload}/${env}`,
+      `ALLOW_READ=${config.persistentDataRoot}/${env}/db,${GEOIP_DIR}`,
+      `ALLOW_WRITE=${config.persistentDataRoot}/${env}/db`,
       `BLUE_PORT=${ports[env].blue}`,
       `GREEN_PORT=${ports[env].green}`,
       `SERVICE_BLUE=hobproj.${env}-blue`,
       `SERVICE_GREEN=hobproj.${env}-green`,
-      `SERVER_CACHE_PATH_BLUE=${config.remoteCacheRoot}/${env}/blue/.local/share/bin.tmp/web_cache`,
-      `SERVER_CACHE_PATH_GREEN=${config.remoteCacheRoot}/${env}/green/.local/share/bin.tmp/web_cache`,
-      `DENO_DIR=${config.remoteCacheRoot}/${env}/deno`,
+      `SERVER_CACHE_PATH_BLUE=${paths.cache}/${env}/blue/.local/share/bin.tmp/web_cache`,
+      `SERVER_CACHE_PATH_GREEN=${paths.cache}/${env}/green/.local/share/bin.tmp/web_cache`,
+      `DENO_DIR=${paths.cache}/${env}/deno`,
       `ACTIVE_COLOR_FILE=${etcEnvRoot}/active-color`,
       `CADDY_SNIPPET_FILE=${etcEnvRoot}/active-upstream.caddy`,
       `KEEP_IDLE_RUNNING=${keepIdleRunning[env]}`,
@@ -771,7 +784,7 @@ async function ensureDeployerConfigFiles(
 
     results.push(
       await ensureFile(
-        `${config.remoteDeployerRoot}/${env}/.env.deployer`,
+        `${paths.deployer}/${env}/.env.deployer`,
         envDeployerEnv,
         "root",
         "hobproj",
@@ -789,6 +802,7 @@ async function ensureDeployerConfigFiles(
 
 async function ensureSystemdAppUnits(config: Config): Promise<StepResult[]> {
   const results: StepResult[] = [];
+  const paths = getRemotePaths(config.runtimeRoot, config.stateRoot);
   let anyChanged = false;
 
   const ports: Record<Env, Record<Color, string>> = {
@@ -797,11 +811,11 @@ async function ensureSystemdAppUnits(config: Config): Promise<StepResult[]> {
   };
 
   for (const env of ENVS) {
-    const appPath = `${config.remoteAppRoot}/${env}`;
+    const appPath = `${paths.app}/${env}`;
 
     for (const color of COLORS) {
       const colorPath = `${appPath}/${color}`;
-      const colorHome = `${config.remoteCacheRoot}/${env}/${color}`;
+      const colorHome = `${paths.cache}/${env}/${color}`;
       const unit = [
         "[Unit]",
         `Description=Hobproj ${
@@ -809,7 +823,8 @@ async function ensureSystemdAppUnits(config: Config): Promise<StepResult[]> {
         } web application (${color})`,
         "After=network-online.target",
         "Wants=network-online.target",
-        `RequiresMountsFor=${colorPath}`,
+        `ConditionPathIsMountPoint=${config.persistentDataRoot}`,
+        `RequiresMountsFor=${config.persistentDataRoot}`,
         "",
         "[Service]",
         "Type=simple",
@@ -840,7 +855,7 @@ async function ensureSystemdAppUnits(config: Config): Promise<StepResult[]> {
         "PrivateTmp=true",
         "ProtectHome=true",
         "ProtectSystem=strict",
-        `ReadWritePaths=${appPath}/db ${colorHome}`,
+        `ReadWritePaths=${config.persistentDataRoot}/${env}/db ${colorHome}`,
         "",
         "[Install]",
         "WantedBy=multi-user.target",

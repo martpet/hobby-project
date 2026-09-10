@@ -1,6 +1,7 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { join } from "@std/path";
 import { loadSetupEnv } from "./load-env.ts";
+import { getRemotePaths } from "../utils/remote-paths.ts";
 import { run } from "../utils/run.ts";
 
 // Compiles the remote setup installer and installs it persistently on the
@@ -10,7 +11,10 @@ await loadSetupEnv();
 
 const remoteHost = getRequiredEnv("REMOTE_HOST");
 const compileTarget = getRequiredEnv("COMPILE_TARGET");
-const remoteInstallerRoot = getRequiredEnv("REMOTE_INSTALLER_PATH");
+const remoteInstallerRoot = getRemotePaths(
+  getRequiredEnv("REMOTE_RUNTIME_ROOT"),
+  getRequiredEnv("REMOTE_STATE_ROOT"),
+).installer;
 const remoteInstaller = join(remoteInstallerRoot, "installer");
 const localInstaller = "dist/setup-remote-installer";
 const remoteTempInstaller = "installer-setup-remote.tmp";

@@ -71,9 +71,9 @@ async function loadConfig(gitSha: string | undefined): Promise<DeployConfig> {
     join(parentPath, configFileName),
     join(remotePath, configFileName),
   ]);
-  const remoteAppPath = getAbsoluteEnvPath(env, "APP_PATH");
   const remoteUploadPath = getAbsoluteEnvPath(env, "UPLOAD_PATH");
   const envName = getEnvNameValue(env);
+  const remoteAppPath = getAbsoluteEnvPath(env, "APP_PATH");
   const binaryFileName = getRelativeBinary(env);
 
   function buildColorConfig(color: Color): ColorConfig {
