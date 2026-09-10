@@ -7,31 +7,37 @@ import { purgeCloudflareCache } from "./purge-cloudflare-cache.ts";
 import { run } from "../utils/run.ts";
 import { extractSourceArchive } from "./source-archive.ts";
 
-interface DeployConfig {
-  readonly remoteAppPort: string;
-  readonly remoteBinary: string;
-  readonly remoteBinaryTemp: string;
-  readonly remoteSourceArchive: string;
-  readonly remoteAppPath: string;
-  readonly remoteUploadPath: string;
-  readonly remoteService: string;
-  readonly serverCachePath: string;
-  readonly denoDir: string;
-  readonly gitSha: string;
+type Color = "blue" | "green";
+const COLORS: readonly Color[] = ["blue", "green"];
+
+interface ColorConfig {
+  readonly service: string;
+  readonly port: string;
+  readonly binary: string;
+  readonly binaryTemp: string;
   readonly gitShaEnvPath: string;
+  readonly serverCachePath: string;
+  readonly allowNet: string;
+}
+
+interface DeployConfig {
+  readonly gitSha: string;
   readonly envName: EnvName;
+  readonly remoteUploadPath: string;
+  readonly remoteSourceArchive: string;
+  readonly activeColorFile: string;
+  readonly caddySnippetFile: string;
+  readonly keepIdleRunning: boolean;
+  readonly denoDir: string;
   readonly cloudflareZoneId?: string;
   readonly cloudflareApiToken?: string;
   readonly compileTarget?: string;
   readonly allowRead?: string;
   readonly allowWrite?: string;
-  readonly allowNet: string;
+  readonly blue: ColorConfig;
+  readonly green: ColorConfig;
 }
 
-let previousBinary = "";
-let previousGitShaEnvPath = "";
-let installedBinary = false;
-let installedGitShaEnv = false;
 const configFileName = ".env.deployer";
 const configFileDescription =
   `merged ${configFileName} files from the deployer and parent directories`;
@@ -44,13 +50,14 @@ try {
   const config = await loadConfig(gitSha);
   validateConfig(config);
 
-  previousBinary = `${config.remoteBinary}.prev`;
-  previousGitShaEnvPath = `${config.gitShaEnvPath}.prev`;
-
   await deploy(config);
 } catch (error) {
   console.error("Remote deployment failed.", error);
   Deno.exit(1);
+}
+
+function otherColor(color: Color): Color {
+  return color === "blue" ? "green" : "blue";
 }
 
 async function loadConfig(gitSha: string | undefined): Promise<DeployConfig> {
@@ -66,75 +73,123 @@ async function loadConfig(gitSha: string | undefined): Promise<DeployConfig> {
   ]);
   const remoteAppPath = getAbsoluteEnvPath(env, "APP_PATH");
   const remoteUploadPath = getAbsoluteEnvPath(env, "UPLOAD_PATH");
-  const gitShaEnvPath = join(remoteAppPath, ".git-sha");
-  const remoteAppPort = getEnvValue(env, "APP_PORT");
-  const remoteBinary = join(remoteAppPath, getRelativeBinary(env));
   const envName = getEnvNameValue(env);
+  const binaryFileName = getRelativeBinary(env);
+
+  function buildColorConfig(color: Color): ColorConfig {
+    const colorPath = join(remoteAppPath, color);
+    const binary = join(colorPath, binaryFileName);
+    const port = getEnvValue(env, `${color.toUpperCase()}_PORT`);
+    return {
+      service: getEnvValue(env, `SERVICE_${color.toUpperCase()}`),
+      port,
+      binary,
+      binaryTemp: `${binary}.tmp`,
+      gitShaEnvPath: join(colorPath, ".git-sha"),
+      serverCachePath: getEnvValue(
+        env,
+        `SERVER_CACHE_PATH_${color.toUpperCase()}`,
+      ),
+      allowNet: `0.0.0.0:${port}`,
+    };
+  }
 
   return {
-    remoteAppPort,
-    remoteBinary,
-    remoteBinaryTemp: `${remoteBinary}.tmp`,
-    remoteSourceArchive: join(remoteUploadPath, `source-${gitSha}.tar.gz`),
-    remoteAppPath,
-    remoteUploadPath,
-    remoteService: getEnvValue(env, "SERVICE"),
-    serverCachePath: getEnvValue(env, "SERVER_CACHE_PATH"),
-    denoDir: getAbsoluteEnvPath(env, "DENO_DIR"),
     gitSha,
-    gitShaEnvPath,
     envName,
+    remoteUploadPath,
+    remoteSourceArchive: join(remoteUploadPath, `source-${gitSha}.tar.gz`),
+    activeColorFile: getAbsoluteEnvPath(env, "ACTIVE_COLOR_FILE"),
+    caddySnippetFile: getAbsoluteEnvPath(env, "CADDY_SNIPPET_FILE"),
+    keepIdleRunning: getBooleanEnvValue(env, "KEEP_IDLE_RUNNING"),
+    denoDir: getAbsoluteEnvPath(env, "DENO_DIR"),
     cloudflareZoneId: env.CLOUDFLARE_ZONE_ID,
     cloudflareApiToken: env.CLOUDFLARE_API_TOKEN,
     compileTarget: env.COMPILE_TARGET,
     allowRead: env.ALLOW_READ,
     allowWrite: env.ALLOW_WRITE,
-    allowNet: `0.0.0.0:${remoteAppPort}`,
+    blue: buildColorConfig("blue"),
+    green: buildColorConfig("green"),
   };
 }
 
+async function readActiveColor(config: DeployConfig): Promise<Color> {
+  const raw = (await Deno.readTextFile(config.activeColorFile)).trim();
+  if (raw !== "blue" && raw !== "green") {
+    throw new Error(
+      `Invalid active color '${raw}' in ${config.activeColorFile}.`,
+    );
+  }
+  return raw;
+}
+
 async function deploy(config: DeployConfig) {
+  const activeColor = await readActiveColor(config);
+  const idleColor = otherColor(activeColor);
+  const idle = config[idleColor];
+  const active = config[activeColor];
+
+  console.log(
+    `Active color is '${activeColor}'; deploying to idle color '${idleColor}'.`,
+  );
+
+  const wasIdleActiveBeforeDeploy = (await run(
+    systemctlPath,
+    ["is-active", "--quiet", idle.service],
+    { check: false, stdin: "null" },
+  )).code === 0;
+  let startedIdle = false;
+
   let sourceDir: string | undefined;
 
   try {
     sourceDir = await Deno.makeTempDir({
-      dir: dirname(config.remoteBinary),
+      dir: dirname(idle.binary),
       prefix: ".deploy-src-",
     });
     await extractSourceArchive(config.remoteSourceArchive, sourceDir);
-    await compileSource(config, sourceDir);
+    await compileSource(config, idle, sourceDir);
 
-    if (await exists(config.remoteBinary)) {
-      if (await exists(previousBinary)) {
-        await Deno.remove(previousBinary);
-      }
-      await Deno.rename(config.remoteBinary, previousBinary);
+    await ensureDir(dirname(idle.binary));
+    if (await exists(idle.binary)) {
+      await Deno.remove(idle.binary);
     }
+    await Deno.rename(idle.binaryTemp, idle.binary);
 
-    await Deno.rename(config.remoteBinaryTemp, config.remoteBinary);
-    installedBinary = true;
-
-    if (await exists(previousGitShaEnvPath)) {
-      await Deno.remove(previousGitShaEnvPath);
-    }
-    if (await exists(config.gitShaEnvPath)) {
-      await Deno.copyFile(config.gitShaEnvPath, previousGitShaEnvPath);
-    }
     await Deno.writeTextFile(
-      config.gitShaEnvPath,
+      idle.gitShaEnvPath,
       `GIT_SHA=${config.gitSha}\n`,
     );
-    installedGitShaEnv = true;
 
-    await wipeServerCache(config);
-    await run(sudoPath, [systemctlPath, "restart", config.remoteService]);
-    await ensureServiceActive(config.remoteService);
-    await ensureHealthy(config);
+    await wipeServerCache(idle.serverCachePath);
+
+    if (wasIdleActiveBeforeDeploy) {
+      await run(sudoPath, [systemctlPath, "restart", idle.service]);
+    } else {
+      await run(sudoPath, [systemctlPath, "start", idle.service]);
+      startedIdle = true;
+    }
+
+    await ensureServiceActive(idle.service);
+    await ensureHealthy(idle, config.gitSha);
+
+    // The idle color is now healthy and serving nothing yet; only past
+    // this point does live traffic move, so a failure above never touches
+    // the still-active color.
+    await cutOverTraffic(config, idleColor, idle);
+
+    if (!config.keepIdleRunning) {
+      await run(sudoPath, [systemctlPath, "stop", active.service]);
+    }
   } catch (error) {
     console.error(
-      "Deployment validation failed; restoring the previous release.",
+      "Deployment validation failed; the active color was never touched.",
     );
-    await rollback(config);
+    if (startedIdle) {
+      await run(sudoPath, [systemctlPath, "stop", idle.service], {
+        check: false,
+      });
+    }
     throw error;
   } finally {
     try {
@@ -157,57 +212,6 @@ async function deploy(config: DeployConfig) {
     }
   }
 
-  async function compileSource(config: DeployConfig, sourceDir: string) {
-    if (await exists(config.remoteBinaryTemp)) {
-      await Deno.remove(config.remoteBinaryTemp);
-    }
-
-    const args = [
-      "compile",
-      `--output=${config.remoteBinaryTemp}`,
-      "--allow-env",
-      "--include=src/",
-    ];
-
-    if (config.compileTarget) {
-      args.push(`--target=${config.compileTarget}`);
-    }
-
-    if (config.allowRead) {
-      args.push(`--allow-read=${config.allowRead}`);
-    }
-
-    if (config.allowWrite) {
-      args.push(`--allow-write=${config.allowWrite}`);
-    }
-
-    args.push(`--allow-net=${config.allowNet}`);
-    args.push("src/main.ts");
-
-    await ensureDir(dirname(config.remoteBinaryTemp));
-    const options = {
-      cwd: sourceDir,
-      env: { DENO_DIR: config.denoDir },
-    };
-    await run(denoPath, args, options);
-  }
-
-  try {
-    if (await exists(previousBinary)) {
-      await Deno.remove(previousBinary);
-    }
-  } catch (error) {
-    console.error(`Warning: could not remove ${previousBinary}.`, error);
-  }
-
-  try {
-    if (await exists(previousGitShaEnvPath)) {
-      await Deno.remove(previousGitShaEnvPath);
-    }
-  } catch (error) {
-    console.error(`Warning: could not remove ${previousGitShaEnvPath}.`, error);
-  }
-
   try {
     await purgeCloudflareCache(config.envName, {
       zoneId: config.cloudflareZoneId,
@@ -221,57 +225,74 @@ async function deploy(config: DeployConfig) {
   }
 }
 
-async function wipeServerCache(config: DeployConfig) {
+async function compileSource(
+  config: DeployConfig,
+  idle: ColorConfig,
+  sourceDir: string,
+) {
+  if (await exists(idle.binaryTemp)) {
+    await Deno.remove(idle.binaryTemp);
+  }
+
+  const args = [
+    "compile",
+    `--output=${idle.binaryTemp}`,
+    "--allow-env",
+    "--include=src/",
+  ];
+
+  if (config.compileTarget) {
+    args.push(`--target=${config.compileTarget}`);
+  }
+
+  if (config.allowRead) {
+    args.push(`--allow-read=${config.allowRead}`);
+  }
+
+  if (config.allowWrite) {
+    args.push(`--allow-write=${config.allowWrite}`);
+  }
+
+  args.push(`--allow-net=${idle.allowNet}`);
+  args.push("src/main.ts");
+
+  await ensureDir(dirname(idle.binaryTemp));
+  const options = {
+    cwd: sourceDir,
+    env: { DENO_DIR: config.denoDir },
+  };
+  await run(denoPath, args, options);
+}
+
+// Points Caddy's per-env upstream at the idle color's port and reloads it
+// (graceful; Caddy drains the previous upstream's in-flight connections
+// itself), then records the new active color. Only called once the idle
+// color has already passed its health check.
+async function cutOverTraffic(
+  config: DeployConfig,
+  idleColor: Color,
+  idle: ColorConfig,
+) {
+  const snippet = [
+    `reverse_proxy 127.0.0.1:${idle.port} {`,
+    "\theader_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}",
+    "}",
+    "",
+  ].join("\n");
+
+  await Deno.writeTextFile(config.caddySnippetFile, snippet);
+  await run(sudoPath, [systemctlPath, "reload", "caddy"]);
+  await Deno.writeTextFile(config.activeColorFile, `${idleColor}\n`);
+}
+
+async function wipeServerCache(serverCachePath: string) {
   try {
-    if (await exists(config.serverCachePath)) {
-      await Deno.remove(config.serverCachePath, { recursive: true });
+    if (await exists(serverCachePath)) {
+      await Deno.remove(serverCachePath, { recursive: true });
     }
   } catch (error) {
     console.error("Warning: could not wipe the server cache.", error);
   }
-}
-
-async function rollback(config: DeployConfig) {
-  let failed = false;
-  const attempt = async (operation: Promise<unknown>) => {
-    try {
-      await operation;
-    } catch (error) {
-      console.error(error);
-      failed = true;
-    }
-  };
-
-  if (await exists(config.remoteBinaryTemp)) {
-    await attempt(Deno.remove(config.remoteBinaryTemp));
-  }
-
-  if (await exists(previousBinary)) {
-    await attempt(Deno.rename(previousBinary, config.remoteBinary));
-  } else if (installedBinary) {
-    if (await exists(config.remoteBinary)) {
-      await attempt(Deno.remove(config.remoteBinary));
-    }
-  }
-
-  if (await exists(previousGitShaEnvPath)) {
-    await attempt(Deno.rename(previousGitShaEnvPath, config.gitShaEnvPath));
-  } else if (installedGitShaEnv) {
-    await attempt(Deno.remove(config.gitShaEnvPath));
-  }
-
-  await attempt(
-    run(sudoPath, [systemctlPath, "restart", config.remoteService]),
-  );
-  await attempt(
-    run(systemctlPath, ["is-active", "--quiet", config.remoteService]),
-  );
-
-  if (failed) {
-    throw new Error("Rollback failed; manual recovery is required.");
-  }
-
-  console.log("Rollback completed successfully.");
 }
 
 async function ensureServiceActive(remoteService: string) {
@@ -292,18 +313,18 @@ async function ensureServiceActive(remoteService: string) {
   throw new Error(`Service '${remoteService}' is not running.`);
 }
 
-async function ensureHealthy(config: DeployConfig) {
+async function ensureHealthy(idle: ColorConfig, gitSha: string) {
   try {
     await checkHealth({
-      service: config.remoteService,
-      port: config.remoteAppPort,
-      expectedGitSha: config.gitSha,
+      service: idle.service,
+      port: idle.port,
+      expectedGitSha: gitSha,
     });
   } catch (error) {
     console.error(error);
     await run(systemctlPath, [
       "status",
-      config.remoteService,
+      idle.service,
       "--no-pager",
     ], {
       check: false,
@@ -318,27 +339,19 @@ function validateConfig(config: unknown): asserts config is DeployConfig {
     throw new Error("Deployment config must be an object.");
   }
 
-  const remoteBinary = getConfigValue(config, "remoteBinary");
-  const remoteBinaryTemp = getConfigValue(config, "remoteBinaryTemp");
-  const remoteAppPort = getConfigValue(config, "remoteAppPort");
-  const remoteSourceArchive = getConfigValue(config, "remoteSourceArchive");
-  const remoteAppPath = getConfigValue(config, "remoteAppPath");
-  const remoteUploadPath = getConfigValue(config, "remoteUploadPath");
   const gitSha = getConfigValue(config, "gitSha");
+  const remoteUploadPath = getConfigValue(config, "remoteUploadPath");
+  const remoteSourceArchive = getConfigValue(config, "remoteSourceArchive");
 
   for (
     const [key, value] of Object.entries({
-      remoteBinary,
-      remoteBinaryTemp,
-      remoteSourceArchive,
-      remoteAppPath,
-      remoteUploadPath,
-      remoteService: getConfigValue(config, "remoteService"),
-      serverCachePath: getConfigValue(config, "serverCachePath"),
-      denoDir: getConfigValue(config, "denoDir"),
       gitSha,
-      gitShaEnvPath: getConfigValue(config, "gitShaEnvPath"),
       envName: getConfigValue(config, "envName"),
+      remoteUploadPath,
+      remoteSourceArchive,
+      activeColorFile: getConfigValue(config, "activeColorFile"),
+      caddySnippetFile: getConfigValue(config, "caddySnippetFile"),
+      denoDir: getConfigValue(config, "denoDir"),
     })
   ) {
     if (typeof value !== "string" || !/^[\w./@+-]+$/.test(value)) {
@@ -352,36 +365,85 @@ function validateConfig(config: unknown): asserts config is DeployConfig {
     );
   }
 
-  if (
-    !remoteBinary.startsWith(`${remoteAppPath}/`) ||
-    !remoteSourceArchive.startsWith(`${remoteUploadPath}/`)
-  ) {
+  if (!remoteSourceArchive.startsWith(`${remoteUploadPath}/`)) {
     throw new Error("Deployment paths escaped their configured directories.");
   }
 
-  if (dirname(remoteBinaryTemp) !== dirname(remoteBinary)) {
-    throw new Error(
-      "Temporary and final remote binaries must share a directory.",
-    );
-  }
+  for (const color of COLORS) {
+    const colorConfig = (config as Record<Color, unknown>)[color];
+    if (typeof colorConfig !== "object" || colorConfig === null) {
+      throw new Error(`${color} config must be an object.`);
+    }
 
-  if (
-    !/^\d+$/.test(remoteAppPort) ||
-    Number(remoteAppPort) === 0 ||
-    Number(remoteAppPort) > 65535
-  ) {
-    throw new Error("remoteAppPort must be a valid port number.");
+    const binary = getColorConfigValue(colorConfig, "binary", color);
+    const binaryTemp = getColorConfigValue(colorConfig, "binaryTemp", color);
+    const port = getColorConfigValue(colorConfig, "port", color);
+
+    for (
+      const [key, value] of Object.entries({
+        service: getColorConfigValue(colorConfig, "service", color),
+        port,
+        binary,
+        binaryTemp,
+        gitShaEnvPath: getColorConfigValue(
+          colorConfig,
+          "gitShaEnvPath",
+          color,
+        ),
+        serverCachePath: getColorConfigValue(
+          colorConfig,
+          "serverCachePath",
+          color,
+        ),
+        allowNet: getColorConfigValue(colorConfig, "allowNet", color),
+      })
+    ) {
+      if (typeof value !== "string" || !/^[\w./@+:-]+$/.test(value)) {
+        throw new Error(`${color}.${key} contains unsupported characters.`);
+      }
+    }
+
+    if (dirname(binaryTemp) !== dirname(binary)) {
+      throw new Error(
+        `${color}: temporary and final binaries must share a directory.`,
+      );
+    }
+
+    if (!/^\d+$/.test(port) || Number(port) === 0 || Number(port) > 65535) {
+      throw new Error(`${color}.port must be a valid port number.`);
+    }
   }
 }
 
-function getConfigValue(config: object, key: keyof DeployConfig) {
-  const value = (config as Record<keyof DeployConfig, unknown>)[key];
+function getColorConfigValue(colorConfig: object, key: string, color: Color) {
+  const value = (colorConfig as Record<string, unknown>)[key];
+
+  if (typeof value !== "string") {
+    throw new Error(`${color}.${key} must be a string.`);
+  }
+
+  return value;
+}
+
+function getConfigValue(
+  config: object,
+  key: keyof Omit<DeployConfig, "blue" | "green">,
+) {
+  const value = (config as Record<string, unknown>)[key];
 
   if (typeof value !== "string") {
     throw new Error(`${key} must be a string.`);
   }
 
   return value;
+}
+
+function getBooleanEnvValue(
+  env: Record<string, string>,
+  key: string,
+): boolean {
+  const value = env[key]?.trim().toLowerCase();
+  return value === "true" || value === "1";
 }
 
 function getEnvValue(env: Record<string, string>, key: string) {

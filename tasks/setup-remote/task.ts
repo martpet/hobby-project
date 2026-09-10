@@ -1,4 +1,4 @@
-import { getRequiredEnv } from "@shared/environment.ts";
+import { getEnv, getRequiredEnv } from "@shared/environment.ts";
 import { join } from "@std/path";
 import { loadSetupEnv } from "./load-env.ts";
 import { run } from "../utils/run.ts";
@@ -27,6 +27,10 @@ const CONFIG_KEYS = [
   "DEPLOY_PROD_USERS",
   "STAGING_APP_PORT",
   "PROD_APP_PORT",
+  "STAGING_BLUE_PORT",
+  "STAGING_GREEN_PORT",
+  "PROD_BLUE_PORT",
+  "PROD_GREEN_PORT",
   "STAGING_APP_ORIGIN",
   "PROD_APP_ORIGIN",
   "COMPILE_TARGET",
@@ -39,6 +43,14 @@ const CONFIG_KEYS = [
   "REMOTE_UPLOAD_PATH",
   "REMOTE_CACHE_PATH",
   "REMOTE_DEPLOYER_PATH",
+];
+
+// Optional; each defaults (on the remote installer side) to "false" if
+// absent from the uploaded config, so they're read separately below rather
+// than via getRequiredEnv.
+const OPTIONAL_CONFIG_KEYS = [
+  "STAGING_KEEP_IDLE_RUNNING",
+  "PROD_KEEP_IDLE_RUNNING",
 ];
 
 let uploadedConfig = false;
@@ -62,9 +74,14 @@ if (installerExists !== 0) {
 
 try {
   console.log("📝 Preparing remote config...");
-  const configContent = CONFIG_KEYS
-    .map((key) => `${key}=${getRequiredEnv(key)}`)
-    .join("\n") + "\n";
+  const requiredLines = CONFIG_KEYS
+    .map((key) => `${key}=${getRequiredEnv(key)}`);
+  const optionalLines = OPTIONAL_CONFIG_KEYS
+    .map((key) => [key, getEnv(key)] as const)
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => `${key}=${value}`);
+  const configContent = [...requiredLines, ...optionalLines].join("\n") +
+    "\n";
   await Deno.mkdir("dist", { recursive: true });
   await Deno.writeTextFile(localConfigTemp, configContent);
 

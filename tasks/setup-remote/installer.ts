@@ -15,6 +15,12 @@ interface Config {
   readonly deployProdUsers: string[];
   readonly stagingAppPort: string;
   readonly prodAppPort: string;
+  readonly stagingBluePort: string;
+  readonly stagingGreenPort: string;
+  readonly prodBluePort: string;
+  readonly prodGreenPort: string;
+  readonly stagingKeepIdleRunning: string;
+  readonly prodKeepIdleRunning: string;
   readonly stagingAppOrigin: string;
   readonly prodAppOrigin: string;
   readonly compileTarget: string;
@@ -38,13 +44,19 @@ interface StepResult {
 const ENVS = ["staging", "prod"] as const;
 type Env = (typeof ENVS)[number];
 
+const COLORS = ["blue", "green"] as const;
+type Color = (typeof COLORS)[number];
+
 const ETC_ROOT = "/etc/hobproj";
 const GEOIP_DIR = "/var/lib/GeoIP";
 const GEOIP_DB_PATH = `${GEOIP_DIR}/GeoLite2-City.mmdb`;
 const SUDOERS_PATH = "/etc/sudoers.d/hobproj-deploy";
 const CLOUDFLARED_DIR = "/etc/cloudflared";
 const CLOUDFLARED_TOKEN_PATH = `${CLOUDFLARED_DIR}/token`;
+const CADDY_FILE = "/etc/caddy/Caddyfile";
 const denoPath = "/usr/local/bin/deno";
+
+let aptUpdated = false;
 
 const results: StepResult[] = [];
 
@@ -55,11 +67,14 @@ try {
   results.push(await ensureStorageMounted(config));
   results.push(await ensureAptPackage("geoipupdate"));
   results.push(await ensureCloudflaredRepoAndPackage());
+  results.push(await ensureCaddyRepoAndPackage());
   results.push(await ensureUsersAndGroups(config));
   results.push(...await ensureDirectoryLayout(config));
   results.push(...await ensureEtcHobprojEnvFiles(config));
   results.push(...await ensureDeployerConfigFiles(config));
   results.push(...await ensureSystemdAppUnits(config));
+  results.push(...await ensureLegacyUnitsRemoved());
+  results.push(...await ensureCaddyConfig(config));
   results.push(await ensureSudoers());
   results.push(...await ensureGeoip(config));
   results.push(await ensureCloudflareTunnel(config));
@@ -99,6 +114,12 @@ async function loadConfig(): Promise<Config> {
     deployProdUsers: splitUsers(env.DEPLOY_PROD_USERS),
     stagingAppPort: required("STAGING_APP_PORT"),
     prodAppPort: required("PROD_APP_PORT"),
+    stagingBluePort: required("STAGING_BLUE_PORT"),
+    stagingGreenPort: required("STAGING_GREEN_PORT"),
+    prodBluePort: required("PROD_BLUE_PORT"),
+    prodGreenPort: required("PROD_GREEN_PORT"),
+    stagingKeepIdleRunning: (env.STAGING_KEEP_IDLE_RUNNING ?? "false").trim(),
+    prodKeepIdleRunning: (env.PROD_KEEP_IDLE_RUNNING ?? "false").trim(),
     stagingAppOrigin: required("STAGING_APP_ORIGIN"),
     prodAppOrigin: required("PROD_APP_ORIGIN"),
     compileTarget: required("COMPILE_TARGET"),
@@ -358,8 +379,6 @@ async function ensureStorageMounted(config: Config): Promise<StepResult> {
 // Packages
 // ---------------------------------------------------------------------------
 
-let aptUpdated = false;
-
 async function ensureAptUpdated(): Promise<void> {
   if (aptUpdated) return;
   await run("apt-get", ["update"]);
@@ -423,6 +442,47 @@ async function ensureCloudflaredRepoAndPackage(): Promise<StepResult> {
   return { label: 'Package "cloudflared"', changed: true, detail: "installed" };
 }
 
+async function ensureCaddyRepoAndPackage(): Promise<StepResult> {
+  const { code } = await run("dpkg", ["-s", "caddy"], {
+    stdout: "piped",
+    check: false,
+  });
+  if (code === 0) {
+    return { label: 'Package "caddy"', changed: false };
+  }
+
+  const keyringPath = "/usr/share/keyrings/caddy-stable-archive-keyring.gpg";
+  const listPath = "/etc/apt/sources.list.d/caddy-stable.list";
+
+  if (!await pathExists(keyringPath)) {
+    await run(
+      "bash",
+      [
+        "-c",
+        `curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | ` +
+        `gpg --dearmor -o ${keyringPath}`,
+      ],
+    );
+  }
+
+  if (!await pathExists(listPath)) {
+    await run(
+      "bash",
+      [
+        "-c",
+        `curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' ` +
+        `-o ${listPath}`,
+      ],
+    );
+  }
+
+  await run("apt-get", ["update"]);
+  aptUpdated = true;
+  await run("apt-get", ["install", "-y", "caddy"]);
+
+  return { label: 'Package "caddy"', changed: true, detail: "installed" };
+}
+
 // ---------------------------------------------------------------------------
 // Users & groups
 // ---------------------------------------------------------------------------
@@ -480,6 +540,9 @@ async function ensureUsersAndGroups(config: Config): Promise<StepResult> {
     ...config.deployProdUsers.map((
       u,
     ): [string, string] => [u, "hobproj-deploy-prod"]),
+    // Caddy reads the active-color-upstream snippets under `/etc/hobproj`,
+    // which are root/hobproj-owned and not world-readable.
+    ["caddy", "hobproj"],
   ];
 
   for (const [user, group] of memberships) {
@@ -539,6 +602,32 @@ async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
         "700",
       ),
     );
+    for (const color of COLORS) {
+      results.push(
+        await ensureDirectory(
+          `${config.remoteAppRoot}/${env}/${color}`,
+          "hobproj",
+          "hobproj",
+          "700",
+        ),
+      );
+      results.push(
+        await ensureDirectory(
+          `${config.remoteCacheRoot}/${env}/${color}`,
+          "hobproj",
+          "hobproj",
+          "700",
+        ),
+      );
+    }
+    results.push(
+      await ensureDirectory(
+        `${ETC_ROOT}/${env}`,
+        "hobproj",
+        "hobproj",
+        "750",
+      ),
+    );
     results.push(
       await ensureDirectory(
         `${config.remoteUploadRoot}/${env}`,
@@ -575,7 +664,6 @@ async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
 async function ensureEtcHobprojEnvFiles(config: Config): Promise<StepResult[]> {
   const commonEnv = [
     "SERVER_CACHE_ENABLED=1",
-    "KV_PATH=./db/kv.sqlite",
     `MAXMIND_DB_PATH=${GEOIP_DB_PATH}`,
     "",
   ].join("\n");
@@ -590,21 +678,21 @@ async function ensureEtcHobprojEnvFiles(config: Config): Promise<StepResult[]> {
     ),
   ];
 
-  const ports: Record<Env, string> = {
-    staging: config.stagingAppPort,
-    prod: config.prodAppPort,
-  };
   const origins: Record<Env, string> = {
     staging: config.stagingAppOrigin,
     prod: config.prodAppOrigin,
   };
 
   for (const env of ENVS) {
+    const appPath = `${config.remoteAppRoot}/${env}`;
+    // `KV_PATH` is absolute (rather than the previous `./db/kv.sqlite`)
+    // because each color now has its own `WorkingDirectory`
+    // (`${appPath}/<color>`), while the KV store itself stays shared at
+    // `${appPath}/db` across both colors.
     const envContent = [
       `ENV_NAME=${env}`,
-      `APP_PORT=${ports[env]}`,
+      `KV_PATH=${appPath}/db/kv.sqlite`,
       `APP_ORIGIN=${origins[env]}`,
-      `HOME=${config.remoteCacheRoot}/${env}`,
       "",
     ].join("\n");
 
@@ -632,8 +720,6 @@ async function ensureDeployerConfigFiles(
   const commonDeployerEnv = [
     `COMPILE_TARGET=${config.compileTarget}`,
     "BINARY=./bin",
-    `ALLOW_READ=./db,${GEOIP_DIR}`,
-    "ALLOW_WRITE=./db",
     `CLOUDFLARE_ZONE_ID=${config.cloudflareZoneId}`,
     `CLOUDFLARE_API_TOKEN=${config.cloudflareApiToken}`,
     "",
@@ -649,20 +735,37 @@ async function ensureDeployerConfigFiles(
     ),
   ];
 
-  const ports: Record<Env, string> = {
-    staging: config.stagingAppPort,
-    prod: config.prodAppPort,
+  const ports: Record<Env, Record<Color, string>> = {
+    staging: { blue: config.stagingBluePort, green: config.stagingGreenPort },
+    prod: { blue: config.prodBluePort, green: config.prodGreenPort },
+  };
+  const keepIdleRunning: Record<Env, string> = {
+    staging: config.stagingKeepIdleRunning,
+    prod: config.prodKeepIdleRunning,
   };
 
   for (const env of ENVS) {
+    const appPath = `${config.remoteAppRoot}/${env}`;
+    const etcEnvRoot = `${ETC_ROOT}/${env}`;
+    // Absolute (rather than the previous relative `./db`) since each
+    // color's `WorkingDirectory` is now its own subdirectory, while the KV
+    // store stays shared at `${appPath}/db` across both colors.
     const envDeployerEnv = [
       `ENV_NAME=${env}`,
-      `APP_PATH=${config.remoteAppRoot}/${env}`,
+      `APP_PATH=${appPath}`,
       `UPLOAD_PATH=${config.remoteUploadRoot}/${env}`,
-      `APP_PORT=${ports[env]}`,
-      `SERVICE=hobproj.${env}`,
-      `SERVER_CACHE_PATH=${config.remoteCacheRoot}/${env}/.local/share/bin.tmp/web_cache`,
+      `ALLOW_READ=${appPath}/db,${GEOIP_DIR}`,
+      `ALLOW_WRITE=${appPath}/db`,
+      `BLUE_PORT=${ports[env].blue}`,
+      `GREEN_PORT=${ports[env].green}`,
+      `SERVICE_BLUE=hobproj.${env}-blue`,
+      `SERVICE_GREEN=hobproj.${env}-green`,
+      `SERVER_CACHE_PATH_BLUE=${config.remoteCacheRoot}/${env}/blue/.local/share/bin.tmp/web_cache`,
+      `SERVER_CACHE_PATH_GREEN=${config.remoteCacheRoot}/${env}/green/.local/share/bin.tmp/web_cache`,
       `DENO_DIR=${config.remoteCacheRoot}/${env}/deno`,
+      `ACTIVE_COLOR_FILE=${etcEnvRoot}/active-color`,
+      `CADDY_SNIPPET_FILE=${etcEnvRoot}/active-upstream.caddy`,
+      `KEEP_IDLE_RUNNING=${keepIdleRunning[env]}`,
       "",
     ].join("\n");
 
@@ -688,59 +791,79 @@ async function ensureSystemdAppUnits(config: Config): Promise<StepResult[]> {
   const results: StepResult[] = [];
   let anyChanged = false;
 
+  const ports: Record<Env, Record<Color, string>> = {
+    staging: { blue: config.stagingBluePort, green: config.stagingGreenPort },
+    prod: { blue: config.prodBluePort, green: config.prodGreenPort },
+  };
+
   for (const env of ENVS) {
     const appPath = `${config.remoteAppRoot}/${env}`;
-    const runtimePath = `${config.remoteCacheRoot}/${env}`;
-    const unit = [
-      "[Unit]",
-      `Description=Hobproj ${
-        env === "prod" ? "production" : env
-      } web application`,
-      "After=network-online.target",
-      "Wants=network-online.target",
-      `RequiresMountsFor=${appPath}`,
-      "",
-      "[Service]",
-      "Type=simple",
-      "User=hobproj",
-      "Group=hobproj",
-      `WorkingDirectory=${appPath}`,
-      `ExecStart=${appPath}/bin`,
-      `EnvironmentFile=${ETC_ROOT}/common.env`,
-      `EnvironmentFile=${ETC_ROOT}/${env}.env`,
-      `EnvironmentFile=${appPath}/.git-sha`,
-      "Restart=always",
-      "RestartSec=5s",
-      "StandardOutput=journal",
-      "StandardError=journal",
-      `SyslogIdentifier=hobproj-${env}`,
-      "NoNewPrivileges=true",
-      "PrivateTmp=true",
-      "ProtectHome=true",
-      "ProtectSystem=strict",
-      `ReadWritePaths=${appPath}/db ${runtimePath}`,
-      "",
-      "[Install]",
-      "WantedBy=multi-user.target",
-      "",
-    ].join("\n");
 
-    const unitPath = `/etc/systemd/system/hobproj.${env}.service`;
-    const result = await ensureFile(unitPath, unit, "root", "root", "644");
-    results.push({
-      label: `systemd unit hobproj.${env}`,
-      changed: result.changed,
-    });
-    if (result.changed) anyChanged = true;
+    for (const color of COLORS) {
+      const colorPath = `${appPath}/${color}`;
+      const colorHome = `${config.remoteCacheRoot}/${env}/${color}`;
+      const unit = [
+        "[Unit]",
+        `Description=Hobproj ${
+          env === "prod" ? "production" : env
+        } web application (${color})`,
+        "After=network-online.target",
+        "Wants=network-online.target",
+        `RequiresMountsFor=${colorPath}`,
+        "",
+        "[Service]",
+        "Type=simple",
+        "User=hobproj",
+        "Group=hobproj",
+        `WorkingDirectory=${colorPath}`,
+        `ExecStart=${colorPath}/bin`,
+        `EnvironmentFile=${ETC_ROOT}/common.env`,
+        `EnvironmentFile=${ETC_ROOT}/${env}.env`,
+        // Override the shared env file's values with this color's own port
+        // and HOME. HOME is per-color (not per-env) because Deno's Cache
+        // API storage is derived from it, and the two colors must never
+        // share that on-disk cache — otherwise wiping one color's cache
+        // before a build would also wipe the other, currently-live color's
+        // cache.
+        `Environment=APP_PORT=${ports[env][color]}`,
+        `Environment=HOME=${colorHome}`,
+        `EnvironmentFile=${colorPath}/.git-sha`,
+        "Restart=always",
+        "RestartSec=5s",
+        // Give the graceful-shutdown SIGTERM handler in main.ts real time
+        // to drain in-flight requests before systemd escalates to SIGKILL.
+        "TimeoutStopSec=30s",
+        "StandardOutput=journal",
+        "StandardError=journal",
+        `SyslogIdentifier=hobproj-${env}-${color}`,
+        "NoNewPrivileges=true",
+        "PrivateTmp=true",
+        "ProtectHome=true",
+        "ProtectSystem=strict",
+        `ReadWritePaths=${appPath}/db ${colorHome}`,
+        "",
+        "[Install]",
+        "WantedBy=multi-user.target",
+        "",
+      ].join("\n");
 
-    const { code: enabledCode } = await run(
-      "systemctl",
-      ["is-enabled", `hobproj.${env}`],
-      { stdout: "piped", check: false },
-    );
-    if (enabledCode !== 0) {
-      await run("systemctl", ["enable", `hobproj.${env}`]);
-      anyChanged = true;
+      const unitPath = `/etc/systemd/system/hobproj.${env}-${color}.service`;
+      const result = await ensureFile(unitPath, unit, "root", "root", "644");
+      results.push({
+        label: `systemd unit hobproj.${env}-${color}`,
+        changed: result.changed,
+      });
+      if (result.changed) anyChanged = true;
+
+      const { code: enabledCode } = await run(
+        "systemctl",
+        ["is-enabled", `hobproj.${env}-${color}`],
+        { stdout: "piped", check: false },
+      );
+      if (enabledCode !== 0) {
+        await run("systemctl", ["enable", `hobproj.${env}-${color}`]);
+        anyChanged = true;
+      }
     }
   }
 
@@ -751,18 +874,166 @@ async function ensureSystemdAppUnits(config: Config): Promise<StepResult[]> {
   return results;
 }
 
+// Removes the old pre-blue/green `hobproj.<env>.service` units (bound
+// directly to the public port), which would otherwise keep running and
+// hold that port, conflicting with Caddy now owning it.
+async function ensureLegacyUnitsRemoved(): Promise<StepResult[]> {
+  const results: StepResult[] = [];
+
+  for (const env of ENVS) {
+    const legacyUnit = `hobproj.${env}.service`;
+    const legacyUnitPath = `/etc/systemd/system/${legacyUnit}`;
+
+    if (!await pathExists(legacyUnitPath)) {
+      results.push({ label: `legacy unit ${legacyUnit}`, changed: false });
+      continue;
+    }
+
+    await run("systemctl", ["stop", legacyUnit], { check: false });
+    await run("systemctl", ["disable", legacyUnit], { check: false });
+    await Deno.remove(legacyUnitPath);
+    await run("systemctl", ["daemon-reload"]);
+    results.push({
+      label: `legacy unit ${legacyUnit}`,
+      changed: true,
+      detail: "removed",
+    });
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Caddy (reverse proxy in front of the blue/green app instances)
+// ---------------------------------------------------------------------------
+
+// Generates the small per-env snippet Caddy `import`s, pointing at whichever
+// color's port is currently active. Regenerated by the deployer on every
+// cutover; only created here (if missing) so a fresh install has something
+// valid to boot with.
+function activeUpstreamSnippet(port: string): string {
+  return [
+    `reverse_proxy 127.0.0.1:${port} {`,
+    // cloudflared already sets X-Forwarded-Proto based on the original
+    // (HTTPS) request at Cloudflare's edge; Caddy's reverse_proxy would
+    // otherwise overwrite it using the local (plain HTTP) connection it
+    // received it over, breaking `httpsMid`'s redirect logic.
+    "\theader_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}",
+    "}",
+    "",
+  ].join("\n");
+}
+
+async function ensureCaddyConfig(config: Config): Promise<StepResult[]> {
+  const results: StepResult[] = [];
+
+  const publicPorts: Record<Env, string> = {
+    staging: config.stagingAppPort,
+    prod: config.prodAppPort,
+  };
+  const ports: Record<Env, Record<Color, string>> = {
+    staging: { blue: config.stagingBluePort, green: config.stagingGreenPort },
+    prod: { blue: config.prodBluePort, green: config.prodGreenPort },
+  };
+
+  for (const env of ENVS) {
+    const activeColorPath = `${ETC_ROOT}/${env}/active-color`;
+    if (!await pathExists(activeColorPath)) {
+      await ensureFile(activeColorPath, "blue\n", "hobproj", "hobproj", "644");
+      results.push({
+        label: `active color (${env})`,
+        changed: true,
+        detail: "defaulted to blue",
+      });
+    } else {
+      results.push({ label: `active color (${env})`, changed: false });
+    }
+
+    const activeColor = (await Deno.readTextFile(activeColorPath))
+      .trim() as Color;
+    const snippetPath = `${ETC_ROOT}/${env}/active-upstream.caddy`;
+    const snippetResult = await ensureFile(
+      snippetPath,
+      activeUpstreamSnippet(ports[env][activeColor]),
+      "hobproj",
+      "hobproj",
+      "644",
+    );
+    results.push({
+      label: `Caddy upstream snippet (${env})`,
+      changed: snippetResult.changed,
+    });
+  }
+
+  const caddyfile = ENVS.map((env) =>
+    [
+      `:${publicPorts[env]} {`,
+      `\timport ${ETC_ROOT}/${env}/active-upstream.caddy`,
+      "}",
+      "",
+    ].join("\n")
+  ).join("\n");
+
+  const caddyfileResult = await ensureFile(
+    CADDY_FILE,
+    caddyfile,
+    "root",
+    "root",
+    "644",
+  );
+  results.push({ label: "Caddyfile", changed: caddyfileResult.changed });
+
+  const { code: enabledCode } = await run(
+    "systemctl",
+    ["is-enabled", "caddy"],
+    { stdout: "piped", check: false },
+  );
+  const { code: activeCode } = await run(
+    "systemctl",
+    ["is-active", "caddy"],
+    { stdout: "piped", check: false },
+  );
+
+  if (enabledCode !== 0 || activeCode !== 0) {
+    await run("systemctl", ["enable", "--now", "caddy"]);
+  } else {
+    // Always reload (not just when a file changed): reloading with
+    // unchanged, already-valid config is a cheap no-op, and this keeps the
+    // running Caddy config in sync even after a prior run left it stale
+    // (e.g. a mid-provisioning failure applied the files but not the
+    // reload).
+    await run("caddy", ["validate", "--config", CADDY_FILE], {
+      check: false,
+    });
+    await run("systemctl", ["reload", "caddy"]);
+  }
+
+  return results;
+}
+
 // ---------------------------------------------------------------------------
 // sudoers
 // ---------------------------------------------------------------------------
 
 async function ensureSudoers(): Promise<StepResult> {
-  const content = [
+  const lines = [
     "%hobproj-deploy-staging ALL=(hobproj) NOPASSWD: /opt/hobproj-deployer/staging/deployer *",
     "%hobproj-deploy-prod ALL=(hobproj) NOPASSWD: /opt/hobproj-deployer/prod/deployer *",
-    "hobproj ALL=(root) NOPASSWD: /usr/bin/systemctl restart hobproj.staging",
-    "hobproj ALL=(root) NOPASSWD: /usr/bin/systemctl restart hobproj.prod",
-    "",
-  ].join("\n");
+  ];
+
+  for (const env of ENVS) {
+    for (const color of COLORS) {
+      for (const action of ["start", "stop", "restart"]) {
+        lines.push(
+          `hobproj ALL=(root) NOPASSWD: /usr/bin/systemctl ${action} hobproj.${env}-${color}`,
+        );
+      }
+    }
+  }
+  lines.push("hobproj ALL=(root) NOPASSWD: /usr/bin/systemctl reload caddy");
+  lines.push("");
+
+  const content = lines.join("\n");
 
   const current = await readTextIfExists(SUDOERS_PATH);
   const currentMeta = await statOwnerGroupMode(SUDOERS_PATH);

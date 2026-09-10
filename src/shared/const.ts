@@ -5,7 +5,6 @@ import {
   getRequiredEnv,
 } from "./environment.ts";
 
-export const APP_PORT = Number(getEnv("APP_PORT") ?? 8000);
 export const APP_ORIGIN = getRequiredEnv("APP_ORIGIN");
 export const APP_ID = "hobproj";
 export const WEBSITE_TITLE = "Hobproj";

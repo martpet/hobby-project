@@ -7,8 +7,8 @@ import { httpsMid } from "@middleware/https.ts";
 import { jsxMid } from "@middleware/jsx.ts";
 import { secureHeadersMid } from "@middleware/secure-headers.ts";
 import { trailingSlashMid } from "@middleware/trailing-slash.ts";
-import { APP_PORT } from "@shared/const.ts";
 import { buildContext } from "@shared/context.ts";
+import { getRequiredEnv } from "@shared/environment.ts";
 import { router } from "@shared/router.ts";
 import { routes } from "./routes.ts";
 
@@ -37,11 +37,24 @@ const middlewares = [
 // `reduceRight` so the first entry ends up outermost. `jsxMid` sits between
 // the chain and the router, turning returned VNodes into HTML responses so
 // every middleware above it only ever sees a `Response`.
-const composed = middlewares.reduceRight(
+const requestHandler = middlewares.reduceRight(
   (a, b) => b(a),
   jsxMid(router(routes)),
 );
 
-Deno.serve({ port: APP_PORT }, (req, info) => {
-  return composed(buildContext(req, info));
+// Every environment must set APP_PORT explicitly. In local development, it
+// must match the port in APP_ORIGIN so the server and passkey origin align.
+const port = Number(getRequiredEnv("APP_PORT"));
+
+const server = Deno.serve({ port }, (req, info) => {
+  const context = buildContext(req, info);
+  return requestHandler(context);
+});
+
+// On deploy, systemd sends SIGTERM to the outgoing instance. `shutdown()`
+// stops accepting new connections but lets in-flight requests finish, so
+// requests already being handled aren't cut off mid-response.
+Deno.addSignalListener("SIGTERM", async () => {
+  await server.shutdown();
+  Deno.exit(0);
 });

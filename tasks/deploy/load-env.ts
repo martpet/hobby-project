@@ -19,12 +19,7 @@ export async function loadEnv(): Promise<DeployEnvName> {
 
   const tasksEnv = await loadEnvFile("./tasks/.env.tasks");
   const deployEnv = await loadEnvFile("./tasks/deploy/.env.deploy");
-  const appPortKey = `${envName.toUpperCase()}_APP_PORT`;
-  const mergedEnv = {
-    ...tasksEnv,
-    ...deployEnv,
-    APP_PORT: tasksEnv[appPortKey],
-  };
+  const mergedEnv = { ...tasksEnv, ...deployEnv };
 
   applyEnv(mergedEnv);
 
