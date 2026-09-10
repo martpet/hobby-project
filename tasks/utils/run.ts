@@ -5,6 +5,7 @@ interface RunOptions {
   readonly input?: string;
   readonly stdin?: "inherit" | "null";
   readonly stdout?: "inherit" | "piped";
+  readonly stderr?: "inherit" | "null";
 }
 
 interface RunResult {
@@ -24,7 +25,7 @@ export async function run(
     env: options.env,
     stdin: options.input === undefined ? options.stdin ?? "inherit" : "piped",
     stdout,
-    stderr: "inherit",
+    stderr: options.stderr ?? "inherit",
   });
 
   const process = command.spawn();

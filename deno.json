@@ -14,6 +14,7 @@
     "setup-remote": "deno -A tasks/setup-remote/task.ts",
     "backup": "deno -A tasks/backup/task.ts",
     "restore": "deno -A tasks/backup/restore.ts",
+    "schedule-backup": "deno -A tasks/backup/schedule.ts",
     "get-simplewebauthn": "deno bundle -o src/features/passkeys/assets/simplewebauthn.js jsr:@simplewebauthn/browser@^14.0.0"
   },
   "unstable": ["kv"],

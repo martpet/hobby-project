@@ -1,0 +1,192 @@
+import { exists } from "@std/fs";
+import { join } from "@std/path";
+import { loadEnvFile } from "../utils/env-file.ts";
+import { run } from "../utils/run.ts";
+
+// Installs a per-user LaunchAgent that runs `deno task backup prod` daily.
+//
+// A LaunchAgent runs inside the Aqua login session, where the login keychain is
+// already unlocked, so the backup password resolves without prompting. A
+// LaunchDaemon would run as root and could not read the login keychain at all.
+//
+// Usage: deno task schedule-backup [install|uninstall|status]
+
+const LABEL = "com.hobproj.backup";
+const DEFAULT_HOUR = 12;
+
+const action = Deno.args[0] ?? "install";
+if (action !== "install" && action !== "uninstall" && action !== "status") {
+  throw new Error(
+    "Usage: deno task schedule-backup [install|uninstall|status].",
+  );
+}
+
+if (Deno.build.os !== "darwin") {
+  throw new Error("Scheduled backups are only supported on macOS.");
+}
+
+const home = Deno.env.get("HOME");
+if (!home) {
+  throw new Error("HOME is not set.");
+}
+
+const hour = readHour();
+const repoRoot = Deno.cwd();
+const agentsDir = join(home, "Library", "LaunchAgents");
+const plistPath = join(agentsDir, `${LABEL}.plist`);
+const logPath = join(home, "Library", "Logs", "hobproj-backup.log");
+const { stdout: uid } = await run("id", ["-u"], { stdout: "piped" });
+const target = `gui/${uid}`;
+
+if (action === "status") {
+  await reportStatus();
+} else if (action === "uninstall") {
+  await removeAgent();
+  console.log(`✅ Removed the scheduled backup (${LABEL}).`);
+} else {
+  await install();
+}
+
+async function install(): Promise<void> {
+  const denoPath = Deno.execPath();
+  const backupTask = join(repoRoot, "tasks", "backup", "task.ts");
+  if (!await exists(backupTask)) {
+    throw new Error(
+      `Run this from the repository root; ${backupTask} does not exist.`,
+    );
+  }
+
+  await Deno.mkdir(agentsDir, { recursive: true });
+  await Deno.mkdir(join(home!, "Library", "Logs"), { recursive: true });
+  await Deno.writeTextFile(plistPath, buildPlist(denoPath));
+
+  // Replace any previous definition so the task stays idempotent.
+  await uninstall();
+  await run("launchctl", ["bootstrap", target, plistPath]);
+
+  console.log(`✅ Scheduled a daily prod backup at ${pad(hour)}:00.`);
+  console.log(`   Agent:  ${plistPath}`);
+  console.log(`   Log:    ${logPath}`);
+  console.log(
+    "   Runs only while you are logged in; a missed run starts after wake.",
+  );
+  await warnIfTerminalLacksDiskAccess();
+}
+
+async function uninstall(): Promise<void> {
+  // Missing on a fresh install, so the "No such process" notice is expected.
+  await run("launchctl", ["bootout", `${target}/${LABEL}`], {
+    check: false,
+    stderr: "null",
+  });
+}
+
+async function removeAgent(): Promise<void> {
+  await uninstall();
+  if (await exists(plistPath)) {
+    await Deno.remove(plistPath);
+  }
+}
+
+async function reportStatus(): Promise<void> {
+  if (!await exists(plistPath)) {
+    console.log("No scheduled backup is installed.");
+    return;
+  }
+  console.log(`Agent: ${plistPath}`);
+  const { code } = await run("launchctl", ["print", `${target}/${LABEL}`], {
+    check: false,
+    stdout: "piped",
+    stderr: "null",
+  });
+  console.log(code === 0 ? "Status: loaded" : "Status: not loaded");
+  console.log(`Log:   ${logPath}`);
+}
+
+// The agent inherits a minimal PATH from launchd, so `deno` is passed by
+// absolute path and its directory is added for any nested lookups.
+function buildPlist(denoPath: string): string {
+  const denoDir = denoPath.slice(0, denoPath.lastIndexOf("/"));
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>${LABEL}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>${denoPath}</string>
+    <string>task</string>
+    <string>backup</string>
+    <string>prod</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>${repoRoot}</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>${denoDir}:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>${hour}</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>LowPriorityIO</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>${logPath}</string>
+  <key>StandardErrorPath</key>
+  <string>${logPath}</string>
+</dict>
+</plist>
+`;
+}
+
+function readHour(): number {
+  const raw = Deno.env.get("BACKUP_SCHEDULE_HOUR");
+  if (!raw) {
+    return DEFAULT_HOUR;
+  }
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 23) {
+    throw new Error(
+      "BACKUP_SCHEDULE_HOUR must be an integer between 0 and 23.",
+    );
+  }
+  return parsed;
+}
+
+function pad(value: number): string {
+  return value.toString().padStart(2, "0");
+}
+
+// Files the agent creates are not readable from a terminal that lacks Full
+// Disk Access, which would leave the backups unrestorable by hand.
+async function warnIfTerminalLacksDiskAccess(): Promise<void> {
+  const backupEnv = await loadEnvFile("./tasks/backup/.env.backup");
+  const backupRoot = Deno.env.get("BACKUP_LOCAL_PATH") ??
+    backupEnv["BACKUP_LOCAL_PATH"];
+  if (!backupRoot || !await exists(backupRoot)) {
+    return;
+  }
+  try {
+    for await (const _ of Deno.readDir(backupRoot)) {
+      break;
+    }
+  } catch {
+    console.warn(
+      "\n⚠️  This terminal cannot list the backup folder, so it will not be " +
+        "able to read backups written by the agent.",
+    );
+    console.warn(
+      "⚠️  Grant it Full Disk Access in System Settings > Privacy & Security " +
+        "so restores work from the command line.",
+    );
+  }
+}
