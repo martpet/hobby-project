@@ -11,7 +11,13 @@ export async function checkHealth({
   service,
   port,
   expectedGitSha,
-  attempts = 10,
+  // The check starts right after `deno compile` has saturated the Pi's CPU
+  // and flushed a ~110MB binary to disk, so the first start of a fresh
+  // binary is far slower than a warm one (~4.7s cold vs ~1.7s warm when
+  // measured on an idle machine). A short budget turned that into a false
+  // failure. Waiting longer costs nothing on success, since the loop
+  // returns as soon as the service reports the expected SHA.
+  attempts = 30,
 }: HealthCheckOptions) {
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
