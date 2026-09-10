@@ -1,6 +1,5 @@
 import { dirname, join } from "@std/path";
 import { exists } from "@std/fs";
-import { loadBackupEnv } from "./load-env.ts";
 import { verifyChecksum } from "./checksum.ts";
 import { resolveEncryptionPassword } from "./password.ts";
 import { run } from "../utils/run.ts";
@@ -24,8 +23,6 @@ if (!encryptedArchive.endsWith("config.tar.gz.enc")) {
       "database.",
   );
 }
-
-await loadBackupEnv();
 
 const targetRoot = Deno.args[1] ?? "./restored-config";
 if (await exists(targetRoot)) {
