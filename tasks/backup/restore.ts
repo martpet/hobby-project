@@ -1,12 +1,19 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { dirname, join } from "@std/path";
 import { loadBackupEnv } from "./load-env.ts";
+import { verifyChecksum } from "./checksum.ts";
 import { resolveEncryptionPassword } from "./password.ts";
 import { run } from "../utils/run.ts";
 
 const encryptedArchive = Deno.args[0];
 if (encryptedArchive === undefined) {
   throw new Error("Usage: deno task restore <database.tar.gz.enc>.");
+}
+if (encryptedArchive.endsWith("config.tar.gz.enc")) {
+  throw new Error(
+    "That is the configuration archive. Use `deno task restore-config` " +
+      "to recover env files.",
+  );
 }
 
 await loadBackupEnv();
@@ -30,21 +37,8 @@ try {
     decryptedArchive,
   ], { env: { BACKUP_ENCRYPTION_PASSWORD: password } });
 
-  const manifest = await Deno.readTextFile(
-    join(dirname(encryptedArchive), "manifest.txt"),
-  );
-  const expectedHash = manifest.match(/^archive_sha256=(\S+)$/m)?.[1];
-  if (expectedHash === undefined) {
-    throw new Error("Backup manifest does not contain archive_sha256.");
-  }
-  const actualHash = (await run(
-    "shasum",
-    ["-a", "256", decryptedArchive],
-    { stdout: "piped" },
-  )).stdout.split(/\s+/)[0];
-  if (actualHash !== expectedHash) {
-    throw new Error("Backup archive checksum does not match its manifest.");
-  }
+  const manifestPath = join(dirname(encryptedArchive), "manifest.txt");
+  await verifyChecksum(decryptedArchive, manifestPath, "archive_sha256");
 
   await Deno.mkdir(targetRoot, { recursive: true });
   await run("tar", [

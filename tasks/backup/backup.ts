@@ -2,6 +2,7 @@ import { getRequiredEnv } from "@shared/environment.ts";
 import { exists } from "@std/fs";
 import { dirname, join } from "@std/path";
 import { loadBackupEnv } from "./load-env.ts";
+import { fileSha256 } from "./checksum.ts";
 import { resolveEncryptionPassword } from "./password.ts";
 import { DEFAULT_RETENTION, selectExpiredBackups } from "./retention.ts";
 import { run } from "../utils/run.ts";
@@ -78,17 +79,15 @@ try {
   await run("scp", [`${remoteHost}:${remoteArchive}`, localArchive]);
 
   const archiveBytes = await Deno.readFile(localArchive);
-  const archiveHash = (await run(
-    "shasum",
-    ["-a", "256", localArchive],
-    { stdout: "piped" },
-  )).stdout.split(/\s+/)[0];
+  const archiveHash = await fileSha256(localArchive);
+  const configHash = await fileSha256(configArchive);
   const manifest = [
     `environment=${envName}`,
     `created_at=${new Date().toISOString()}`,
     `source_path=${dbPath}`,
     `archive_sha256=${archiveHash}`,
     `archive_bytes=${archiveBytes.byteLength}`,
+    `config_sha256=${configHash}`,
     "database_format=sqlite",
     "consistency=sqlite online backup snapshot",
     "",
