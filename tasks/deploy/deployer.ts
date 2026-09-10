@@ -4,7 +4,7 @@ import { ensureDir, exists } from "@std/fs";
 import { dirname, join } from "@std/path";
 import { checkHealth } from "./check-health.ts";
 import { purgeCloudflareCache } from "./purge-cloudflare-cache.ts";
-import { run } from "./run.ts";
+import { run } from "../utils/run.ts";
 import { extractSourceArchive } from "./source-archive.ts";
 
 interface DeployConfig {

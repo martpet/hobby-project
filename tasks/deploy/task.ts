@@ -1,8 +1,8 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { join } from "@std/path";
-import { loadEnv } from "./utils/load-env.ts";
-import { run } from "./utils/run.ts";
-import { createSourceArchive } from "./utils/source-archive.ts";
+import { loadEnv } from "./load-env.ts";
+import { run } from "../utils/run.ts";
+import { createSourceArchive } from "./source-archive.ts";
 
 console.log("🔍 Running local checks...");
 await run("deno", ["task", "check"]);

@@ -1,7 +1,7 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { join } from "@std/path";
-import { loadEnv } from "./utils/load-env.ts";
-import { run } from "./utils/run.ts";
+import { loadEnv } from "./load-env.ts";
+import { run } from "../utils/run.ts";
 
 const envName = await loadEnv();
 const badge = `[${envName.toUpperCase()}]`;
@@ -16,7 +16,8 @@ const remoteUploadPath = join(remoteUploadRoot, envName);
 const remoteTempDeployer = `deployer-${envName}.tmp`;
 const remoteHost = getRequiredEnv("REMOTE_HOST");
 const compileTarget = getRequiredEnv("COMPILE_TARGET");
-const allowNet = getRequiredEnv("ALLOW_NET");
+const appPort = getRequiredEnv("APP_PORT");
+const allowNet = `${getRequiredEnv("ALLOW_NET")},127.0.0.1:${appPort}`;
 
 console.log(`🔨 Building remote deployer for ${badge}...`);
 
@@ -31,7 +32,7 @@ try {
     `--allow-write=${remoteAppPath},${remoteUploadPath},${remoteCacheRoot}`,
     "--allow-run",
     `--allow-net=${allowNet}`,
-    "tasks/utils/remote-deployer.ts",
+    "tasks/deploy/deployer.ts",
   ]);
 
   console.log(

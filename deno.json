@@ -2,15 +2,15 @@
   "tasks": {
     "dev": "deno --allow-all --env-file --watch src/main.ts",
     "check": {
-      "command": "deno check src/main.ts tasks/deploy.ts tasks/install-remote-deployer.ts tasks/utils/remote-deployer.ts",
+      "command": "deno check src/main.ts tasks/deploy/task.ts tasks/deploy/publish-deployer.ts tasks/deploy/deployer.ts tasks/setup-remote/task.ts tasks/setup-remote/publish-installer.ts tasks/setup-remote/installer.ts",
       "dependencies": ["format", "lint"]
     },
     "format": "deno fmt --check '**/*.ts' '**/*.tsx'",
     "lint": "deno lint src tasks --ignore='src/**/assets'",
-    "deploy": "deno -A tasks/deploy.ts",
-    "staging": "deno task deploy staging",
-    "prod": "deno task deploy prod",
-    "install-remote-deployer": "deno -A tasks/install-remote-deployer.ts",
+    "deploy": "deno -A tasks/deploy/task.ts",
+    "publish-deployer": "deno -A tasks/deploy/publish-deployer.ts",
+    "publish-installer": "deno -A tasks/setup-remote/publish-installer.ts",
+    "setup-remote": "deno -A tasks/setup-remote/task.ts",
     "get-simplewebauthn": "deno bundle -o src/features/passkeys/assets/simplewebauthn.js jsr:@simplewebauthn/browser@^14.0.0"
   },
   "unstable": ["kv"],
