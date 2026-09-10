@@ -1,6 +1,6 @@
 // Idempotent, root-run remote configuration binary for "hobproj" servers.
 // Compiled and installed via `publish-installer.ts`, then run via `sudo` by
-// `task.ts`. Every step checks the current state first and only changes
+// `setup-remote.ts`. Every step checks the current state first and only changes
 // something that is missing or different; already-correct steps are
 // reported as skipped, never reapplied. This mirrors the architecture of
 // `deployer.ts`, but for one-time/occasional server provisioning rather

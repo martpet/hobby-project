@@ -49,7 +49,7 @@ if (action === "status") {
 
 async function install(): Promise<void> {
   const denoPath = Deno.execPath();
-  const backupTask = join(repoRoot, "tasks", "backup", "task.ts");
+  const backupTask = join(repoRoot, "tasks", "backup", "backup.ts");
   if (!await exists(backupTask)) {
     throw new Error(
       `Run this from the repository root; ${backupTask} does not exist.`,
