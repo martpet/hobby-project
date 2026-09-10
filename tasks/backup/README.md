@@ -20,7 +20,12 @@ reach the iCloud folder.
 ```sh
 deno task backup staging
 deno task backup prod
+deno task backup-config
 ```
+
+`backup staging` and `backup prod` back up only the corresponding remote
+database. `backup-config` backs up the laptop's local env files independently;
+it does not require an environment name or contact the Pi.
 
 The password is read from the Keychain automatically. The first read after a
 reboot or lock may show a macOS prompt for the `security` command; choose
@@ -30,12 +35,13 @@ To use a different password for one run, set it explicitly. An environment value
 always wins over the Keychain:
 
 ```sh
-BACKUP_ENCRYPTION_PASSWORD=... deno task backup staging
+BACKUP_ENCRYPTION_PASSWORD=... deno task backup-config
 ```
 
 ## Scheduled backups
 
-A LaunchAgent runs a prod backup daily at 12:00:
+A LaunchAgent runs the prod database backup and the local configuration backup
+daily at 12:00:
 
 ```sh
 deno task schedule-backup
@@ -55,24 +61,29 @@ to `~/Library/Logs/hobproj-backup.log`.
 
 ## Backup layout
 
-Each run writes one timestamped directory per environment:
+Each database backup writes one timestamped directory for its environment. Local
+configuration snapshots are stored separately because they are not specific to
+staging or prod:
 
 ```text
 Hobproj Backups/
 ├── staging/
 │   └── 2026-09-10T16-48-12.273Z/
 │       ├── database.tar.gz.enc
-│       ├── config.tar.gz.enc
 │       └── manifest.txt
-└── prod/
-    └── ...
+├── prod/
+│   └── ...
+└── config/
+    └── 2026-09-10T16-48-12.273Z/
+        ├── config.tar.gz.enc
+        └── manifest.txt
 ```
 
-`manifest.txt` is plaintext and holds the SHA-256 checksums that restore
-verifies before extracting.
+Each `manifest.txt` is plaintext and holds the SHA-256 checksum that its restore
+command verifies before extracting.
 
-`config.tar.gz.enc` contains every env file needed to rebuild from a lost
-laptop:
+The environment-independent `config/config.tar.gz.enc` contains every local env
+file needed to rebuild from a lost laptop:
 
 ```text
 .env
@@ -87,9 +98,9 @@ a temporary directory and removed after encryption.
 
 ## Retention
 
-After each successful backup, older backups are pruned automatically, keeping
-the newest of each period: 7 daily, 4 weekly, and 6 monthly. This is about 14
-backups in steady state.
+After each successful backup, older database and configuration backups are
+pruned independently, keeping the newest of each period: 7 daily, 4 weekly, and
+6 monthly. This is about 14 backups in each tree in steady state.
 
 A backup survives if it is the newest of its day, week, or month and that period
 is still in range. Directories ending in `.tmp` are never touched.
@@ -111,7 +122,8 @@ Never set `RESTORE_TARGET_PATH` to a live database directory.
 ## Recover the env files
 
 The database and env files restore separately. To recover the env files from a
-lost laptop, pass the configuration archive and a directory that does not exist:
+lost laptop, pass the configuration archive from the `config/` tree and a
+directory that does not exist:
 
 ```sh
 deno task restore-config \

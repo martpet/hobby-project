@@ -13,6 +13,7 @@
     "publish-installer": "deno -A tasks/setup-remote/publish-installer.ts",
     "setup-remote": "deno -A tasks/setup-remote/setup-remote.ts",
     "backup": "deno -A tasks/backup/backup.ts",
+    "backup-config": "deno -A tasks/backup/backup-config.ts",
     "restore": "deno -A tasks/backup/restore.ts",
     "restore-config": "deno -A tasks/backup/restore-config.ts",
     "schedule-backup": "deno -A tasks/backup/schedule.ts",

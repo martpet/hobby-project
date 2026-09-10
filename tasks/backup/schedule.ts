@@ -4,7 +4,8 @@ import { loadEnvFile } from "../utils/env-file.ts";
 import { parseBackupTimestamp } from "./retention.ts";
 import { run } from "../utils/run.ts";
 
-// Installs a per-user LaunchAgent that runs `deno task backup prod` daily.
+// Installs a per-user LaunchAgent that runs the production database and local
+// configuration backups daily.
 //
 // A LaunchAgent runs inside the Aqua login session, where the login keychain is
 // already unlocked, so the backup password resolves without prompting. A
@@ -53,7 +54,7 @@ if (action === "status") {
 
 async function install(): Promise<void> {
   const denoPath = Deno.execPath();
-  const backupTask = join(repoRoot, "tasks", "backup", "backup.ts");
+  const backupTask = join(repoRoot, "tasks", "backup", "scheduled.ts");
   if (!await exists(backupTask)) {
     throw new Error(
       `Run this from the repository root; ${backupTask} does not exist.`,
@@ -171,9 +172,9 @@ function buildPlist(denoPath: string): string {
   <key>ProgramArguments</key>
   <array>
     <string>${denoPath}</string>
-    <string>task</string>
-    <string>backup</string>
-    <string>prod</string>
+    <string>run</string>
+    <string>-A</string>
+    <string>${join(repoRoot, "tasks", "backup", "scheduled.ts")}</string>
   </array>
   <key>WorkingDirectory</key>
   <string>${repoRoot}</string>
