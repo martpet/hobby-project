@@ -1,6 +1,6 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { dirname, join } from "@std/path";
-import { applyEnv, loadEnvFile } from "../utils/load-env.ts";
+import { applyEnv, loadEnvFile } from "../utils/env-file.ts";
 import { resolveEncryptionPassword } from "./password.ts";
 import { run } from "../utils/run.ts";
 

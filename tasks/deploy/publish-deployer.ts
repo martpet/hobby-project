@@ -3,7 +3,7 @@ import { join } from "@std/path";
 import { loadEnv } from "./load-env.ts";
 import { getRemotePaths } from "../utils/remote-paths.ts";
 import { run } from "../utils/run.ts";
-import { loadEnvFile } from "../utils/load-env.ts";
+import { loadEnvFile } from "../utils/env-file.ts";
 
 const envName = await loadEnv();
 const setupEnv = await loadEnvFile("./tasks/setup-remote/.env.setup");

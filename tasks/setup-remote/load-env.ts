@@ -1,4 +1,4 @@
-import { applyEnv, loadEnvFile } from "../utils/load-env.ts";
+import { applyEnv, loadEnvFile } from "../utils/env-file.ts";
 
 // Loads `tasks/.env.tasks` merged with `tasks/setup-remote/.env.setup` and
 // sets the result on the process environment. Used by `setup-remote`, which

@@ -1,5 +1,5 @@
 import { EnvName } from "@shared/environment.ts";
-import { applyEnv, loadEnvFile } from "../utils/load-env.ts";
+import { applyEnv, loadEnvFile } from "../utils/env-file.ts";
 
 type DeployEnvName = Extract<EnvName, "prod" | "staging">;
 
