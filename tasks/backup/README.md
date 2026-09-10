@@ -138,6 +138,13 @@ and are written with owner-only permissions.
 They are plaintext secrets: move them into place, then delete the temporary
 recovery directory.
 
+The 5 provider-issued secrets (Cloudflare tunnel token/zone ID/API token,
+MaxMind account ID/license key) are **not** part of this archive — they live
+only on the Pi, encrypted with `systemd-creds`. See
+[`tasks/setup-remote/secrets.ts`](../setup-remote/secrets.ts) and
+`deno task set-secret <name>` to provision or rotate them; if the Pi itself
+is lost, re-issue the values from the Cloudflare/MaxMind dashboards.
+
 ## The backup password
 
 One strong password encrypts every archive. If it is lost, the backups cannot be

@@ -5,6 +5,7 @@ import { dirname, join } from "@std/path";
 import { checkHealth } from "./check-health.ts";
 import { purgeCloudflareCache } from "./purge-cloudflare-cache.ts";
 import { run } from "../utils/run.ts";
+import { credentialPath } from "../setup-remote/secrets.ts";
 import { extractSourceArchive } from "./source-archive.ts";
 
 type Color = "blue" | "green";
@@ -29,8 +30,6 @@ interface DeployConfig {
   readonly caddySnippetFile: string;
   readonly keepIdleRunning: boolean;
   readonly denoDir: string;
-  readonly cloudflareZoneId?: string;
-  readonly cloudflareApiToken?: string;
   readonly allowRead?: string;
   readonly allowWrite?: string;
   readonly blue: ColorConfig;
@@ -102,8 +101,6 @@ async function loadConfig(gitSha: string | undefined): Promise<DeployConfig> {
     caddySnippetFile: getAbsoluteEnvPath(env, "CADDY_SNIPPET_FILE"),
     keepIdleRunning: getBooleanEnvValue(env, "KEEP_IDLE_RUNNING"),
     denoDir: getAbsoluteEnvPath(env, "DENO_DIR"),
-    cloudflareZoneId: env.CLOUDFLARE_ZONE_ID,
-    cloudflareApiToken: env.CLOUDFLARE_API_TOKEN,
     allowRead: env.ALLOW_READ,
     allowWrite: env.ALLOW_WRITE,
     blue: buildColorConfig("blue"),
@@ -212,8 +209,8 @@ async function deploy(config: DeployConfig) {
 
   try {
     await purgeCloudflareCache(config.envName, {
-      zoneId: config.cloudflareZoneId,
-      apiToken: config.cloudflareApiToken,
+      zoneId: await decryptSecretOrUndefined("cloudflare_zone_id"),
+      apiToken: await decryptSecretOrUndefined("cloudflare_api_token"),
     });
   } catch (error) {
     console.error(
@@ -221,6 +218,31 @@ async function deploy(config: DeployConfig) {
       error,
     );
   }
+}
+
+// Decrypts a systemd-creds secret via `sudo` (the deployer runs as the
+// unprivileged `hobproj` user; a sudoers rule scoped to exactly this
+// credential file allows it). Returns undefined rather than throwing if the
+// secret hasn't been provisioned yet (`deno task set-secret <name>`),
+// matching purgeCloudflareCache's "not set, skip purge" behavior.
+//
+// No trailing OUTPUT arg: sudoers matches the command line verbatim, so
+// this must be identical to the rule `installer.ts` writes.
+async function decryptSecretOrUndefined(
+  name: string,
+): Promise<string | undefined> {
+  const { code, stdout } = await run(
+    sudoPath,
+    [
+      "-n",
+      "/usr/bin/systemd-creds",
+      "decrypt",
+      `--name=${name}`,
+      credentialPath(name),
+    ],
+    { stdout: "piped", check: false },
+  );
+  return code === 0 ? stdout.trim() : undefined;
 }
 
 async function compileSource(

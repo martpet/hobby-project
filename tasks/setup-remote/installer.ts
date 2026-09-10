@@ -7,6 +7,7 @@
 // than app deploys.
 import { run } from "../utils/run.ts";
 import { remotePaths, STATE_ROOT } from "../utils/remote-paths.ts";
+import { credentialPath, SECRETS } from "./secrets.ts";
 
 interface Config {
   readonly usbLabel: string;
@@ -24,11 +25,6 @@ interface Config {
   readonly prodKeepIdleRunning: string;
   readonly stagingAppOrigin: string;
   readonly prodAppOrigin: string;
-  readonly cloudflareTunnelToken: string;
-  readonly cloudflareZoneId: string;
-  readonly cloudflareApiToken: string;
-  readonly geoipAccountId: string;
-  readonly geoipLicenseKey: string;
   readonly persistentDataRoot: string;
 }
 
@@ -49,7 +45,6 @@ const GEOIP_DIR = "/var/lib/GeoIP";
 const GEOIP_DB_PATH = `${GEOIP_DIR}/GeoLite2-City.mmdb`;
 const SUDOERS_PATH = "/etc/sudoers.d/hobproj-deploy";
 const CLOUDFLARED_DIR = "/etc/cloudflared";
-const CLOUDFLARED_TOKEN_PATH = `${CLOUDFLARED_DIR}/token`;
 const CADDY_FILE = "/etc/caddy/Caddyfile";
 const denoPath = "/usr/local/bin/deno";
 
@@ -59,6 +54,7 @@ const results: StepResult[] = [];
 
 try {
   const config = await loadConfig();
+  await ensureSecretsPresent();
 
   results.push(await ensureDenoInstalled());
   results.push(await ensureStorageMounted(config));
@@ -74,8 +70,8 @@ try {
   results.push(...await ensureLegacyUnitsRemoved());
   results.push(...await ensureCaddyConfig(config));
   results.push(await ensureSudoers());
-  results.push(...await ensureGeoip(config));
-  results.push(await ensureCloudflareTunnel(config));
+  results.push(...await ensureGeoip());
+  results.push(await ensureCloudflareTunnel());
   results.push(await ensureFirewall(config));
 
   printSummary(results);
@@ -83,6 +79,27 @@ try {
   console.error("\n❌ Remote setup failed.", error);
   printSummary(results);
   Deno.exit(1);
+}
+
+// The 5 provider-issued secrets (Cloudflare, MaxMind) are provisioned
+// separately with `deno task set-secret <name>`, never uploaded in this
+// installer's config file. This only checks they already exist.
+async function ensureSecretsPresent(): Promise<void> {
+  const missing = [];
+  for (const secret of SECRETS) {
+    if (!await pathExists(credentialPath(secret.name))) {
+      missing.push(secret);
+    }
+  }
+  if (missing.length === 0) return;
+
+  const lines = missing
+    .map((secret) => `  deno task set-secret ${secret.name}  # ${secret.label}`)
+    .join("\n");
+  throw new Error(
+    `Missing ${missing.length} secret(s). Run the following from the ` +
+      `laptop, then re-run setup-remote:\n${lines}`,
+  );
 }
 
 async function loadConfig(): Promise<Config> {
@@ -120,11 +137,6 @@ async function loadConfig(): Promise<Config> {
     prodKeepIdleRunning: (env.PROD_KEEP_IDLE_RUNNING ?? "false").trim(),
     stagingAppOrigin: required("STAGING_APP_ORIGIN"),
     prodAppOrigin: required("PROD_APP_ORIGIN"),
-    cloudflareTunnelToken: required("CLOUDFLARE_TUNNEL_TOKEN"),
-    cloudflareZoneId: required("CLOUDFLARE_ZONE_ID"),
-    cloudflareApiToken: required("CLOUDFLARE_API_TOKEN"),
-    geoipAccountId: required("GEOIP_ACCOUNT_ID"),
-    geoipLicenseKey: required("GEOIP_LICENSE_KEY"),
     persistentDataRoot: required("USB_MOUNT_PATH"),
   };
 }
@@ -722,10 +734,10 @@ async function ensureEtcHobprojEnvFiles(config: Config): Promise<StepResult[]> {
 async function ensureDeployerConfigFiles(
   config: Config,
 ): Promise<StepResult[]> {
+  // Cloudflare zone/token are no longer written here; the deployer reads
+  // them itself via `systemd-creds decrypt` at deploy time.
   const commonDeployerEnv = [
     "BINARY=./bin",
-    `CLOUDFLARE_ZONE_ID=${config.cloudflareZoneId}`,
-    `CLOUDFLARE_API_TOKEN=${config.cloudflareApiToken}`,
     "",
   ].join("\n");
 
@@ -1036,6 +1048,19 @@ async function ensureSudoers(): Promise<StepResult> {
     }
   }
   lines.push("hobproj ALL=(root) NOPASSWD: /usr/bin/systemctl reload caddy");
+  // The deployer (running as `hobproj`) decrypts these 2 secrets itself at
+  // deploy time for the Cloudflare cache purge; narrow, per-credential
+  // rules rather than a wildcard.
+  lines.push(
+    `hobproj ALL=(root) NOPASSWD: /usr/bin/systemd-creds decrypt --name=cloudflare_zone_id ${
+      credentialPath("cloudflare_zone_id")
+    }`,
+  );
+  lines.push(
+    `hobproj ALL=(root) NOPASSWD: /usr/bin/systemd-creds decrypt --name=cloudflare_api_token ${
+      credentialPath("cloudflare_api_token")
+    }`,
+  );
   lines.push("");
 
   const content = lines.join("\n");
@@ -1077,19 +1102,21 @@ async function ensureSudoers(): Promise<StepResult> {
 // GeoIP
 // ---------------------------------------------------------------------------
 
-async function ensureGeoip(config: Config): Promise<StepResult[]> {
+async function ensureGeoip(): Promise<StepResult[]> {
   const results: StepResult[] = [];
 
+  // No AccountID/LicenseKey here: geoipupdate reads them from the
+  // credentials directory at runtime instead (see the unit's ExecStart).
   const confContent = [
-    `AccountID ${config.geoipAccountId}`,
-    `LicenseKey ${config.geoipLicenseKey}`,
     "EditionIDs GeoLite2-City",
     "",
   ].join("\n");
   results.push(
-    await ensureFile("/etc/GeoIP.conf", confContent, "root", "root", "600"),
+    await ensureFile("/etc/GeoIP.conf", confContent, "root", "root", "644"),
   );
 
+  const accountIdCred = credentialPath("geoip_account_id");
+  const licenseKeyCred = credentialPath("geoip_license_key");
   const serviceUnit = [
     "[Unit]",
     "Description=Update MaxMind GeoIP databases",
@@ -1098,7 +1125,13 @@ async function ensureGeoip(config: Config): Promise<StepResult[]> {
     "",
     "[Service]",
     "Type=oneshot",
-    "ExecStart=/usr/bin/geoipupdate",
+    // The ID before ":" must match the name `set-secret` encrypted the
+    // file with (`systemd-creds encrypt --name=...`); systemd validates
+    // the two against each other on load.
+    `LoadCredentialEncrypted=geoip_account_id:${accountIdCred}`,
+    `LoadCredentialEncrypted=geoip_license_key:${licenseKeyCred}`,
+    'ExecStart=/bin/sh -c "GEOIPUPDATE_ACCOUNT_ID_FILE=${CREDENTIALS_DIRECTORY}/geoip_account_id ' +
+    'GEOIPUPDATE_LICENSE_KEY_FILE=${CREDENTIALS_DIRECTORY}/geoip_license_key exec /usr/bin/geoipupdate"',
     `ExecStartPost=/usr/bin/chmod 0644 ${GEOIP_DB_PATH}`,
     "User=root",
     "Group=root",
@@ -1163,7 +1196,17 @@ async function ensureGeoip(config: Config): Promise<StepResult[]> {
   }
 
   if (!await pathExists(GEOIP_DB_PATH)) {
-    await run("geoipupdate", []);
+    // One-off bootstrap download outside the unit's LoadCredentialEncrypted=
+    // sandbox: decrypt both secrets directly (installer already runs as
+    // root) and pass them as env vars for this single invocation only.
+    const accountId = await decryptCredential("geoip_account_id");
+    const licenseKey = await decryptCredential("geoip_license_key");
+    await run("geoipupdate", [], {
+      env: {
+        GEOIPUPDATE_ACCOUNT_ID: accountId,
+        GEOIPUPDATE_LICENSE_KEY: licenseKey,
+      },
+    });
     await run("chmod", ["0644", GEOIP_DB_PATH]);
     results.push({
       label: "GeoLite2-City.mmdb",
@@ -1177,24 +1220,31 @@ async function ensureGeoip(config: Config): Promise<StepResult[]> {
   return results;
 }
 
+// Decrypts a credential file synchronously for local (root-only) one-off
+// use, e.g. the geoipupdate bootstrap download that runs outside of any
+// systemd unit's LoadCredentialEncrypted= sandbox.
+async function decryptCredential(name: string): Promise<string> {
+  const { stdout } = await run(
+    "systemd-creds",
+    ["decrypt", `--name=${name}`, credentialPath(name), "-"],
+    { stdout: "piped" },
+  );
+  return stdout.trim();
+}
+
 // ---------------------------------------------------------------------------
 // Cloudflare Tunnel
 // ---------------------------------------------------------------------------
 
-async function ensureCloudflareTunnel(config: Config): Promise<StepResult> {
-  const currentToken = await readTextIfExists(CLOUDFLARED_TOKEN_PATH);
-  const tokenChanged =
-    currentToken?.trim() !== config.cloudflareTunnelToken.trim();
+// Token rotation/restart is handled by `set-secret cloudflare_tunnel_token`
+// (it restarts the service itself when the value changes); this only
+// ensures the unit definition is in place and running.
+async function ensureCloudflareTunnel(): Promise<StepResult> {
+  const tokenCred = credentialPath("cloudflare_tunnel_token");
 
-  if (tokenChanged) {
-    await ensureFile(
-      CLOUDFLARED_TOKEN_PATH,
-      config.cloudflareTunnelToken.trim() + "\n",
-      "root",
-      "root",
-      "600",
-    );
-  }
+  // Leftover from before the switch to LoadCredentialEncrypted=; remove it
+  // so the plaintext token doesn't linger on disk.
+  await run("rm", ["-f", "/etc/cloudflared/token"], { check: false });
 
   const unit = [
     "[Unit]",
@@ -1205,7 +1255,9 @@ async function ensureCloudflareTunnel(config: Config): Promise<StepResult> {
     "[Service]",
     "TimeoutStartSec=15",
     "Type=notify",
-    `ExecStart=/usr/bin/cloudflared --no-autoupdate tunnel run --token-file ${CLOUDFLARED_TOKEN_PATH}`,
+    `LoadCredentialEncrypted=cloudflare_tunnel_token:${tokenCred}`,
+    "ExecStart=/usr/bin/cloudflared --no-autoupdate tunnel run --token-file " +
+    "${CREDENTIALS_DIRECTORY}/cloudflare_tunnel_token",
     "Restart=on-failure",
     "RestartSec=5s",
     "",
@@ -1237,15 +1289,12 @@ async function ensureCloudflareTunnel(config: Config): Promise<StepResult> {
     check: false,
   });
 
-  const changed = tokenChanged || unitResult.changed || enabledCode !== 0 ||
+  const changed = unitResult.changed || enabledCode !== 0 ||
     activeCode !== 0;
 
   if (changed) {
     await run("systemctl", ["daemon-reload"]);
     await run("systemctl", ["enable", "--now", "cloudflared"]);
-    if (tokenChanged && activeCode === 0) {
-      await run("systemctl", ["restart", "cloudflared"]);
-    }
   }
 
   return { label: "Cloudflare Tunnel (cloudflared)", changed };

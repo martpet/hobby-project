@@ -15,13 +15,15 @@ export async function purgeCloudflareCache(
   { zoneId, apiToken }: PurgeCloudflareCacheOptions,
 ) {
   if (!apiToken) {
-    console.log("ℹ️  CLOUDFLARE_API_TOKEN not set, skipping cache purge.");
+    console.log(
+      "ℹ️  cloudflare_api_token secret not set, skipping cache purge.",
+    );
     return;
   }
 
   if (!zoneId) {
     throw new Error(
-      "CLOUDFLARE_API_TOKEN is set but CLOUDFLARE_ZONE_ID is missing.",
+      "cloudflare_api_token secret is set but cloudflare_zone_id is missing.",
     );
   }
 

@@ -34,11 +34,6 @@ const CONFIG_KEYS = [
   "PROD_GREEN_PORT",
   "STAGING_APP_ORIGIN",
   "PROD_APP_ORIGIN",
-  "CLOUDFLARE_TUNNEL_TOKEN",
-  "CLOUDFLARE_ZONE_ID",
-  "CLOUDFLARE_API_TOKEN",
-  "GEOIP_ACCOUNT_ID",
-  "GEOIP_LICENSE_KEY",
 ];
 
 // Optional; each defaults (on the remote installer side) to "false" if

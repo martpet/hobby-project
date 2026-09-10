@@ -12,6 +12,7 @@
     "publish-deployer": "deno -A tasks/deploy/publish-deployer.ts",
     "publish-installer": "deno -A tasks/setup-remote/publish-installer.ts",
     "setup-remote": "deno -A tasks/setup-remote/setup-remote.ts",
+    "set-secret": "deno -A tasks/setup-remote/set-secret.ts",
     "backup": "deno -A tasks/backup/backup.ts",
     "backup-config": "deno -A tasks/backup/backup-config.ts",
     "restore": "deno -A tasks/backup/restore.ts",
