@@ -51,7 +51,7 @@ export function DeleteAccountDialog(
           form={DELETE_ACCOUNT_FORM}
           class="danger"
         >
-          Delete Account Forever
+          Delete account forever
         </button>
       </footer>
     </dialog>

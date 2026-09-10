@@ -5,11 +5,11 @@ import { FlashMessage } from "./types.ts";
 export const FLASH = {
   "LOGGED_OUT": {
     type: "success",
-    msg: "Signed Out",
+    msg: "Signed out",
   },
   "SESSION_REVOKED": {
     type: "success",
-    msg: "Session Revoked",
+    msg: "Session revoked",
   },
   "SESSION_EXPIRED": {
     type: "warning",
@@ -21,19 +21,19 @@ export const FLASH = {
   },
   "ACCOUNT_DELETED": {
     type: "success",
-    msg: "Account Deleted",
+    msg: "Account deleted",
   },
   "PASSKEY_ADDED": {
     type: "success",
-    msg: "Passkey Added",
+    msg: "Passkey added",
   },
   "PASSKEY_DELETED": {
     type: "success",
-    msg: "Passkey Deleted",
+    msg: "Passkey deleted",
   },
   "PASSKEY_RENAMED": {
     type: "success",
-    msg: "Passkey Renamed",
+    msg: "Passkey renamed",
   },
   "PASSKEY_LAST_ONE": {
     type: "warning",

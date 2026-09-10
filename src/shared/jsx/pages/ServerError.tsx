@@ -6,7 +6,7 @@ interface ServerErrorPageProps {
 }
 
 export function ServerErrorPage({ detail }: ServerErrorPageProps, c: Context) {
-  c.head.title = "Server Error";
+  c.head.title = "Server error";
 
   return (
     <Page>

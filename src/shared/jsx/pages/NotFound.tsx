@@ -2,7 +2,7 @@ import { Context } from "@shared/context.ts";
 import { Page } from "@shared/jsx/Page.tsx";
 
 export function NotFoundPage(_props: unknown, c: Context) {
-  c.head.title = "Page Not Found";
+  c.head.title = "Page not found";
 
   return (
     <Page>

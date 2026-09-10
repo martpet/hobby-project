@@ -15,7 +15,7 @@ export function LogInButton(
 
   return (
     <button class="login-button" {...attr}>
-      {children || "Sign In"}
+      {children || "Sign in"}
     </button>
   );
 }

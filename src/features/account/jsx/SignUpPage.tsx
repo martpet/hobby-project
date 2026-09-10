@@ -3,7 +3,7 @@ import { Page } from "@shared/jsx/Page.tsx";
 import { SignUpForm } from "./SignUpForm.tsx";
 
 export function SignUpPage(_props: unknown, c: Context) {
-  c.head.title = "Sign Up";
+  c.head.title = "Sign up";
 
   return (
     <Page>

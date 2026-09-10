@@ -20,7 +20,7 @@ export function SignUpForm(_props: unknown, c: Context) {
         spellcheck={false}
       />
       <p>
-        <button type="submit">Create Account</button>
+        <button type="submit">Create</button>
       </p>
     </form>
   );

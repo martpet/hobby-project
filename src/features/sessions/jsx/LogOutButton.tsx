@@ -12,7 +12,7 @@ export function LogOutButton(
   return (
     <form method="POST" action="/logout">
       <button {...attr}>
-        {children || "Sign Out"}
+        {children || "Sign out"}
       </button>
       {sessionId && (
         <input
