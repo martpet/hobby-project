@@ -126,6 +126,7 @@ async function deploy(config: DeployConfig) {
     );
     installedGitShaEnv = true;
 
+    await wipeServerCache(config);
     await run(sudoPath, [systemctlPath, "restart", config.remoteService]);
     await ensureServiceActive(config.remoteService);
     await ensureHealthy(config);
@@ -154,14 +155,6 @@ async function deploy(config: DeployConfig) {
         console.error(`Warning: could not remove ${sourceDir}.`, error);
       }
     }
-  }
-
-  try {
-    if (await exists(config.serverCachePath)) {
-      await Deno.remove(config.serverCachePath, { recursive: true });
-    }
-  } catch (error) {
-    console.error("Warning: could not wipe the server cache.", error);
   }
 
   async function compileSource(config: DeployConfig, sourceDir: string) {
@@ -225,6 +218,16 @@ async function deploy(config: DeployConfig) {
       "Warning: deployment succeeded, but Cloudflare cache purge failed.",
       error,
     );
+  }
+}
+
+async function wipeServerCache(config: DeployConfig) {
+  try {
+    if (await exists(config.serverCachePath)) {
+      await Deno.remove(config.serverCachePath, { recursive: true });
+    }
+  } catch (error) {
+    console.error("Warning: could not wipe the server cache.", error);
   }
 }
 
