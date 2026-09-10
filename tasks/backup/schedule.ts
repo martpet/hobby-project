@@ -1,6 +1,7 @@
 import { exists } from "@std/fs";
 import { join } from "@std/path";
 import { loadEnvFile } from "../utils/env-file.ts";
+import { parseBackupTimestamp } from "./retention.ts";
 import { run } from "../utils/run.ts";
 
 // Installs a per-user LaunchAgent that runs `deno task backup prod` daily.
@@ -13,6 +14,9 @@ import { run } from "../utils/run.ts";
 
 const LABEL = "com.hobproj.backup";
 const DEFAULT_HOUR = 12;
+// Two daily runs may be missed while the Mac is asleep without anything
+// being wrong, so only warn past that.
+const STALE_AFTER_HOURS = 48;
 
 const action = Deno.args[0] ?? "install";
 if (action !== "install" && action !== "uninstall" && action !== "status") {
@@ -101,6 +105,56 @@ async function reportStatus(): Promise<void> {
   });
   console.log(code === 0 ? "Status: loaded" : "Status: not loaded");
   console.log(`Log:   ${logPath}`);
+  await reportLastBackup();
+}
+
+// A failing run only writes to the log, which nobody reads. The age of the
+// newest prod backup is the outcome that actually matters, so report it here
+// and warn once it is older than the schedule can explain.
+async function reportLastBackup(): Promise<void> {
+  const backupEnv = await loadEnvFile("./tasks/backup/.env.backup");
+  const backupRoot = Deno.env.get("BACKUP_LOCAL_PATH") ??
+    backupEnv["BACKUP_LOCAL_PATH"];
+  if (!backupRoot) {
+    return;
+  }
+
+  const prodRoot = join(backupRoot, "prod");
+  let newest: Date | undefined;
+  try {
+    for await (const entry of Deno.readDir(prodRoot)) {
+      if (!entry.isDirectory || entry.name.endsWith(".tmp")) {
+        continue;
+      }
+      const date = parseBackupTimestamp(entry.name);
+      if (date && (!newest || date > newest)) {
+        newest = date;
+      }
+    }
+  } catch {
+    // Listing needs Full Disk Access, which `install` already warns about.
+    console.log("Last backup: unknown (cannot list the backup folder)");
+    return;
+  }
+
+  if (!newest) {
+    console.log("Last backup: none found");
+    console.warn(`⚠️  No prod backup exists yet in ${prodRoot}.`);
+    return;
+  }
+
+  const ageHours = (Date.now() - newest.getTime()) / 3_600_000;
+  console.log(
+    `Last backup: ${newest.toISOString()} (${Math.floor(ageHours)}h ago)`,
+  );
+  if (ageHours > STALE_AFTER_HOURS) {
+    console.warn(
+      `⚠️  The newest prod backup is over ${
+        Math.floor(STALE_AFTER_HOURS / 24)
+      } days old, so recent runs are likely failing.`,
+    );
+    console.warn(`⚠️  Check ${logPath} for the reason.`);
+  }
 }
 
 // The agent inherits a minimal PATH from launchd, so `deno` is passed by
