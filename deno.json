@@ -2,7 +2,7 @@
   "tasks": {
     "dev": "deno --allow-all --env-file --watch src/main.ts",
     "check": {
-      "command": "deno check src/main.ts tasks/backup/task.ts tasks/backup/restore.ts tasks/deploy/task.ts tasks/deploy/publish-deployer.ts tasks/deploy/deployer.ts tasks/deploy/logs.ts tasks/setup-remote/task.ts tasks/setup-remote/publish-installer.ts tasks/setup-remote/installer.ts",
+      "command": "deno check '**/*.ts' '**/*.tsx'",
       "dependencies": ["format", "lint"]
     },
     "format": "deno fmt --check '**/*.ts' '**/*.tsx'",
