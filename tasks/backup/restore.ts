@@ -1,6 +1,6 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { dirname, join } from "@std/path";
-import { applyEnv, loadEnvFile } from "../utils/env-file.ts";
+import { loadBackupEnv } from "./load-env.ts";
 import { resolveEncryptionPassword } from "./password.ts";
 import { run } from "../utils/run.ts";
 
@@ -9,16 +9,7 @@ if (encryptedArchive === undefined) {
   throw new Error("Usage: deno task restore <database.tar.gz.enc>.");
 }
 
-const tasksEnv = await loadEnvFile("./tasks/.env.tasks");
-const backupEnv = await loadEnvFile("./tasks/backup/.env.backup");
-applyEnv(tasksEnv);
-applyEnv(
-  Object.fromEntries(
-    Object.entries(backupEnv).filter(([key, value]) =>
-      value !== "" && Deno.env.get(key) === undefined
-    ),
-  ),
-);
+await loadBackupEnv();
 
 const password = await resolveEncryptionPassword();
 const targetRoot = getRequiredEnv("RESTORE_TARGET_PATH");

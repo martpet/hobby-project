@@ -1,7 +1,7 @@
 import { getRequiredEnv } from "@shared/environment.ts";
 import { exists } from "@std/fs";
 import { dirname, join } from "@std/path";
-import { applyEnv, loadEnvFile } from "../utils/env-file.ts";
+import { loadBackupEnv } from "./load-env.ts";
 import { resolveEncryptionPassword } from "./password.ts";
 import { DEFAULT_RETENTION, selectExpiredBackups } from "./retention.ts";
 import { run } from "../utils/run.ts";
@@ -21,10 +21,7 @@ if (envName !== "staging" && envName !== "prod") {
   throw new Error("Usage: deno task backup <staging|prod>.");
 }
 
-const tasksEnv = await loadEnvFile("./tasks/.env.tasks");
-const backupEnv = await loadEnvFile("./tasks/backup/.env.backup");
-applyEnv(tasksEnv);
-applyBackupEnv(backupEnv);
+await loadBackupEnv();
 
 const remoteHost = getRequiredEnv("REMOTE_HOST");
 const backupRoot = getRequiredEnv("BACKUP_LOCAL_PATH");
@@ -201,15 +198,5 @@ async function pruneExpiredBackups(envRoot: string): Promise<void> {
     `✅ Retention: kept ${names.length - expired.length} backup(s) ` +
       `(${DEFAULT_RETENTION.daily} daily, ${DEFAULT_RETENTION.weekly} weekly, ` +
       `${DEFAULT_RETENTION.monthly} monthly).`,
-  );
-}
-
-function applyBackupEnv(env: Record<string, string>): void {
-  applyEnv(
-    Object.fromEntries(
-      Object.entries(env).filter(([key, value]) =>
-        value !== "" && Deno.env.get(key) === undefined
-      ),
-    ),
   );
 }
