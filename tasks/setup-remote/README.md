@@ -158,3 +158,49 @@ To let another developer deploy to staging and/or prod:
 They don't need any of the 5 provider secrets locally — those stay on the
 Pi. Their laptop only needs the usual local deploy config (`tasks/.env.tasks`,
 `tasks/deploy/.env.deploy`) and SSH access to deploy.
+
+## Permissions
+
+There are two separate permission levels on the Pi:
+
+### Server administrators
+
+The user running these provisioning tasks needs SSH access and passwordless
+administrator `sudo`:
+
+```sh
+sudo -n true
+```
+
+That is required for:
+
+```sh
+deno task set-secret <name>
+deno task publish-installer
+deno task publish-deployer staging
+deno task publish-deployer prod
+deno task setup-remote
+```
+
+These tasks install root-owned binaries and configuration, create systemd
+units, manage packages and users, and write sudoers rules. This administrator
+access is configured on the Pi outside this repository; `setup-remote` does not
+grant it.
+
+### Deploy-only developers
+
+Users listed in `DEPLOY_STAGING_USERS` and/or `DEPLOY_PROD_USERS` do not get
+general administrator access. The installer adds them to narrowly-scoped
+deploy groups that can invoke only the corresponding administrator-owned
+deployer binary:
+
+```sh
+deno task deploy staging
+deno task deploy prod
+```
+
+Being in `DEPLOY_STAGING_USERS` permits staging deploys; being in
+`DEPLOY_PROD_USERS` permits production deploys. These users cannot publish
+binaries, run `setup-remote`, change server configuration, or manage the
+systemd-creds secrets unless they are separately granted administrator `sudo`
+access on the Pi.
