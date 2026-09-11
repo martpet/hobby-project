@@ -14,7 +14,7 @@ export function LogInButton(
   c.head.modules.add("login-button");
 
   return (
-    <button disabled class="login-button loading" {...attr}>
+    <button class="login-button" {...attr}>
       {children || "Sign in"}
     </button>
   );
