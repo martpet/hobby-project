@@ -22,7 +22,11 @@ export function setSessionCookie(
     // `Lax` (not `Strict`) so a user following a link to the site from
     // elsewhere arrives logged in. CSRF is covered by `csrfMid`, not by this.
     sameSite: "Lax",
-    maxAge: duration / SECOND,
+    // `@std/http`'s setCookie silently drops `Max-Age` (no `Expires`
+    // fallback) unless it's a whole number, so this must be floored: caller
+    // durations come from timestamp arithmetic and are essentially never an
+    // exact multiple of `SECOND`.
+    maxAge: Math.floor(duration / SECOND),
     ...COOKIE_ATTRIBUTES,
   });
 
