@@ -1,10 +1,10 @@
-import { GIT_SHA, IS_DEV } from "@shared/const.ts";
+import { DEPLOYMENT_ID, IS_DEV } from "@shared/const.ts";
 import { ScriptKey, SCRIPTS_REGISTRY } from "@shared/asset/registry.ts";
 
-export const ASSET_VERSION = GIT_SHA;
+export const ASSET_VERSION = DEPLOYMENT_ID;
 export const VERSION_PARAM = "v";
 
-// Cache-busting via `?v=<git sha>`; `handleAsset` marks such requests
+// Cache-busting via `?v=<deployment id>`; `handleAsset` marks such requests
 // immutable for a year. Without a SHA (local dev) paths are left bare, except
 // for the dev-only bust below.
 //

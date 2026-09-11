@@ -847,7 +847,7 @@ async function ensureSystemdAppUnits(config: Config): Promise<StepResult[]> {
         // cache.
         `Environment=APP_PORT=${ports[env][color]}`,
         `Environment=HOME=${colorHome}`,
-        `EnvironmentFile=${colorPath}/.git-sha`,
+        `EnvironmentFile=${colorPath}/.deployment-id`,
         "Restart=always",
         "RestartSec=5s",
         // Give the graceful-shutdown SIGTERM handler in main.ts real time

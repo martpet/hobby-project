@@ -61,6 +61,15 @@ deno task deploy staging
 deno task deploy prod
 ```
 
+Each deployment gets a `DEPLOYMENT_ID`, which is the version identity used for
+health checks, asset cache-busting, and the server-cache namespace. A clean
+working tree uses the short Git revision. Staging deployments may include
+uncommitted source changes; those deployments receive a timestamped
+`<git-revision>-dirty-<utc-timestamp>` ID so browsers and the server cache do
+not reuse the previous version's assets or responses. Production deployments
+require a clean working tree, keeping the deployed version directly
+traceable to a committed revision.
+
 The order of the two blocks above matters:
 
 - The secrets must exist before `setup-remote` runs, because `installer.ts`'s

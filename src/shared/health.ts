@@ -1,4 +1,4 @@
-import { GIT_SHA } from "@shared/const.ts";
+import { DEPLOYMENT_ID } from "@shared/const.ts";
 import { Context } from "@shared/context.ts";
 import { cacheNoStore } from "@shared/header/cache-control.ts";
 import { respondForbidden } from "@shared/responses/forbidden.tsx";
@@ -11,7 +11,7 @@ export function handleHealth(c: Context) {
   if (!LOOPBACK_ADDRESSES.has(c.ip)) {
     return respondForbidden(c);
   }
-  const res = Response.json({ gitSha: GIT_SHA ?? null });
+  const res = Response.json({ deploymentId: DEPLOYMENT_ID ?? null });
   cacheNoStore(res.headers);
 
   return res;

@@ -17,13 +17,13 @@ interface ColorConfig {
   readonly port: string;
   readonly binary: string;
   readonly binaryTemp: string;
-  readonly gitShaEnvPath: string;
+  readonly deploymentIdEnvPath: string;
   readonly serverCachePath: string;
   readonly allowNet: string;
 }
 
 interface DeployConfig {
-  readonly gitSha: string;
+  readonly deploymentId: string;
   readonly envName: EnvName;
   readonly remoteUploadPath: string;
   readonly remoteSourceArchive: string;
@@ -45,8 +45,8 @@ const sudoPath = "/usr/bin/sudo";
 const systemctlPath = "/usr/bin/systemctl";
 
 try {
-  const gitSha = Deno.args[0];
-  const config = await loadConfig(gitSha);
+  const deploymentId = Deno.args[0];
+  const config = await loadConfig(deploymentId);
   validateConfig(config);
 
   await deploy(config);
@@ -59,9 +59,11 @@ function otherColor(color: Color): Color {
   return color === "blue" ? "green" : "blue";
 }
 
-async function loadConfig(gitSha: string | undefined): Promise<DeployConfig> {
-  if (gitSha === undefined) {
-    throw new Error("Missing git SHA.");
+async function loadConfig(
+  deploymentId: string | undefined,
+): Promise<DeployConfig> {
+  if (deploymentId === undefined) {
+    throw new Error("Missing deployment ID.");
   }
 
   const remotePath = dirname(Deno.execPath());
@@ -84,7 +86,7 @@ async function loadConfig(gitSha: string | undefined): Promise<DeployConfig> {
       port,
       binary,
       binaryTemp: `${binary}.tmp`,
-      gitShaEnvPath: join(colorPath, ".git-sha"),
+      deploymentIdEnvPath: join(colorPath, ".deployment-id"),
       serverCachePath: getEnvValue(
         env,
         `SERVER_CACHE_PATH_${color.toUpperCase()}`,
@@ -94,10 +96,13 @@ async function loadConfig(gitSha: string | undefined): Promise<DeployConfig> {
   }
 
   return {
-    gitSha,
+    deploymentId,
     envName,
     remoteUploadPath,
-    remoteSourceArchive: join(remoteUploadPath, `source-${gitSha}.tar.gz`),
+    remoteSourceArchive: join(
+      remoteUploadPath,
+      `source-${deploymentId}.tar.gz`,
+    ),
     activeColorFile: getAbsoluteEnvPath(env, "ACTIVE_COLOR_FILE"),
     caddySnippetFile: getAbsoluteEnvPath(env, "CADDY_SNIPPET_FILE"),
     keepIdleRunning: parseBooleanEnvValue(env.KEEP_IDLE_RUNNING),
@@ -153,8 +158,8 @@ async function deploy(config: DeployConfig) {
     await Deno.rename(idle.binaryTemp, idle.binary);
 
     await Deno.writeTextFile(
-      idle.gitShaEnvPath,
-      `GIT_SHA=${config.gitSha}\n`,
+      idle.deploymentIdEnvPath,
+      `DEPLOYMENT_ID=${config.deploymentId}\n`,
     );
 
     await wipeServerCache(idle.serverCachePath);
@@ -167,7 +172,7 @@ async function deploy(config: DeployConfig) {
     }
 
     await ensureServiceActive(idle.service);
-    await ensureHealthy(idle, config.gitSha);
+    await ensureHealthy(idle, config.deploymentId);
 
     // The idle color is now healthy and serving nothing yet; only past
     // this point does live traffic move, so a failure above never touches
@@ -330,12 +335,12 @@ async function ensureServiceActive(remoteService: string) {
   throw new Error(`Service '${remoteService}' is not running.`);
 }
 
-async function ensureHealthy(idle: ColorConfig, gitSha: string) {
+async function ensureHealthy(idle: ColorConfig, deploymentId: string) {
   try {
     await checkHealth({
       service: idle.service,
       port: idle.port,
-      expectedGitSha: gitSha,
+      expectedDeploymentId: deploymentId,
     });
   } catch (error) {
     console.error(error);
@@ -356,13 +361,13 @@ function validateConfig(config: unknown): asserts config is DeployConfig {
     throw new Error("Deployment config must be an object.");
   }
 
-  const gitSha = getConfigValue(config, "gitSha");
+  const deploymentId = getConfigValue(config, "deploymentId");
   const remoteUploadPath = getConfigValue(config, "remoteUploadPath");
   const remoteSourceArchive = getConfigValue(config, "remoteSourceArchive");
 
   for (
     const [key, value] of Object.entries({
-      gitSha,
+      deploymentId,
       envName: getConfigValue(config, "envName"),
       remoteUploadPath,
       remoteSourceArchive,
@@ -376,9 +381,9 @@ function validateConfig(config: unknown): asserts config is DeployConfig {
     }
   }
 
-  if (!/^[0-9a-f]{7,40}$/.test(gitSha)) {
+  if (!/^[0-9a-f]{7,40}(?:-dirty-[0-9]{8}T[0-9]{9}Z)?$/.test(deploymentId)) {
     throw new Error(
-      "gitSha must be a 7-40 character lowercase hexadecimal SHA.",
+      "deploymentId must be a Git SHA or a dirty staging ID with a UTC timestamp.",
     );
   }
 
@@ -402,9 +407,9 @@ function validateConfig(config: unknown): asserts config is DeployConfig {
         port,
         binary,
         binaryTemp,
-        gitShaEnvPath: getColorConfigValue(
+        deploymentIdEnvPath: getColorConfigValue(
           colorConfig,
-          "gitShaEnvPath",
+          "deploymentIdEnvPath",
           color,
         ),
         serverCachePath: getColorConfigValue(

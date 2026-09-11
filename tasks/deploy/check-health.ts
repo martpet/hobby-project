@@ -3,14 +3,14 @@ import { delay } from "@std/async";
 interface HealthCheckOptions {
   readonly service: string;
   readonly port: string;
-  readonly expectedGitSha: string;
+  readonly expectedDeploymentId: string;
   readonly attempts?: number;
 }
 
 export async function checkHealth({
   service,
   port,
-  expectedGitSha,
+  expectedDeploymentId,
   // The check starts right after `deno compile` has saturated the Pi's CPU
   // and flushed a ~110MB binary to disk, so the first start of a fresh
   // binary is far slower than a warm one (~4.7s cold vs ~1.7s warm when
@@ -27,7 +27,10 @@ export async function checkHealth({
       });
       const health = await response.text();
 
-      if (response.ok && health === `{"gitSha":"${expectedGitSha}"}`) {
+      if (
+        response.ok &&
+        health === `{"deploymentId":"${expectedDeploymentId}"}`
+      ) {
         return;
       }
     } catch {
@@ -41,6 +44,6 @@ export async function checkHealth({
   }
 
   throw new Error(
-    `Health check failed: expected deployed SHA ${expectedGitSha}.`,
+    `Health check failed: expected deployment ID ${expectedDeploymentId}.`,
   );
 }

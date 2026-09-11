@@ -1,5 +1,5 @@
 import { getSessionCookie } from "@features/sessions/cookie.ts";
-import { GIT_SHA, SERVER_CACHE_ENABLED } from "@shared/const.ts";
+import { DEPLOYMENT_ID, SERVER_CACHE_ENABLED } from "@shared/const.ts";
 import { Middleware } from "@shared/types.ts";
 import { HEADER } from "@std/http/unstable-header";
 import { METHOD } from "@std/http/unstable-method";
@@ -15,8 +15,8 @@ import {
 let serverCache: Cache;
 
 if (SERVER_CACHE_ENABLED) {
-  // One cache per deploy; without a SHA (local runs) one per process start.
-  serverCache = await caches.open(GIT_SHA || new Date().toISOString());
+  // One cache per deploy; without an ID (local runs) one per process start.
+  serverCache = await caches.open(DEPLOYMENT_ID || new Date().toISOString());
 }
 
 // Serves public GET/HEAD responses from a server-side Cache API instance, keyed

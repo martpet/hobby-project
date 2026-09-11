@@ -12,6 +12,7 @@ await run("deno", ["task", "check"]);
 
 const envName = await loadEnv();
 const badge = `[${envName.toUpperCase()}]`;
+const deploymentId = await createDeploymentId(envName);
 const localSourceArchive = `dist/${envName}-source.tar.gz`;
 const remoteDeployer = join(
   remotePaths.deployer,
@@ -21,13 +22,10 @@ const remoteDeployer = join(
 const remoteHost = getRequiredEnv("REMOTE_HOST");
 const ssh = createSsh(remoteHost);
 const scp = createScp(remoteHost);
-const { stdout: gitSha } = await run("git", ["rev-parse", "--short", "HEAD"], {
-  stdout: "piped",
-});
 const remoteUploadPath = join(remotePaths.upload, envName);
 const remoteSourceArchive = join(
   remoteUploadPath,
-  `source-${gitSha}.tar.gz`,
+  `source-${deploymentId}.tar.gz`,
 );
 let uploadedSourceArchive = false;
 
@@ -60,7 +58,7 @@ try {
     "-u",
     "hobproj",
     remoteDeployer,
-    gitSha,
+    deploymentId,
   ]);
 
   console.log(`✅ Deployment to ${badge} completed successfully!`);
@@ -81,4 +79,35 @@ try {
   Deno.exit(1);
 } finally {
   console.timeEnd("✨ Total deployment time");
+}
+
+async function createDeploymentId(
+  envName: "staging" | "prod",
+): Promise<string> {
+  const { stdout: gitSha } = await run(
+    "git",
+    ["rev-parse", "--short", "HEAD"],
+    { stdout: "piped" },
+  );
+  const { stdout: status } = await run(
+    "git",
+    ["status", "--porcelain", "--untracked-files=all"],
+    { stdout: "piped" },
+  );
+
+  if (status === "") {
+    return gitSha;
+  }
+
+  if (envName === "prod") {
+    throw new Error(
+      "Production deployments require a clean working tree. Commit or stash your changes first.",
+    );
+  }
+
+  const timestamp = new Date().toISOString()
+    .replaceAll("-", "")
+    .replaceAll(":", "")
+    .replace(".", "");
+  return `${gitSha}-dirty-${timestamp}`;
 }
