@@ -7,6 +7,9 @@ import { createSsh } from "../utils/ssh.ts";
 import { createScp } from "../utils/scp.ts";
 import { loadEnvFile } from "../utils/env-file.ts";
 
+console.log("🔍 Running task checks...");
+await run("deno", ["task", "check:tasks"]);
+
 const envName = await loadEnv();
 const setupEnv = await loadEnvFile("./tasks/setup-remote/.env.setup");
 const usbMountPath = setupEnv.USB_MOUNT_PATH;

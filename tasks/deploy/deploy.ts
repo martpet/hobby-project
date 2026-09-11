@@ -8,7 +8,7 @@ import { createScp } from "../utils/scp.ts";
 import { createSourceArchive } from "./source-archive.ts";
 
 console.log("🔍 Running local checks...");
-await run("deno", ["task", "check"]);
+await run("deno", ["task", "check:src"]);
 
 const envName = await loadEnv();
 const badge = `[${envName.toUpperCase()}]`;

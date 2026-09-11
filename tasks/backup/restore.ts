@@ -7,7 +7,7 @@ import { run } from "../utils/run.ts";
 
 const encryptedArchive = Deno.args[0];
 if (encryptedArchive === undefined) {
-  throw new Error("Usage: deno task restore <database.tar.gz.enc>.");
+  throw new Error("Usage: deno task restore-db <database.tar.gz.enc>.");
 }
 if (encryptedArchive.endsWith("config.tar.gz.enc")) {
   throw new Error(

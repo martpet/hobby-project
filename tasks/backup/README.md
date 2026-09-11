@@ -18,8 +18,8 @@ reach the iCloud folder.
 ## Run a backup
 
 ```sh
-deno task backup staging
-deno task backup prod
+deno task backup-db staging
+deno task backup-db prod
 deno task backup-config
 ```
 
@@ -111,7 +111,7 @@ Restore reads the password the same way. It restores only to the disposable path
 configured by `RESTORE_TARGET_PATH`:
 
 ```sh
-deno task restore /path/to/database.tar.gz.enc
+deno task restore-db /path/to/database.tar.gz.enc
 ```
 
 It verifies the checksum against the manifest, extracts the database, and runs

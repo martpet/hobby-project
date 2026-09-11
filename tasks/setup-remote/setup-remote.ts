@@ -6,6 +6,9 @@ import { run } from "../utils/run.ts";
 import { createSsh } from "../utils/ssh.ts";
 import { createScp } from "../utils/scp.ts";
 
+console.log("🔍 Running task checks...");
+await run("deno", ["task", "check:tasks"]);
+
 // Local orchestrator for `deno task setup-remote`. Verifies SSH/sudo access,
 // uploads a generated config file, runs the already-installed remote
 // installer interactively over SSH (so confirmation prompts for destructive

@@ -15,7 +15,7 @@ type EnvName = "staging" | "prod";
 // files are handled separately by `deno task backup-config`.
 const envName = Deno.args[0] as EnvName | undefined;
 if (envName !== "staging" && envName !== "prod") {
-  throw new Error("Usage: deno task backup <staging|prod>.");
+  throw new Error("Usage: deno task backup-db <staging|prod>.");
 }
 
 await loadBackupEnv();

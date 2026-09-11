@@ -6,6 +6,9 @@ import { run } from "../utils/run.ts";
 import { createSsh } from "../utils/ssh.ts";
 import { createScp } from "../utils/scp.ts";
 
+console.log("🔍 Running task checks...");
+await run("deno", ["task", "check:tasks"]);
+
 // Compiles the remote setup installer and installs it persistently on the
 // remote host, so `setup-remote` doesn't need to recompile/upload it on
 // every run. Only needs to be re-run when `installer.ts` changes.

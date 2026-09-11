@@ -14,12 +14,17 @@ Built without a heavy framework or single-page application (SPA) architecture.
    ```sh
    cp .env.example .env
    ```
-3. **Install VS Code Extensions (optional):**
+3. **Install Git hooks:**
+   ```sh
+   deno task setup
+   ```
+
+4. **Install VS Code Extensions (optional):**
 
    Open the project in VS Code and accept the prompt to install the recommended
    extensions listed in `.vscode/extensions.json`.
 
-4. **Run the development server:**
+5. **Run the development server:**
    ```sh
    deno task dev
    ```

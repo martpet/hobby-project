@@ -19,7 +19,7 @@ if (encryptedArchive === undefined) {
 }
 if (!encryptedArchive.endsWith("config.tar.gz.enc")) {
   throw new Error(
-    "Expected a config.tar.gz.enc archive. Use `deno task restore` for the " +
+    "Expected a config.tar.gz.enc archive. Use `deno task restore-db` for the " +
       "database.",
   );
 }

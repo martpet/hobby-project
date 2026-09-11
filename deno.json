@@ -1,21 +1,29 @@
 {
   "tasks": {
     "dev": "deno --allow-all --env-file --watch src/main.ts",
-    "check": {
-      "command": "deno check '**/*.ts' '**/*.tsx'",
-      "dependencies": ["format", "lint"]
+    "check:src": {
+      "command": "deno check src/main.ts",
+      "dependencies": ["format:src", "lint:src"]
     },
-    "format": "deno fmt --check '**/*.ts' '**/*.tsx'",
-    "lint": "deno lint src tasks --ignore='src/**/assets'",
+    "check:tasks": {
+      "command": "deno check 'tasks/**/*.ts'",
+      "dependencies": ["format:tasks", "lint:tasks"]
+    },
+    "format:src": "deno fmt --check 'src/**/*.ts' 'src/**/*.tsx'",
+    "format:tasks": "deno fmt --check 'tasks/**/*.ts'",
+    "lint:src": "deno lint src --ignore='src/**/assets'",
+    "lint:tasks": "deno lint tasks",
+    "setup": "deno task hooks:install",
+    "hooks:install": "git config core.hooksPath .githooks",
     "deploy": "deno -A tasks/deploy/deploy.ts",
     "logs": "deno -A tasks/deploy/logs.ts",
     "publish-deployer": "deno -A tasks/deploy/publish-deployer.ts",
     "publish-installer": "deno -A tasks/setup-remote/publish-installer.ts",
     "setup-remote": "deno -A tasks/setup-remote/setup-remote.ts",
     "set-secret": "deno -A tasks/setup-remote/set-secret.ts",
-    "backup": "deno -A tasks/backup/backup.ts",
+    "backup-db": "deno -A tasks/backup/backup.ts",
     "backup-config": "deno -A tasks/backup/backup-config.ts",
-    "restore": "deno -A tasks/backup/restore.ts",
+    "restore-db": "deno -A tasks/backup/restore.ts",
     "restore-config": "deno -A tasks/backup/restore-config.ts",
     "schedule-backup": "deno -A tasks/backup/schedule.ts",
     "get-simplewebauthn": "deno bundle -o src/features/passkeys/assets/simplewebauthn.js jsr:@simplewebauthn/browser@^14.0.0"
