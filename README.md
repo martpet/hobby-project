@@ -16,7 +16,7 @@ Built without a heavy framework or single-page application (SPA) architecture.
    ```
 3. **Install Git hooks:**
    ```sh
-   deno task setup
+   deno task install-hooks
    ```
 
 4. **Install VS Code Extensions (optional):**
