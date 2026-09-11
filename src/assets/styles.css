@@ -1,6 +1,27 @@
-/* @view-transition {
-  navigation: auto;
-} */
+:root {
+  --color-text-danger: orangered;
+  --color-bg-status-info: light-dark(Blue, DarkBlue);
+  --color-bg-status-success: light-dark(Green, DarkGreen);
+  --color-bg-status-warning: light-dark(Peru, SaddleBrown);
+  --color-bg-status-danger: light-dark(Brown, Maroon);
+  /* Replace these duplicate alpha recipes with @function when it is cross-browser. */
+  --color-current-200: color-mix(in srgb, currentColor 20%, transparent);
+  --color-button-current-200: color-mix(in srgb, ButtonText 20%, transparent);
+  --shadow-raised: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flash-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5em);
+  }
+}
 
 *,
 *::before,
@@ -11,7 +32,7 @@
 noscript {
   display: block;
   margin-block: 1rem;
-  color: red;
+  color: var(--color-text-danger);
 }
 
 table {
@@ -29,7 +50,7 @@ th {
 td,
 th {
   padding: 0.5em;
-  border: 1px solid light-dark(LightGrey, DimGrey);
+  border: 1px solid var(--color-current-200);
 }
 
 label {
@@ -39,7 +60,7 @@ label {
 
 button {
   &.danger {
-    color: orangered;
+    color: var(--color-text-danger);
   }
   &.loading {
     display: inline-flex;
@@ -50,7 +71,7 @@ button {
       display: inline-block;
       width: 0.9em;
       height: 0.9em;
-      border: 2px solid color-mix(in srgb, ButtonText 20%, transparent);
+      border: 2px solid var(--color-button-current-200);
       border-top-color: ButtonText;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -100,9 +121,7 @@ dialog {
     max-width: min(50em, 100%);
     margin: 0;
     border: none;
-    box-shadow:
-      0 4px 6px -1px rgb(0 0 0 / 0.1),
-      0 2px 4px -2px rgb(0 0 0 / 0.1);
+    box-shadow: var(--shadow-raised);
     animation: flash-in 0.2s ease-out;
     pointer-events: auto;
     &:not(:open) {
@@ -128,46 +147,33 @@ dialog {
       align-items: center;
       justify-content: center;
       font: 700 0.9em system-ui;
-      background: color-mix(in srgb, white 20%, transparent);
+      background: var(--color-current-200);
       border-radius: 50%;
     }
     &.info {
-      background: light-dark(Blue, DarkBlue);
+      background: var(--color-bg-status-info);
       &::before {
         font-style: italic;
         content: "i";
       }
     }
     &.success {
-      background: light-dark(Green, DarkGreen);
+      background: var(--color-bg-status-success);
       &::before {
         content: "✓";
       }
     }
     &.warning {
-      background: light-dark(Peru, SaddleBrown);
+      background: var(--color-bg-status-warning);
       &::before {
         content: "!";
       }
     }
     &.danger {
-      background: light-dark(Brown, Maroon);
+      background: var(--color-bg-status-danger);
       &::before {
         content: "✕";
       }
     }
-  }
-}
-
-@keyframes spin {
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes flash-in {
-  from {
-    opacity: 0;
-    transform: translateY(-0.5em);
   }
 }
