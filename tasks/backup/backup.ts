@@ -6,6 +6,8 @@ import { fileSha256 } from "./checksum.ts";
 import { resolveEncryptionPassword } from "./password.ts";
 import { pruneExpiredBackups } from "./prune.ts";
 import { run } from "../utils/run.ts";
+import { createSsh } from "../utils/ssh.ts";
+import { createScp } from "../utils/scp.ts";
 
 type EnvName = "staging" | "prod";
 
@@ -19,6 +21,8 @@ if (envName !== "staging" && envName !== "prod") {
 await loadBackupEnv();
 
 const remoteHost = getRequiredEnv("REMOTE_HOST");
+const ssh = createSsh(remoteHost);
+const scp = createScp(remoteHost);
 const backupRoot = getRequiredEnv("BACKUP_LOCAL_PATH");
 const encryptionPassword = await resolveEncryptionPassword();
 const timestamp = new Date().toISOString().replaceAll(":", "-");
@@ -36,16 +40,14 @@ try {
   // SQLite's online backup creates a consistent snapshot without stopping the
   // application. Validate it before transferring the archive to the laptop.
   console.log(`Creating an online SQLite snapshot for ${envName}...`);
-  await run("ssh", [
-    remoteHost,
+  await ssh([
     "sudo",
     "sqlite3",
     `${dbPath}/kv.sqlite`,
   ], {
     input: `.backup ${remoteSnapshot}\n`,
   });
-  await run("ssh", [
-    remoteHost,
+  await ssh([
     "sudo",
     "sqlite3",
     remoteSnapshot,
@@ -53,9 +55,7 @@ try {
     input: "PRAGMA integrity_check;\n",
     stdout: "piped",
   });
-  await run("ssh", [
-    "-n",
-    remoteHost,
+  await ssh([
     "sudo",
     "tar",
     "--ignore-failed-read",
@@ -65,8 +65,8 @@ try {
     "/tmp",
     remoteSnapshot.split("/").at(-1)!,
   ]);
-  await run("ssh", ["-n", remoteHost, "sudo", "chmod", "0644", remoteArchive]);
-  await run("scp", [`${remoteHost}:${remoteArchive}`, localArchive]);
+  await ssh(["sudo", "chmod", "0644", remoteArchive]);
+  await scp.download(remoteArchive, localArchive);
 
   // Record the checksum and metadata beside the encrypted archive so restore
   // can verify that the downloaded snapshot was not changed or truncated.
@@ -111,9 +111,8 @@ try {
 } finally {
   // Remote snapshots and local temporary files are disposable, even when a
   // transfer, encryption, or validation step fails.
-  await run(
-    "ssh",
-    ["-n", remoteHost, "sudo", "rm", "-f", remoteArchive, remoteSnapshot],
+  await ssh(
+    ["sudo", "rm", "-f", remoteArchive, remoteSnapshot],
     { check: false },
   );
   if (await exists(tempDir)) {

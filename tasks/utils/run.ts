@@ -1,4 +1,4 @@
-interface RunOptions {
+export interface RunOptions {
   readonly check?: boolean;
   readonly cwd?: string;
   readonly env?: Record<string, string>;
@@ -8,7 +8,7 @@ interface RunOptions {
   readonly stderr?: "inherit" | "null";
 }
 
-interface RunResult {
+export interface RunResult {
   readonly code: number;
   readonly stdout: string;
 }

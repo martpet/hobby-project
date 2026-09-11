@@ -3,6 +3,8 @@ import { join } from "@std/path";
 import { loadSetupEnv } from "./load-env.ts";
 import { remotePaths } from "../utils/remote-paths.ts";
 import { run } from "../utils/run.ts";
+import { createSsh } from "../utils/ssh.ts";
+import { createScp } from "../utils/scp.ts";
 
 // Compiles the remote setup installer and installs it persistently on the
 // remote host, so `setup-remote` doesn't need to recompile/upload it on
@@ -10,6 +12,8 @@ import { run } from "../utils/run.ts";
 await loadSetupEnv();
 
 const remoteHost = getRequiredEnv("REMOTE_HOST");
+const ssh = createSsh(remoteHost);
+const scp = createScp(remoteHost);
 const compileTarget = getRequiredEnv("COMPILE_TARGET");
 const remoteInstaller = join(remotePaths.installer, "installer");
 const localInstaller = "dist/setup-remote-installer";
@@ -31,10 +35,8 @@ try {
   console.log(
     `📦 Installing remote setup installer to "${remoteHost}:${remoteInstaller}"...`,
   );
-  await run("scp", [localInstaller, `${remoteHost}:${remoteTempInstaller}`]);
-  await run("ssh", [
-    "-n",
-    remoteHost,
+  await scp.upload(localInstaller, remoteTempInstaller);
+  await ssh([
     "sudo",
     "mkdir",
     "-p",
@@ -58,7 +60,7 @@ try {
   console.error("❌ Remote setup installer installation failed!", error);
   failed = true;
 } finally {
-  await run("ssh", ["-n", remoteHost, "rm", "-f", remoteTempInstaller], {
+  await ssh(["rm", "-f", remoteTempInstaller], {
     check: false,
   });
 }

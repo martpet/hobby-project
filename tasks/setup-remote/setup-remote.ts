@@ -3,6 +3,8 @@ import { join } from "@std/path";
 import { loadSetupEnv } from "./load-env.ts";
 import { remotePaths } from "../utils/remote-paths.ts";
 import { run } from "../utils/run.ts";
+import { createSsh } from "../utils/ssh.ts";
+import { createScp } from "../utils/scp.ts";
 
 // Local orchestrator for `deno task setup-remote`. Verifies SSH/sudo access,
 // uploads a generated config file, runs the already-installed remote
@@ -13,6 +15,8 @@ import { run } from "../utils/run.ts";
 await loadSetupEnv();
 
 const remoteHost = getRequiredEnv("REMOTE_HOST");
+const ssh = createSsh(remoteHost);
+const scp = createScp(remoteHost);
 const remoteInstaller = join(
   remotePaths.installer,
   "installer",
@@ -49,11 +53,10 @@ let uploadedConfig = false;
 console.log(
   `🔐 Verifying SSH connectivity and passwordless sudo on "${remoteHost}"...`,
 );
-await run("ssh", ["-n", remoteHost, "sudo", "-n", "true"]);
+await ssh(["sudo", "-n", "true"]);
 
-const { code: installerExists } = await run(
-  "ssh",
-  ["-n", remoteHost, "sudo", "test", "-x", remoteInstaller],
+const { code: installerExists } = await ssh(
+  ["sudo", "test", "-x", remoteInstaller],
   { check: false },
 );
 if (installerExists !== 0) {
@@ -77,13 +80,13 @@ try {
   await Deno.writeTextFile(localConfigTemp, configContent);
 
   console.log(`📦 Uploading config to "${remoteHost}"...`);
-  await run("scp", [localConfigTemp, `${remoteHost}:${remoteConfigTemp}`]);
+  await scp.upload(localConfigTemp, remoteConfigTemp);
   uploadedConfig = true;
 
   console.log(
     "⚙️  Running remote setup (interactive; you may be prompted)...\n",
   );
-  await run("ssh", ["-t", remoteHost, "sudo", remoteInstaller]);
+  await ssh(["sudo", remoteInstaller], { tty: true });
 
   console.log("\n📦 Installing deployer binaries...");
   await run("deno", ["task", "publish-deployer", "staging"]);
@@ -94,11 +97,7 @@ try {
   );
 } finally {
   if (uploadedConfig) {
-    await run(
-      "ssh",
-      ["-n", remoteHost, "rm", "-f", remoteConfigTemp],
-      { check: false },
-    );
+    await ssh(["rm", "-f", remoteConfigTemp], { check: false });
   }
   await Deno.remove(localConfigTemp, { recursive: true }).catch(() => {});
 }

@@ -3,6 +3,8 @@ import { join } from "@std/path";
 import { loadEnv } from "./load-env.ts";
 import { remotePaths } from "../utils/remote-paths.ts";
 import { run } from "../utils/run.ts";
+import { createSsh } from "../utils/ssh.ts";
+import { createScp } from "../utils/scp.ts";
 import { createSourceArchive } from "./source-archive.ts";
 
 console.log("🔍 Running local checks...");
@@ -17,6 +19,8 @@ const remoteDeployer = join(
   "deployer",
 );
 const remoteHost = getRequiredEnv("REMOTE_HOST");
+const ssh = createSsh(remoteHost);
+const scp = createScp(remoteHost);
 const { stdout: gitSha } = await run("git", ["rev-parse", "--short", "HEAD"], {
   stdout: "piped",
 });
@@ -38,10 +42,7 @@ try {
     `📦 Copying "${localSourceArchive}" to "${remoteHost}:${remoteSourceArchive}"...`,
   );
 
-  await run("scp", [
-    localSourceArchive,
-    `${remoteHost}:${remoteSourceArchive}`,
-  ]);
+  await scp.upload(localSourceArchive, remoteSourceArchive);
   uploadedSourceArchive = true;
 
   console.log(
@@ -50,9 +51,7 @@ try {
 
   // The fixed sudoers command lets environment-specific deploy groups run the
   // administrator-owned deployer as `hobproj`, but not replace it.
-  await run("ssh", [
-    "-n",
-    remoteHost,
+  await ssh([
     "cd",
     remoteUploadPath,
     "&&",
@@ -70,7 +69,7 @@ try {
 
   if (uploadedSourceArchive) {
     try {
-      await run("ssh", ["-n", remoteHost, "rm", "-f", remoteSourceArchive]);
+      await ssh(["rm", "-f", remoteSourceArchive]);
     } catch (cleanupError) {
       console.error(
         `Warning: could not remove ${remoteHost}:${remoteSourceArchive}.`,

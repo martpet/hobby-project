@@ -2,7 +2,7 @@ import { getRequiredEnv } from "@shared/environment.ts";
 import { loadSetupEnv } from "./load-env.ts";
 import { credentialPath, SECRET_STORE_DIR, SECRETS } from "./secrets.ts";
 import { promptSecret } from "../utils/prompt-secret.ts";
-import { run } from "../utils/run.ts";
+import { createSsh } from "../utils/ssh.ts";
 
 // Sets or rotates one of the 5 provider-issued secrets (Cloudflare, MaxMind)
 // used during remote setup and deploy. The value never touches a local file
@@ -35,11 +35,12 @@ if (secret === undefined) {
 }
 
 const remoteHost = getRequiredEnv("REMOTE_HOST");
+const ssh = createSsh(remoteHost);
 
 console.log(
   `🔐 Verifying SSH connectivity and passwordless sudo on "${remoteHost}"...`,
 );
-await run("ssh", ["-n", remoteHost, "sudo", "-n", "true"]);
+await ssh(["sudo", "-n", "true"]);
 
 const value = await promptSecret(`Enter the ${secret.label}`);
 if (value === "") {
@@ -50,17 +51,13 @@ const path = credentialPath(secret.name);
 const tempPath = `${path}.tmp`;
 
 console.log(`🔒 Encrypting and storing "${secret.label}" on ${remoteHost}...`);
-await run("ssh", [
-  "-n",
-  remoteHost,
+await ssh([
   "sudo",
   "mkdir",
   "-p",
   SECRET_STORE_DIR,
 ]);
-await run("ssh", [
-  "-n",
-  remoteHost,
+await ssh([
   "sudo",
   "chmod",
   "0700",
@@ -68,8 +65,7 @@ await run("ssh", [
 ]);
 // Piped over the same SSH connection's stdin; the value is never written to
 // a file on this laptop and never appears in `ps` on either machine.
-await run("ssh", [
-  remoteHost,
+await ssh([
   "sudo",
   "systemd-creds",
   "encrypt",
@@ -77,20 +73,19 @@ await run("ssh", [
   "-",
   tempPath,
 ], { input: value });
-await run("ssh", ["-n", remoteHost, "sudo", "chmod", "0600", tempPath]);
-await run("ssh", ["-n", remoteHost, "sudo", "mv", "-f", tempPath, path]);
+await ssh(["sudo", "chmod", "0600", tempPath]);
+await ssh(["sudo", "mv", "-f", tempPath, path]);
 
 console.log(`✅ Stored "${secret.label}" at ${path} on ${remoteHost}.`);
 
 const unit = RESTART_UNIT_AFTER[secret.name];
 if (unit !== undefined) {
-  const { code } = await run(
-    "ssh",
-    ["-n", remoteHost, "sudo", "systemctl", "is-enabled", unit],
+  const { code } = await ssh(
+    ["sudo", "systemctl", "is-enabled", unit],
     { check: false, stdout: "piped", stderr: "null" },
   );
   if (code === 0) {
     console.log(`🔄 Restarting ${unit} to pick up the new value...`);
-    await run("ssh", ["-n", remoteHost, "sudo", "systemctl", "restart", unit]);
+    await ssh(["sudo", "systemctl", "restart", unit]);
   }
 }

@@ -3,6 +3,8 @@ import { join } from "@std/path";
 import { loadEnv } from "./load-env.ts";
 import { remotePaths } from "../utils/remote-paths.ts";
 import { run } from "../utils/run.ts";
+import { createSsh } from "../utils/ssh.ts";
+import { createScp } from "../utils/scp.ts";
 import { loadEnvFile } from "../utils/env-file.ts";
 
 const envName = await loadEnv();
@@ -31,6 +33,8 @@ const remoteUploadPath = join(remoteUploadRoot, envName);
 const remoteEtcEnvPath = join(remoteEtcRoot, envName);
 const remoteTempDeployer = `deployer-${envName}.tmp`;
 const remoteHost = getRequiredEnv("REMOTE_HOST");
+const ssh = createSsh(remoteHost);
+const scp = createScp(remoteHost);
 const compileTarget = getRequiredEnv("COMPILE_TARGET");
 const bluePort = getRequiredEnv(`${envName.toUpperCase()}_BLUE_PORT`);
 const greenPort = getRequiredEnv(`${envName.toUpperCase()}_GREEN_PORT`);
@@ -57,13 +61,8 @@ try {
   console.log(
     `📦 Installing remote deployer to "${remoteHost}:${remoteDeployer}"...`,
   );
-  await run("scp", [
-    localRemoteDeployer,
-    `${remoteHost}:${remoteTempDeployer}`,
-  ]);
-  await run("ssh", [
-    "-n",
-    remoteHost,
+  await scp.upload(localRemoteDeployer, remoteTempDeployer);
+  await ssh([
     "sudo",
     "install",
     "-o",
@@ -86,7 +85,7 @@ try {
   console.error("❌ Remote deployer installation failed!", error);
   failed = true;
 } finally {
-  await run("ssh", ["-n", remoteHost, "rm", "-f", remoteTempDeployer], {
+  await ssh(["rm", "-f", remoteTempDeployer], {
     check: false,
   });
 }
