@@ -8,6 +8,7 @@
 import { run } from "../utils/run.ts";
 import { remotePaths, STATE_ROOT } from "../utils/remote-paths.ts";
 import { credentialPath, SECRETS } from "./secrets.ts";
+import { parseBooleanEnvValue } from "@shared/environment.ts";
 
 interface Config {
   readonly usbLabel: string;
@@ -21,8 +22,8 @@ interface Config {
   readonly stagingGreenPort: string;
   readonly prodBluePort: string;
   readonly prodGreenPort: string;
-  readonly stagingKeepIdleRunning: string;
-  readonly prodKeepIdleRunning: string;
+  readonly stagingKeepIdleRunning: boolean;
+  readonly prodKeepIdleRunning: boolean;
   readonly stagingAppOrigin: string;
   readonly prodAppOrigin: string;
   readonly persistentDataRoot: string;
@@ -133,8 +134,10 @@ async function loadConfig(): Promise<Config> {
     stagingGreenPort: required("STAGING_GREEN_PORT"),
     prodBluePort: required("PROD_BLUE_PORT"),
     prodGreenPort: required("PROD_GREEN_PORT"),
-    stagingKeepIdleRunning: (env.STAGING_KEEP_IDLE_RUNNING ?? "false").trim(),
-    prodKeepIdleRunning: (env.PROD_KEEP_IDLE_RUNNING ?? "false").trim(),
+    stagingKeepIdleRunning: parseBooleanEnvValue(
+      env.STAGING_KEEP_IDLE_RUNNING,
+    ),
+    prodKeepIdleRunning: parseBooleanEnvValue(env.PROD_KEEP_IDLE_RUNNING),
     stagingAppOrigin: required("STAGING_APP_ORIGIN"),
     prodAppOrigin: required("PROD_APP_ORIGIN"),
     persistentDataRoot: required("USB_MOUNT_PATH"),
@@ -680,7 +683,7 @@ async function ensureDirectoryLayout(config: Config): Promise<StepResult[]> {
 
 async function ensureEtcHobprojEnvFiles(config: Config): Promise<StepResult[]> {
   const commonEnv = [
-    "SERVER_CACHE_ENABLED=1",
+    "SERVER_CACHE_ENABLED=true",
     `MAXMIND_DB_PATH=${GEOIP_DB_PATH}`,
     "",
   ].join("\n");
@@ -755,7 +758,7 @@ async function ensureDeployerConfigFiles(
     staging: { blue: config.stagingBluePort, green: config.stagingGreenPort },
     prod: { blue: config.prodBluePort, green: config.prodGreenPort },
   };
-  const keepIdleRunning: Record<Env, string> = {
+  const keepIdleRunning: Record<Env, boolean> = {
     staging: config.stagingKeepIdleRunning,
     prod: config.prodKeepIdleRunning,
   };

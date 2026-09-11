@@ -1,4 +1,5 @@
 import type { EnvName } from "@shared/environment.ts";
+import { parseBooleanEnvValue } from "@shared/environment.ts";
 import { load } from "@std/dotenv";
 import { ensureDir, exists } from "@std/fs";
 import { dirname, join } from "@std/path";
@@ -99,7 +100,7 @@ async function loadConfig(gitSha: string | undefined): Promise<DeployConfig> {
     remoteSourceArchive: join(remoteUploadPath, `source-${gitSha}.tar.gz`),
     activeColorFile: getAbsoluteEnvPath(env, "ACTIVE_COLOR_FILE"),
     caddySnippetFile: getAbsoluteEnvPath(env, "CADDY_SNIPPET_FILE"),
-    keepIdleRunning: getBooleanEnvValue(env, "KEEP_IDLE_RUNNING"),
+    keepIdleRunning: parseBooleanEnvValue(env.KEEP_IDLE_RUNNING),
     denoDir: getAbsoluteEnvPath(env, "DENO_DIR"),
     allowRead: env.ALLOW_READ,
     allowWrite: env.ALLOW_WRITE,
@@ -452,14 +453,6 @@ function getConfigValue(
   }
 
   return value;
-}
-
-function getBooleanEnvValue(
-  env: Record<string, string>,
-  key: string,
-): boolean {
-  const value = env[key]?.trim().toLowerCase();
-  return value === "true" || value === "1";
 }
 
 function getEnvValue(env: Record<string, string>, key: string) {

@@ -13,9 +13,27 @@ export function getEnv(key: string): string | undefined {
 }
 
 export function getBooleanEnv(key: string): boolean {
-  const value = Deno.env.get(key)?.trim().toLowerCase();
+  return parseBooleanEnvValue(Deno.env.get(key));
+}
 
-  return Boolean(value) && value !== "0" && value !== "false";
+export function parseBooleanEnvValue(value: string | undefined): boolean {
+  const normalized = value?.trim().toLowerCase();
+
+  if (normalized === undefined || normalized === "") {
+    return false;
+  }
+
+  if (normalized === "true") {
+    return true;
+  }
+
+  if (normalized === "false") {
+    return false;
+  }
+
+  throw new Error(
+    `Invalid boolean value '${value}'. Expected "true" or "false".`,
+  );
 }
 
 const ENV_NAMES = ["dev", "staging", "prod"] as const;
