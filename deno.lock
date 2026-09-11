@@ -2,8 +2,8 @@
   "version": "5",
   "specifiers": {
     "jsr:@josh-hemphill/maxminddb-wasm@^2.1.8": "2.1.8",
-    "jsr:@simplewebauthn/server@14": "14.0.0",
-    "jsr:@std/async@^1.0.14": "1.5.0",
+    "jsr:@simplewebauthn/server@^14.0.1": "14.0.1",
+    "jsr:@std/async@^1.5.0": "1.5.0",
     "jsr:@std/cli@^1.0.32": "1.0.32",
     "jsr:@std/collections@^1.3.0": "1.3.0",
     "jsr:@std/data-structures@^1.1.1": "1.1.2",
@@ -30,19 +30,21 @@
     "npm:@peculiar/asn1-ecc@^2.6.1": "2.9.4",
     "npm:@peculiar/asn1-rsa@^2.6.1": "2.9.4",
     "npm:@peculiar/asn1-schema@^2.6.0": "2.9.4",
+    "npm:@peculiar/asn1-x509-post-quantum@^2.9.4": "2.9.4",
     "npm:@peculiar/asn1-x509@^2.6.1": "2.9.4",
-    "npm:@peculiar/x509@^1.14.3": "1.14.3",
+    "npm:@peculiar/x509@^2.1.0": "2.1.0",
     "npm:preact-render-to-string@^6.7.0": "6.7.0_preact@10.29.8",
     "npm:preact@*": "10.29.8_preact-render-to-string@6.7.0",
     "npm:preact@^10.29.8": "10.29.8_preact-render-to-string@6.7.0",
-    "npm:type-fest@^5.8.0": "5.8.0"
+    "npm:reflect-metadata@~0.2.2": "0.2.2",
+    "npm:type-fest@^5.9.0": "5.9.0"
   },
   "jsr": {
     "@josh-hemphill/maxminddb-wasm@2.1.8": {
       "integrity": "10efd111632c32f6eb1f70c1ceae4f3457b157635b99bbe09236c89dcf68f2b5"
     },
-    "@simplewebauthn/server@14.0.0": {
-      "integrity": "cf1c640671bb271957b086a0a72a095292cc4c0db14ebce7a19c4d2e1a6fe14e",
+    "@simplewebauthn/server@14.0.1": {
+      "integrity": "a3e00df55229a4c79bd81b8ad829f2e4e6b99afee0b0e2d91c2cd109f40279f9",
       "dependencies": [
         "npm:@hexagon/base64",
         "npm:@levischuck/tiny-cbor",
@@ -51,7 +53,9 @@
         "npm:@peculiar/asn1-rsa",
         "npm:@peculiar/asn1-schema",
         "npm:@peculiar/asn1-x509",
-        "npm:@peculiar/x509"
+        "npm:@peculiar/asn1-x509-post-quantum",
+        "npm:@peculiar/x509",
+        "npm:reflect-metadata"
       ]
     },
     "@std/async@1.5.0": {
@@ -151,6 +155,16 @@
         "tslib@2.8.1"
       ]
     },
+    "@peculiar/asn1-asym-key@2.9.4": {
+      "integrity": "sha512-s7SJfjcXlR3MYMngDTeMLCy3VjGaIxeEy905CQ0j09pDbeYhNBvBGA7r7cAvCZYkVFo9kVg9RAki0K2iUz7SGQ==",
+      "dependencies": [
+        "@peculiar/asn1-pkcs8",
+        "@peculiar/asn1-schema",
+        "@peculiar/asn1-x509",
+        "asn1js",
+        "tslib@2.8.1"
+      ]
+    },
     "@peculiar/asn1-cms@2.9.4": {
       "integrity": "sha512-cben7oxmQsUGZqotus7yt0srYdncOT6RNWcTQ77T2RFOXejYVYkXadrfePdRcrVpO9K95IRLKKglG2k38jKXuw==",
       "dependencies": [
@@ -238,6 +252,16 @@
         "tslib@2.8.1"
       ]
     },
+    "@peculiar/asn1-x509-post-quantum@2.9.4": {
+      "integrity": "sha512-GD0k7BY3dsEIeai7C7bVRPddj/PzZu+sTawRPRxdHKbdy1f9b58WQyk0eFJdr28GShyLVTU8poyi4+bTAZfEtQ==",
+      "dependencies": [
+        "@peculiar/asn1-asym-key",
+        "@peculiar/asn1-schema",
+        "@peculiar/asn1-x509",
+        "asn1js",
+        "tslib@2.8.1"
+      ]
+    },
     "@peculiar/asn1-x509@2.9.4": {
       "integrity": "sha512-CxhBo/RdEbMMob7T31ZdQjGuoyRFLVwrDzTn25bihzBasRg9kRm/0IxIPvhgQtcK/9dNcO1XQL2fuPugwELL0Q==",
       "dependencies": [
@@ -253,8 +277,8 @@
         "tslib@2.8.1"
       ]
     },
-    "@peculiar/x509@1.14.3": {
-      "integrity": "sha512-C2Xj8FZ0uHWeCXXqX5B4/gVFQmtSkiuOolzAgutjTfseNOHT3pUjljDZsTSxXFGgio54bCzVFqmEOUrIVk8RDA==",
+    "@peculiar/x509@2.1.0": {
+      "integrity": "sha512-IYbg1R03CSQGWwl24kGyqrdVtixNSbRaDvBg1r5wyYjTP+VwPQkka1BzTgU5+vxiuwqg04OxdvdJ1xYYFIdUSA==",
       "dependencies": [
         "@peculiar/asn1-cms",
         "@peculiar/asn1-csr",
@@ -263,8 +287,8 @@
         "@peculiar/asn1-rsa",
         "@peculiar/asn1-schema",
         "@peculiar/asn1-x509",
+        "@peculiar/asn1-x509-post-quantum",
         "pvtsutils",
-        "reflect-metadata",
         "tslib@2.8.1",
         "tsyringe"
       ]
@@ -319,8 +343,8 @@
         "tslib@1.14.1"
       ]
     },
-    "type-fest@5.8.0": {
-      "integrity": "sha512-YGYEVz3Fm5iy/AybuA0oyNFq7H4CgQNfRp/qfe8nurE1kuCeNm3/vfm9X4Mtl+qLyaKJUh5xrFZwogr41SMjYA==",
+    "type-fest@5.9.0": {
+      "integrity": "sha512-yANm3Jr3GiJ1qgJlxGAVxTOIcEOk1rhQHamlXtnrCK7EHP4HeM9OGxtMg/W7HFdrVzw/ZWJKGVIJusVH85sLtw==",
       "dependencies": [
         "tagged-tag"
       ]
@@ -329,8 +353,8 @@
   "workspace": {
     "dependencies": [
       "jsr:@josh-hemphill/maxminddb-wasm@^2.1.8",
-      "jsr:@simplewebauthn/server@14",
-      "jsr:@std/async@^1.0.14",
+      "jsr:@simplewebauthn/server@^14.0.1",
+      "jsr:@std/async@^1.5.0",
       "jsr:@std/collections@^1.3.0",
       "jsr:@std/datetime@~0.225.7",
       "jsr:@std/dotenv@~0.225.8",
@@ -343,7 +367,7 @@
       "npm:preact-render-to-string@^6.7.0",
       "npm:preact@*",
       "npm:preact@^10.29.8",
-      "npm:type-fest@^5.8.0"
+      "npm:type-fest@^5.9.0"
     ]
   }
 }
